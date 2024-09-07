@@ -5,9 +5,9 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
-eralchemy2 = "*"
 
 [dev-packages]
+eralchemy2 = "*"
 
 [requires]
 python_version = "3.11"
