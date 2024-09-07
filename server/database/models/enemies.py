@@ -1,81 +1,242 @@
+from typing import Any, Dict
+
 from sqlalchemy import BLOB, Boolean, Column, Integer, String, Table, Text, ForeignKey
+from sqlalchemy.orm import relationship
+
 from .base import Base
 
 
 class Enemies(Base):
-    __tablename__ = "Enemies"
-    enemy_id = Column("Enemy_id", Integer, primary_key=True)
-    name = Column("Name", String, nullable=False)
-    description = Column("Description", Text)
-    information = Column("Information", Text)
-    race_id = Column("Race_id", Integer, ForeignKey("Races.Race_id"))
+    """
+    Table that holds all monsters the party has fought along their travels.
+
+    Parameters:
+        - name (str): The name of the NPC.
+        - description (str): Description about how the monster looks like (optional).
+        - information (str): Notes and extra information about the monster (optional).
+        - alive (bool): Boolean check if NPC is alive (True), or dead (False).
+        - active (bool): Boolean check if the NPC is visible for party (True) or not (False).
+        - amour_class (int): The armour class the NPC has (optional).
+        - image (BLOB): An image of the NPC (optional).
+        - race (int): FK to the "races" table holding the PK of the race of the NPC.
+        - subrace (int): FK to the "subraces" table holding the PK of the subrace of the NPC (optional).
+    """
+
+    __tablename__ = "enemies"
+
+    enemy_id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    information = Column(Text, nullable=True)
+    alive = Column(Boolean, nullable=False)
+    active = Column(Boolean, nullable=False)
+    armour_class = Column(Integer)
+    image = Column(BLOB, nullable=True)
+    race = Column(Integer, ForeignKey("races.race_id"), nullable=False)
+    subrace = Column(Integer, ForeignKey("subraces.subrace_id"), nullable=True)
+
+    # Define relationships
+    classes = relationship("Classes", secondary="enemy_classes")
+    immunities = relationship("Effects", secondary="enemy_immunities")
+    resistances = relationship("Effects", secondary="enemy_resistances")
+    vulnerabilities = relationship("Effects", secondary="enemy_vulnerabilities")
+
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the instance including all
+        its attributes.
+
+        :returns: A string representation of the Enemies instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}('{self.enemy_id}', '{self.name}',
+        '{self.description}', '{self.information}', '{self.alive}',
+        '{self.active}', '{self.armour_class}', '{self.image}', '{self.race}',
+        '{self.subrace}', '{self.classes}', '{self.immunities}', '{self.resistances}', 
+        '{self.vulnerabilities}')"""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        This method creates a dictionary where the keys are attribute names and
+        the values are the attribute values, facilitating data serialization.
+
+        :returns: A dictionary representation of the Enemies instance.
+        :rtype: Dict[str, Any]
+        """
+        return {
+            "enemy_id": self.enemy_id,
+            "name": self.name,
+            "description": self.description,
+            "information": self.information,
+            "alive": self.alive,
+            "active": self.active,
+            "armour_class": self.armour_class,
+            "image": self.image,
+            "race": self.race,
+            "subrace": self.subrace,
+            "classes": [cls.to_dict() for cls in self.classes],
+            "immunities": [imm.to_dict() for imm in self.immunities],
+            "resistances": [res.to_dict() for res in self.resistances],
+            "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
+        }
 
 
 class Monsters(Base):
-    __tablename__ = "Monsters"
-    monster_id = Column("Monster_id", Integer, primary_key=True)
-    name = Column("Name", String, nullable=False)
-    description = Column("Description", Text)
-    armour_class = Column("Armour_class", Integer)
-    alive = Column("Alive", Boolean, nullable=True)
-    active = Column("Visible", Boolean, nullable=True)
-    image = Column("Image", BLOB, nullable=True)
-    size_id = Column("Id_size", Integer, ForeignKey("Sizes.Size_id"))
-    type_id = Column("Id_Type", Integer, ForeignKey("Types.Type_id"))
+    """
+    Table that holds all monsters the party has fought along their travels.
+
+    Parameters:
+        - name (str): The name of the monster.
+        - description (str): Description about how the monster looks like (optional).
+        - information (str): Notes and extra information about the monster (optional).
+        - alive (bool): Boolean check if monster is alive (True), or dead (False).
+        - active (bool): Boolean check if the monster is visible for party (True) or not (False).
+        - amour_class (int): The armour class the monster has (optional).
+        - image (BLOB): An image of the monster (optional).
+        - size_id (int): FK to the "sizes" table.
+        - type_id (int): FK to the "types" table.
+    """
+
+    __tablename__ = "monsters"
+
+    monster_id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    information = Column(Text, nullable=True)
+    alive = Column(Boolean, nullable=False)
+    active = Column(Boolean, nullable=False)
+    armour_class = Column(Integer, nullable=False)
+    image = Column(BLOB, nullable=True)
+    size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=False)
+    type_id = Column(Integer, ForeignKey("types.type_id"), nullable=False)
+
+    # Define relationships
+    immunities = relationship("Effects", secondary="monster_immunities")
+    resistances = relationship("Effects", secondary="monster_resistances")
+    vulnerabilities = relationship("Effects", secondary="monster_vulnerabilities")
+
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the instance including all
+        its attributes.
+
+        :returns: A string representation of the Monster instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}('{self.monster_id}', '{self.name}',
+        '{self.description}', '{self.information}', '{self.alive}',
+        '{self.active}', '{self.armour_class}', '{self.image}', '{self.type_id}',
+        '{self.size_id}', '{self.immunities}', '{self.resistances}', 
+        '{self.vulnerabilities}')"""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        This method creates a dictionary where the keys are attribute names and
+        the values are the attribute values, facilitating data serialization.
+
+        :returns: A dictionary representation of the Monster instance.
+        :rtype: Dict[str, Any]
+        """
+        return {
+            "monster_id": self.monster_id,
+            "name": self.name,
+            "description": self.description,
+            "information": self.information,
+            "alive": self.alive,
+            "active": self.active,
+            "armour_class": self.armour_class,
+            "image": self.image,
+            "type": self.type_id,
+            "size": self.size_id,
+            "immunities": [imm.to_dict() for imm in self.immunities],
+            "resistances": [res.to_dict() for res in self.resistances],
+            "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
+        }
 
 
 class Types(Base):
-    __tablename__ = "Types"
-    type_id = Column("Type_id", Integer, primary_key=True)
-    type = Column("Type", Text, nullable=False)
+    """
+
+    Parameters:
+        - type (str): The name of the type
+    """
+
+    __tablename__ = "types"
+
+    type_id = Column(Integer, primary_key=True)
+    name = Column(Text, nullable=False)
+
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the instance including all
+        its attributes.
+
+        :returns: A string representation of the Types instance.
+        :rtype: str
+        """
+        return f"{self.__class__.__tablename__}('{self.type_id}', '{self.name}')"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        This method creates a dictionary where the keys are attribute names and
+        the values are the attribute values, facilitating data serialization.
+
+        :returns: A dictionary representation of the Types instance.
+        :rtype: Dict[str, Any]
+        """
+        return {"type_id": self.type_id, "type": self.name}
 
 
+# Cross-reference table for enemies and their classes
 EnemyClasses = Table(
-    "Enemy_Classes",
+    "enemy_classes",
     Base.metadata,
-    Column("Class_id", Integer, ForeignKey("Classes.Class_id")),
-    Column("Enemy_id", Integer, ForeignKey("Enemies.Enemy_id")),
-    Column("Subclass_id", Integer, ForeignKey("Subclasses.Subclass_id")),
+    Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
+    Column("class_id", Integer, ForeignKey("classes.class_id"), nullable=False),
+    Column("subclass_id", Integer, ForeignKey("subclasses.subclass_id"), nullable=True),
 )
 
+# Cross-reference table for enemies and their immunities
 EnemyImmunities = Table(
-    "Enemy_Immunities",
+    "enemy_immunities",
     Base.metadata,
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
-    Column("Enemy_id", Integer, ForeignKey("Enemies.Enemy_id")),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
+    Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
 )
 
+# Cross-reference table for enemies and their resistances
 EnemyResistances = Table(
-    "Enemy_Resistances",
+    "enemy_resistances",
     Base.metadata,
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
-    Column("Enemy_id", Integer, ForeignKey("Enemies.Enemy_id")),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
+    Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
 )
 
+# Cross-reference table for enemies and their vulnerabilities
 EnemyVulnerabilities = Table(
-    "Enemy_Vulnerabilities",
+    "enemy_vulnerabilities",
     Base.metadata,
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
-    Column("Enemy_id", Integer, ForeignKey("Enemies.Enemy_id")),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
+    Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
 )
 
 MonsterImmunities = Table(
-    "Monster_Immunities",
+    "monster_immunities",
     Base.metadata,
-    Column("Monster_id", Integer, ForeignKey("Monsters.Monster_id")),
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
+    Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=False),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
 )
 
 MonsterResistances = Table(
-    "Monster_Resistances",
+    "monster_resistances",
     Base.metadata,
-    Column("Monster_id", Integer, ForeignKey("Monsters.Monster_id")),
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
+    Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=True),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=True),
 )
 
 MonsterVulnerabilities = Table(
-    "Monster_Vulnerabilities",
+    "monster_vulnerabilities",
     Base.metadata,
-    Column("Monster_id", Integer, ForeignKey("Monsters.Monster_id")),
-    Column("Effect_id", Integer, ForeignKey("Effects.Effect_id")),
+    Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=True),
+    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=True),
 )

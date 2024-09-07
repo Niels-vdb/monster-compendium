@@ -9,6 +9,7 @@ bcrypt = "*"
 
 [dev-packages]
 eralchemy2 = "*"
+sqlalchemy-schemadisplay = "*"
 
 [requires]
 python_version = "3.11"
