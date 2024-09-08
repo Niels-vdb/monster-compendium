@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 
-class PlayableCharacters(Base):
+class PlayableCharacter(Base):
     __tablename__ = "playable_characters"
 
     pc_id = Column(Integer, primary_key=True)
@@ -22,10 +22,10 @@ class PlayableCharacters(Base):
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 
     # Define relationships
-    classes = relationship("Classes", secondary="pc_classes")
-    immunities = relationship("Effects", secondary="pc_immunities")
-    resistances = relationship("Effects", secondary="pc_resistances")
-    vulnerabilities = relationship("Effects", secondary="pc_vulnerabilities")
+    classes = relationship("Class", secondary="pc_classes")
+    immunities = relationship("Effect", secondary="pc_immunities")
+    resistances = relationship("Effect", secondary="pc_resistances")
+    vulnerabilities = relationship("Effect", secondary="pc_vulnerabilities")
 
     def __repr__(self) -> str:
         """

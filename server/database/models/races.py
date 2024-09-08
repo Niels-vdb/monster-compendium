@@ -8,7 +8,7 @@ from .base import Base
 # Add resistances to race as FK
 
 
-class Races(Base):
+class Race(Base):
     """
     Table that holds all races a character can have.
 
@@ -24,9 +24,9 @@ class Races(Base):
     size_id = Column(Integer, ForeignKey("sizes.size_id"))
 
     subrace = relationship(
-        "Subraces", back_populates="parent_race", passive_deletes=True
+        "Subrace", back_populates="parent_race", passive_deletes=True
     )
-    resistances = relationship("Effects", secondary="race_resistances")
+    resistances = relationship("Effect", secondary="race_resistances")
 
     def __repr__(self) -> str:
         """
@@ -57,7 +57,7 @@ class Races(Base):
         }
 
 
-class Subraces(Base):
+class Subrace(Base):
     """
     Table that holds all subraces that a race can have.
 
@@ -72,10 +72,10 @@ class Subraces(Base):
     name = Column(String(30), nullable=False)
     race_id = Column(Integer, ForeignKey("races.race_id", ondelete="CASCADE"))
 
-    resistances = relationship("Effects", secondary="subrace_resistances")
+    resistances = relationship("Effect", secondary="subrace_resistances")
 
     # Define relationships
-    race = relationship("Races", backref="subraces")
+    race = relationship("Race", backref="subraces")
 
     def __repr__(self) -> str:
         """

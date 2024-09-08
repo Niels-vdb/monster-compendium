@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 
-class Classes(Base):
+class Class(Base):
     """
     Table that holds all classes a character can have.
 
@@ -20,7 +20,7 @@ class Classes(Base):
     name = Column(String(20), nullable=False)
 
     subclass = relationship(
-        "Subclasses", back_populates="parent_class", passive_deletes=True
+        "Subclass", back_populates="parent_class", passive_deletes=True
     )
 
     def __repr__(self) -> str:
@@ -44,7 +44,7 @@ class Classes(Base):
         return {"class_id": self.class_id, "name": self.name}
 
 
-class Subclasses(Base):
+class Subclass(Base):
     """
     Table that holds all subclasses that can belong to a class.
 
@@ -58,7 +58,7 @@ class Subclasses(Base):
     name = Column(String(20), nullable=False)
     class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"))
 
-    parent_class = relationship("Classes", back_populates="subclass")
+    parent_class = relationship("Class", back_populates="subclass")
 
     def __repr__(self) -> str:
         """

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 
-class NPCCharacters(Base):
+class NPCCharacter(Base):
     """
     Table that holds all noticeable NPC's the party has met along their travels.
 
@@ -35,10 +35,10 @@ class NPCCharacters(Base):
     subrace = Column(Integer, ForeignKey("subraces.subrace_id"), nullable=True)
 
     # Define relationships
-    classes = relationship("Classes", secondary="npc_classes")
-    immunities = relationship("Effects", secondary="npc_immunities")
-    resistances = relationship("Effects", secondary="npc_resistances")
-    vulnerabilities = relationship("Effects", secondary="npc_vulnerabilities")
+    classes = relationship("Class", secondary="npc_classes")
+    immunities = relationship("Effect", secondary="npc_immunities")
+    resistances = relationship("Effect", secondary="npc_resistances")
+    vulnerabilities = relationship("Effect", secondary="npc_vulnerabilities")
 
     def __repr__(self) -> str:
         """

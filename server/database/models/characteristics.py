@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, Text
 from .base import Base
 
 
-class Sizes(Base):
+class Size(Base):
     """
     Table that holds all sizes a character can have.
 
@@ -39,7 +39,7 @@ class Sizes(Base):
         return {"size_id": self.size_id, "size": self.name}
 
 
-class Effects(Base):
+class Effect(Base):
     """
     Table that holds all the effects a character can have a venerability,
     immunity or resistance to.

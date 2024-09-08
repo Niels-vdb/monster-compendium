@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from .base import Base
 
 
-class Enemies(Base):
+class Enemy(Base):
     """
     Table that holds all monsters the party has fought along their travels.
 
@@ -36,10 +36,10 @@ class Enemies(Base):
     subrace = Column(Integer, ForeignKey("subraces.subrace_id"), nullable=True)
 
     # Define relationships
-    classes = relationship("Classes", secondary="enemy_classes")
-    immunities = relationship("Effects", secondary="enemy_immunities")
-    resistances = relationship("Effects", secondary="enemy_resistances")
-    vulnerabilities = relationship("Effects", secondary="enemy_vulnerabilities")
+    classes = relationship("Class", secondary="enemy_classes")
+    immunities = relationship("Effect", secondary="enemy_immunities")
+    resistances = relationship("Effect", secondary="enemy_resistances")
+    vulnerabilities = relationship("Effect", secondary="enemy_vulnerabilities")
 
     def __repr__(self) -> str:
         """
@@ -81,7 +81,7 @@ class Enemies(Base):
         }
 
 
-class Monsters(Base):
+class Monster(Base):
     """
     Table that holds all monsters the party has fought along their travels.
 
@@ -111,9 +111,9 @@ class Monsters(Base):
     type_id = Column(Integer, ForeignKey("types.type_id"), nullable=False)
 
     # Define relationships
-    immunities = relationship("Effects", secondary="monster_immunities")
-    resistances = relationship("Effects", secondary="monster_resistances")
-    vulnerabilities = relationship("Effects", secondary="monster_vulnerabilities")
+    immunities = relationship("Effect", secondary="monster_immunities")
+    resistances = relationship("Effect", secondary="monster_resistances")
+    vulnerabilities = relationship("Effect", secondary="monster_vulnerabilities")
 
     def __repr__(self) -> str:
         """
@@ -154,7 +154,7 @@ class Monsters(Base):
         }
 
 
-class Types(Base):
+class Type(Base):
     """
 
     Parameters:
