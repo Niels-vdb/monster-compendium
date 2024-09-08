@@ -2,28 +2,28 @@ from .base import Base
 from .enemies import (
     Enemies,
     Monsters,
-    EnemyClasses,
-    EnemyImmunities,
-    EnemyResistances,
-    EnemyVulnerabilities,
-    MonsterImmunities,
-    MonsterResistances,
-    MonsterVulnerabilities,
+    enemy_classes,
+    enemy_immunities,
+    enemy_resistances,
+    enemy_vulnerabilities,
+    monster_immunities,
+    monster_resistances,
+    monster_vulnerabilities,
     Types,
 )
 from .non_playable_characters import (
     NPCCharacters,
-    NPCClasses,
-    NPCImmunities,
-    NPCResistances,
-    NPCVulnerabilities,
+    npc_classes,
+    npc_immunities,
+    npc_resistances,
+    npc_vulnerabilities,
 )
 from .playable_characters import (
     PlayableCharacters,
-    PCClasses,
-    PCImmunities,
-    PCResistances,
-    PCVulnerabilities,
+    pc_classes,
+    pc_immunities,
+    pc_resistances,
+    pc_vulnerabilities,
 )
 from .characteristics import Effects, Sizes
 from .classes import Classes, Subclasses

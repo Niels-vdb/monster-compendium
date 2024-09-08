@@ -114,7 +114,7 @@ race_resistances = Table(
 
 # Cross-reference table holding the subrace and its resistances.
 subrace_resistances = Table(
-    "race_resistances",
+    "subrace_resistances",
     Base.metadata,
     Column("race_id", Integer, ForeignKey("subraces.subrace_id"), nullable=False),
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),

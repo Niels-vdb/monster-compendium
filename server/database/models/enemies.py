@@ -188,7 +188,7 @@ class Types(Base):
 
 
 # Cross-reference table for enemies and their classes
-enemy_Classes = Table(
+enemy_classes = Table(
     "enemy_classes",
     Base.metadata,
     Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
