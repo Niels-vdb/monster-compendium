@@ -81,7 +81,7 @@ class NPCCharacters(Base):
 
 
 # Cross-reference table holding the NPC and its class. If the class has a subclass it will also hold the subclass.
-NPCClasses = Table(
+npc_classes = Table(
     "npc_classes",
     Base.metadata,
     Column("npc_id", Integer, ForeignKey("npc_characters.npc_id"), nullable=False),
@@ -90,7 +90,7 @@ NPCClasses = Table(
 )
 
 # Cross-reference table holding the NPC and its immunities.
-NPCImmunities = Table(
+npc_immunities = Table(
     "npc_immunities",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
@@ -98,7 +98,7 @@ NPCImmunities = Table(
 )
 
 # Cross-reference table holding the NPC and its resistances.
-NPCResistances = Table(
+npc_resistances = Table(
     "npc_resistances",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
@@ -106,7 +106,7 @@ NPCResistances = Table(
 )
 
 # Cross-reference table holding the NPC and its vunrabilities.
-NPCVulnerabilities = Table(
+npc_vulnerabilities = Table(
     "npc_vulnerabilities",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),

@@ -25,7 +25,7 @@ from .playable_characters import (
     PCResistances,
     PCVulnerabilities,
 )
-from .characteristics import Classes, Subclasses, Races, Subraces, Effects, Sizes
+from .characteristics import Effects, Sizes
+from .classes import Classes, Subclasses
+from .races import Races, Subraces
 from .users import Users
-
-# Import other models and relationship tables as needed

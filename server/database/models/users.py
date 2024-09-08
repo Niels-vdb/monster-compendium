@@ -119,7 +119,7 @@ class Parties(Base):
         return {"party_id": self.party_id, "name": self.name}
 
 
-UserParty = Table(
+user_parties = Table(
     "user_parties",
     Base.metadata,
     Column("user_id", Integer, ForeignKey("users.user_id"), nullable=True),

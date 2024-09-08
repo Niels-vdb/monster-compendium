@@ -69,7 +69,7 @@ class PlayableCharacters(Base):
 
 
 # Cross-reference table holding the PC and its class. If the class has a subclass it will also hold the subclass.
-PCClasses = Table(
+pc_classes = Table(
     "pc_classes",
     Base.metadata,
     Column("pc_id", Integer, ForeignKey("playable_characters.pc_id"), nullable=False),
@@ -78,7 +78,7 @@ PCClasses = Table(
 )
 
 # Cross-reference table holding the PC and its immunities.
-PCImmunities = Table(
+pc_immunities = Table(
     "pc_immunities",
     Base.metadata,
     Column("pc_id", Integer, ForeignKey("playable_characters.pc_id"), nullable=False),
@@ -86,7 +86,7 @@ PCImmunities = Table(
 )
 
 # Cross-reference table holding the PC and its resistances.
-PCResistances = Table(
+pc_resistances = Table(
     "pc_resistances",
     Base.metadata,
     Column("pc_id", Integer, ForeignKey("playable_characters.pc_id"), nullable=False),
@@ -94,7 +94,7 @@ PCResistances = Table(
 )
 
 # Cross-reference table holding the PC and its vunrabilities.
-PCVulnerabilities = Table(
+pc_vulnerabilities = Table(
     "pc_vulnerabilities",
     Base.metadata,
     Column("pc_id", Integer, ForeignKey("playable_characters.pc_id"), nullable=False),

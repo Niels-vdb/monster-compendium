@@ -188,7 +188,7 @@ class Types(Base):
 
 
 # Cross-reference table for enemies and their classes
-EnemyClasses = Table(
+enemy_Classes = Table(
     "enemy_classes",
     Base.metadata,
     Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
@@ -197,7 +197,7 @@ EnemyClasses = Table(
 )
 
 # Cross-reference table for enemies and their immunities
-EnemyImmunities = Table(
+enemy_immunities = Table(
     "enemy_immunities",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
@@ -205,7 +205,7 @@ EnemyImmunities = Table(
 )
 
 # Cross-reference table for enemies and their resistances
-EnemyResistances = Table(
+enemy_resistances = Table(
     "enemy_resistances",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
@@ -213,28 +213,28 @@ EnemyResistances = Table(
 )
 
 # Cross-reference table for enemies and their vulnerabilities
-EnemyVulnerabilities = Table(
+enemy_vulnerabilities = Table(
     "enemy_vulnerabilities",
     Base.metadata,
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
     Column("enemy_id", Integer, ForeignKey("enemies.enemy_id"), nullable=False),
 )
 
-MonsterImmunities = Table(
+monster_immunities = Table(
     "monster_immunities",
     Base.metadata,
     Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=False),
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
 )
 
-MonsterResistances = Table(
+monster_resistances = Table(
     "monster_resistances",
     Base.metadata,
     Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=True),
     Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=True),
 )
 
-MonsterVulnerabilities = Table(
+monster_vulnerabilities = Table(
     "monster_vulnerabilities",
     Base.metadata,
     Column("monster_id", Integer, ForeignKey("monsters.monster_id"), nullable=True),
