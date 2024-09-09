@@ -1,6 +1,6 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -19,7 +19,7 @@ class Class(Base):
     class_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
 
-    subclass = relationship(
+    subclasses = relationship(
         "Subclass", back_populates="parent_class", passive_deletes=True
     )
 
@@ -58,7 +58,7 @@ class Subclass(Base):
     name = Column(String(20), nullable=False)
     class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"))
 
-    parent_class = relationship("Class", back_populates="subclass")
+    parent_class = relationship("Class", back_populates="subclasses")
 
     def __repr__(self) -> str:
         """
@@ -68,7 +68,7 @@ class Subclass(Base):
         :returns: A string representation of the Subclass instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.subclass_id}', 
+        return f"""{self.__class__.__tablename__}('{self.subclass_id}',
                 '{self.name}', '{self.class_id}')"""
 
     def to_dict(self) -> Dict[str, Any]:

@@ -1,11 +1,9 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
-
-# Add resistances to race as FK
 
 
 class Race(Base):
@@ -21,12 +19,15 @@ class Race(Base):
 
     race_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
-    size_id = Column(Integer, ForeignKey("sizes.size_id"))
+    size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=False)
 
-    subrace = relationship(
-        "Subrace", back_populates="parent_race", passive_deletes=True
+    size = relationship("Size", back_populates="races")
+    subraces = relationship("Subrace", back_populates="race")
+    resistances = relationship(
+        "Effect",
+        secondary="race_resistances",
+        back_populates="race_resistances",
     )
-    resistances = relationship("Effect", secondary="race_resistances")
 
     def __repr__(self) -> str:
         """
@@ -36,9 +37,7 @@ class Race(Base):
         :returns: A string representation of the Race instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.race_id}', 
-                '{self.name}', '{self.size_id}', '{self.subrace}', 
-                '{self.resistances}')"""
+        return f"{self.__class__.__tablename__}('{self.race_id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -51,8 +50,6 @@ class Race(Base):
         return {
             "race_id": self.race_id,
             "name": self.name,
-            "size_id": self.size_id,
-            "subrace": self.subrace,
             "resistances": self.resistances,
         }
 
@@ -70,12 +67,17 @@ class Subrace(Base):
 
     subrace_id = Column(Integer, primary_key=True)
     name = Column(String(30), nullable=False)
-    race_id = Column(Integer, ForeignKey("races.race_id", ondelete="CASCADE"))
+    race_id = Column(
+        Integer,
+        ForeignKey("races.race_id", ondelete="CASCADE"),
+    )
 
-    resistances = relationship("Effect", secondary="subrace_resistances")
-
-    # Define relationships
-    race = relationship("Race", backref="subraces")
+    race = relationship("Race", back_populates="subraces")
+    resistances = relationship(
+        "Effect",
+        secondary="subrace_resistances",
+        back_populates="subrace_resistances",
+    )
 
     def __repr__(self) -> str:
         """
@@ -85,8 +87,8 @@ class Subrace(Base):
         :returns: A string representation of the Subrace instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.subrace_id}', 
-                '{self.name}', '{self.race_id}', '{self.resistances}')"""
+        return f"""{self.__class__.__tablename__}('{self.subrace_id}',
+                '{self.name}', '{self.race}', '{self.resistances}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -99,23 +101,22 @@ class Subrace(Base):
         return {
             "subrace_id": self.subrace_id,
             "name": self.name,
-            "race_id": self.race_id,
+            "race_id": self.race,
             "resistances": self.resistances,
         }
 
 
-# Cross-reference table holding the race and its resistances.
-race_resistances = Table(
-    "race_resistances",
-    Base.metadata,
-    Column("race_id", Integer, ForeignKey("races.race_id"), nullable=False),
-    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
-)
+class RaceResistances(Base):
+    __tablename__ = "race_resistances"
 
-# Cross-reference table holding the subrace and its resistances.
-subrace_resistances = Table(
-    "subrace_resistances",
-    Base.metadata,
-    Column("race_id", Integer, ForeignKey("subraces.subrace_id"), nullable=False),
-    Column("effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False),
-)
+    id = Column(Integer, primary_key=True)
+    race_id = Column("race_id", Integer, ForeignKey("races.race_id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+
+
+class SubraceResistances(Base):
+    __tablename__ = "subrace_resistances"
+
+    id = Column(Integer, primary_key=True)
+    subrace_id = Column("subrace_id", Integer, ForeignKey("subraces.subrace_id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
