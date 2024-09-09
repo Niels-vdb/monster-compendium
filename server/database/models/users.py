@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import BLOB, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -13,6 +13,7 @@ class User(Base):
     Parameters:
         - name (str): The name of the user.
         - password (str): The hashes password of the user (optional).
+        - image (BLOB): An image of the user (optional).
         - roles (List[Role]): The roles a user has, can be multiple.
         - parties (List[Party]): The parties a user belongs to, can be multiple (optional).
     """
@@ -22,6 +23,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False, unique=True)
     password = Column(String(80), nullable=True)
+    image = Column(BLOB, nullable=True)
 
     # n-n relationships
     parties = relationship(
