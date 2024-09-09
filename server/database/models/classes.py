@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -19,8 +19,12 @@ class Class(Base):
     class_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
 
+    # Relationship references
     subclasses = relationship(
         "Subclass", back_populates="parent_class", passive_deletes=True
+    )
+    creatures = relationship(
+        "Creature", secondary="creature_classes", back_populates="classes"
     )
 
     def __repr__(self) -> str:
@@ -50,6 +54,7 @@ class Subclass(Base):
 
     Parameters:
         - name (str): The name of the subclass.
+        - class_id (int): The class id of the class this subclass belongs to.
     """
 
     __tablename__ = "subclasses"
@@ -58,7 +63,13 @@ class Subclass(Base):
     name = Column(String(20), nullable=False)
     class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"))
 
+    # n-1 relationships
     parent_class = relationship("Class", back_populates="subclasses")
+
+    # Relationship references
+    creatures = relationship(
+        "Creature", secondary="creature_classes", back_populates="subclasses"
+    )
 
     def __repr__(self) -> str:
         """

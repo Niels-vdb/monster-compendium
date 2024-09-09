@@ -1,14 +1,14 @@
 from typing import Any, Dict
 
-from sqlalchemy import BLOB, Boolean, Column, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, ForeignKey
 
-from .base import Base, Creature
+from .base import Creature
 
 
 class Monster(Creature):
     """
     Table that holds all monsters the party has fought along their travels.
+    Table inherits from Creature table.
 
     Parameters:
         - name (str): The name of the monster.
@@ -18,8 +18,16 @@ class Monster(Creature):
         - active (bool): Boolean check if the monster is visible for party (True) or not (False).
         - amour_class (int): The armour class the monster has (optional).
         - image (BLOB): An image of the monster (optional).
-        - size_id (int): FK to the "sizes" table.
-        - type_id (int): FK to the "types" table.
+
+        - race (int): The race of the creature, FK to id of the races table (optional).
+        - subrace (int): The race of the creature, FK to id of the subraces table (optional).
+        - size_id (int): The size of the creature, FK to id of the sizes table.
+        - type_id (int): The type of the creature, FK to id of the types table (optional).
+
+        - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
+        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
+        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
     __tablename__ = "monsters"
