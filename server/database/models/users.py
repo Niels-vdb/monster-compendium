@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import BLOB, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -12,9 +12,10 @@ class User(Base):
 
     Parameters:
         - name (str): The name of the user.
-        - password (str): The hashes password of the user.
-        - role_id (int): FK to the "roles" table holding the PK of the role given to the user.
-        - party_id (int): FK to the "parties" table holding the PK of the party the user belongs to (optional).
+        - password (str): The hashes password of the user (optional).
+        - image (BLOB): An image of the user (optional).
+        - roles (List[Role]): The roles a user has, can be multiple.
+        - parties (List[Party]): The parties a user belongs to, can be multiple (optional).
     """
 
     __tablename__ = "users"
@@ -22,7 +23,9 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False, unique=True)
     password = Column(String(80), nullable=True)
+    image = Column(BLOB, nullable=True)
 
+    # n-n relationships
     parties = relationship(
         "Party",
         secondary="user_parties",
@@ -57,7 +60,7 @@ class User(Base):
         return {
             "user_id": self.user_id,
             "name": self.name,
-            "role": self.role_id,
+            "role": self.roles,
             "party": self.parties,
         }
 
@@ -75,6 +78,7 @@ class Party(Base):
     party_id = Column(Integer, primary_key=True)
     name: str = Column(String(50), nullable=False, unique=True)
 
+    # n-n relationships
     users = relationship(
         "User",
         secondary="user_parties",
@@ -120,6 +124,7 @@ class Role(Base):
     role_id = Column(Integer, primary_key=True)
     name: str = Column(String(20), nullable=False, unique=True)
 
+    # n-n relationships
     users = relationship(
         "User",
         secondary="user_roles",
@@ -148,6 +153,10 @@ class Role(Base):
 
 
 class UserParties(Base):
+    """
+    Cross-reference table for many-to-many relationship between users and parties.
+    """
+
     __tablename__ = "user_parties"
 
     id = Column(Integer, primary_key=True)
@@ -156,6 +165,10 @@ class UserParties(Base):
 
 
 class CharacterParties(Base):
+    """
+    Cross-reference table for many-to-many relationship between pc characters and parties.
+    """
+
     __tablename__ = "character_parties"
 
     id = Column(Integer, primary_key=True)
@@ -164,6 +177,10 @@ class CharacterParties(Base):
 
 
 class UserRoles(Base):
+    """
+    Cross-reference table for many-to-many relationship between users and roles.
+    """
+
     __tablename__ = "user_roles"
 
     id = Column(Integer, primary_key=True)

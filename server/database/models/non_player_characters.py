@@ -1,24 +1,32 @@
 from typing import Any, Dict
 
-from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
-from .base import Base, Creature
+from sqlalchemy import Column, ForeignKey, Integer
+from .base import Creature
 
 
 class NPCCharacter(Creature):
     """
     Table that holds all noticeable NPC's the party has met along their travels.
+    Table inherits from Creature table.
 
     Parameters:
-        - name (str): The name of the NPC.
-        - description (str): Description about how the NPC looks like (optional).
-        - information (str): Notes and extra information about the NPC (optional).
-        - alive (bool): Boolean check if NPC is alive (True), or dead (False).
-        - amour_class (int): The armour class the NPC has (optional).
-        - active (bool): Boolean check if the NPC is visible for party (True) or not (False).
-        - image (BLOB): An image of the NPC (optional).
-        - race (int): FK to the "races" table holding the PK of the race of the NPC.
-        - subrace (int): FK to the "subraces" table holding the PK of the subrace of the NPC (optional).
+        - name (str): The name of the monster.
+        - description (str): Description about how the monster looks like (optional).
+        - information (str): Notes and extra information about the monster (optional).
+        - alive (bool): Boolean check if monster is alive (True), or dead (False).
+        - active (bool): Boolean check if the monster is visible for party (True) or not (False).
+        - amour_class (int): The armour class the monster has (optional).
+        - image (BLOB): An image of the monster (optional).
+
+        - race (int): The race of the creature, FK to id of the races table (optional).
+        - subrace (int): The race of the creature, FK to id of the subraces table (optional).
+        - size_id (int): The size of the creature, FK to id of the sizes table.
+        - type_id (int): The type of the creature, FK to id of the types table (optional).
+
+        - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
+        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
+        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
     __tablename__ = "npc_characters"

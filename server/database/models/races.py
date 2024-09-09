@@ -13,6 +13,8 @@ class Race(Base):
     Parameters:
         - name (str): The name of the race.
         - size_id (int): FK to sizes table holding the PK of the size of this race.
+
+        - resistances (List[Effect]): The resistances this race has (optional).
     """
 
     __tablename__ = "races"
@@ -21,13 +23,16 @@ class Race(Base):
     name = Column(String(20), nullable=False)
     size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=False)
 
-    size = relationship("Size", back_populates="races")
-    subraces = relationship("Subrace", back_populates="race")
+    # n-n relationships
     resistances = relationship(
         "Effect",
         secondary="race_resistances",
         back_populates="race_resistances",
     )
+
+    # Relationships
+    size = relationship("Size", back_populates="races")
+    subraces = relationship("Subrace", back_populates="race")
 
     def __repr__(self) -> str:
         """
@@ -37,7 +42,8 @@ class Race(Base):
         :returns: A string representation of the Race instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.race_id}', '{self.name}')"
+        return f"""{self.__class__.__tablename__}('{self.race_id}', 
+                '{self.name}', '{self.size_id}', '{self.resistances}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -50,6 +56,7 @@ class Race(Base):
         return {
             "race_id": self.race_id,
             "name": self.name,
+            "size": self.size_id,
             "resistances": self.resistances,
         }
 
@@ -72,7 +79,10 @@ class Subrace(Base):
         ForeignKey("races.race_id", ondelete="CASCADE"),
     )
 
+    # n-1 relationships
     race = relationship("Race", back_populates="subraces")
+
+    # n-n relationships
     resistances = relationship(
         "Effect",
         secondary="subrace_resistances",
@@ -107,6 +117,10 @@ class Subrace(Base):
 
 
 class RaceResistances(Base):
+    """
+    Cross-reference table for many-to-many relationship between a race and it's resistances.
+    """
+
     __tablename__ = "race_resistances"
 
     id = Column(Integer, primary_key=True)
@@ -115,6 +129,10 @@ class RaceResistances(Base):
 
 
 class SubraceResistances(Base):
+    """
+    Cross-reference table for many-to-many relationship between a subrace and it's resistances.
+    """
+
     __tablename__ = "subrace_resistances"
 
     id = Column(Integer, primary_key=True)

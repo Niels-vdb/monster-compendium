@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from server.database.create import session
+from server.database.models.base import CreatureClasses
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NPCCharacter
@@ -10,7 +11,10 @@ from server.database.models.characteristics import Size, Type, Effect
 from server.database.models.users import User, Party, Role
 
 
-def initialize_party():
+def initialize_party() -> None:
+    """
+    Creates initial "Murder Hobo Party" party in the parties table
+    """
     party = "Murder Hobo Party"
 
     if not session.query(Party).filter(Party.name == party).first():
@@ -20,9 +24,9 @@ def initialize_party():
     session.commit()
 
 
-def initialize_roles():
+def initialize_roles() -> None:
     """
-    Creates the roles and add them to the database.
+    Creates the roles and add them to the roles table.
     """
     roles: List[str] = ["Admin", "Dungeon Master", "Player"]
 
@@ -34,9 +38,9 @@ def initialize_roles():
     session.commit()
 
 
-def initialize_users():
+def initialize_users() -> None:
     """
-    Create an initial admin account to the database.
+    Create the initial user accounts and adds them to the users table.
     """
     users: Dict[str, Dict[str, str]] = {
         "admin": {
@@ -73,9 +77,9 @@ def initialize_users():
     session.commit()
 
 
-def initialize_sizes():
+def initialize_sizes() -> None:
     """
-    All initial sizes to be added to the database.
+    All initial sizes to be added to the sizes table.
     """
     sizes: List[str] = [
         "Tiny",
@@ -94,9 +98,9 @@ def initialize_sizes():
         session.commit()
 
 
-def initialize_effects():
+def initialize_effects() -> None:
     """
-    All initial conditions and damage types to be added to the database.
+    All initial conditions and damage types to be added to the effects table.
     """
     effects: List[str] = [
         "Acid",
@@ -138,9 +142,9 @@ def initialize_effects():
     session.commit()
 
 
-def initialize_classes():
+def initialize_classes() -> None:
     """
-    All initial classes to be added to the database.
+    All initial classes to be added to the classes table.
     """
     classes: List[str] = [
         "Artificer",
@@ -165,9 +169,9 @@ def initialize_classes():
         session.commit()
 
 
-def initialize_subclasses():
+def initialize_subclasses() -> None:
     """
-    All initial subclasses to be added to the database and linked to classes.
+    All initial subclasses to be added to the subclasses database and linked to classes.
     """
     subclasses: Dict[str, str] = {
         "Artificer": [
@@ -341,9 +345,9 @@ def initialize_subclasses():
     session.commit()
 
 
-def initialize_races():
+def initialize_races() -> None:
     """
-    All initial races to be added to the database
+    All initial races to be added to the races table
     """
     races: Dict[str, Dict[str, List[str]]] = {
         "Aarakocra": {"size": ["medium"], "resistance": [""]},
@@ -411,9 +415,9 @@ def initialize_races():
         session.commit()
 
 
-def initialize_subraces():
+def initialize_subraces() -> None:
     """
-    All initial subraces to be added to the database and linked to a race.
+    All initial subraces to be added to the subraces table and linked to a race.
     """
     subraces: Dict[str, Dict[str, List[str]]] = {
         "Dragonborn": {
@@ -516,9 +520,9 @@ def initialize_subraces():
             session.commit()
 
 
-def initialize_types():
+def initialize_types() -> None:
     """
-    All initial monster types to be added to the database.
+    All initial creature types to be added to the types table.
     """
     types: List[str] = [
         "Aberration",
@@ -544,7 +548,10 @@ def initialize_types():
     session.commit()
 
 
-def create_pcs():
+def create_pcs() -> None:
+    """
+    Creates two player characters with attributes and adds them to the pc_characters table.
+    """
     pcs: Dict[str, dict[str, str]] = {
         "Rhoetus": {
             "alive": True,
@@ -554,7 +561,7 @@ def create_pcs():
             "information": "Some information about Rhoetus.",
             "armour_class": 17,
             "classes": ["Barbarian"],
-            # "subclasses": ["Herculean Path"],
+            "subclasses": ["Herculean Path"],
             "race": "Thylean Centaur",
             "user": "player",
             "parties": ["Murder Hobo Party"],
@@ -567,7 +574,7 @@ def create_pcs():
             "information": "Some information about Electra.",
             "armour_class": 18,
             "classes": ["Fighter"],
-            # "subclasses": ["Hoplite Soldier"],
+            "subclasses": ["Hoplite Soldier"],
             "race": "Thylean Nymph",
             "subrace": "Naiad",
             "user": "admin",
@@ -581,9 +588,10 @@ def create_pcs():
             .filter(PlayerCharacter.name == pc)
             .first()
         ):
-            # print(
-            #     f"Adding '{pc}' to player_characters table in the database with the following attributes: {attributes}."
-            # )
+            print(
+                f"Adding '{pc}' to player_characters table in the database with the following attributes: {attributes}."
+            )
+
             attributes["size_id"] = (
                 session.query(Size)
                 .filter(Size.name == attributes["size"])
@@ -600,16 +608,21 @@ def create_pcs():
                     .type_id
                 )
                 del attributes["type"]
+
+            classes: List[Class] = None
+            subclasses: List[Subclass] = None
             if "classes" in attributes.keys():
-                attributes["classes"] = [
+                classes = [
                     session.query(Class).filter(Class.name == attribute).first()
                     for attribute in attributes["classes"]
                 ]
-            # if "subclasses" in attributes.keys():
-            #     attributes["subclasses"] = [
-            #         session.query(Subclass).filter(Subclass.name == attribute).first()
-            #         for attribute in attributes["subclasses"]
-            #     ]
+            del attributes["classes"]
+            if "subclasses" in attributes.keys():
+                subclasses = [
+                    session.query(Subclass).filter(Subclass.name == attribute).first()
+                    for attribute in attributes["subclasses"]
+                ]
+            del attributes["subclasses"]
             if "race" in attributes.keys():
                 attributes["race"] = (
                     session.query(Race)
@@ -639,13 +652,38 @@ def create_pcs():
                 )
                 del attributes["user"]
 
-            # print(attributes)
+            # Create the new PlayerCharacter
             new_pc = PlayerCharacter(name=pc, **attributes)
             session.add(new_pc)
+            session.flush()
+
+            # Adds classes and subclasses to CreatureClasses cross-reference table
+            if classes:
+                for cls in classes:
+                    linked_subclasses = [
+                        sc for sc in subclasses if sc.class_id == cls.class_id
+                    ]
+                    if linked_subclasses:
+                        for subclass in linked_subclasses:
+                            creature_class_entry = CreatureClasses(
+                                creature_id=new_pc.id,
+                                class_id=cls.class_id,
+                                subclass_id=subclass.subclass_id,
+                            )
+                            session.add(creature_class_entry)
+                    else:
+                        creature_class_entry = CreatureClasses(
+                            creature_id=new_pc.id, class_id=cls.class_id
+                        )
+                        session.add(creature_class_entry)
+
     session.commit()
 
 
-def create_npcs():
+def create_npcs() -> None:
+    """
+    Creates two non player characters with attributes and adds them to the npc_characters table.
+    """
     npcs: Dict[str, dict[str, str]] = {
         "Endofyre": {
             "alive": True,
@@ -687,7 +725,10 @@ def create_npcs():
     session.commit()
 
 
-def create_monsters():
+def create_monsters() -> None:
+    """
+    Creates two monster characters with attributes and adds them to the monsters table.
+    """
     monsters: Dict[str, dict[str, str]] = {
         "Giff": {
             "alive": True,
@@ -696,7 +737,7 @@ def create_monsters():
             "information": "Some information about this big hippo, like his knowledge about firearms.",
             "armour_class": 16,
             "classes": ["Artificer", "Ranger"],
-            # "subclasses": ["Artillerist", "Amazonian Conclave"],
+            "subclasses": ["Artillerist", "Amazonian Conclave"],
             "type": "Humanoid",
             "size": "Medium",
             "immunities": ["Fire"],
@@ -717,9 +758,9 @@ def create_monsters():
 
     for monster, attributes in monsters.items():
         if not session.query(Monster).filter(Monster.name == monster).first():
-            # print(
-            #     f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
-            # )
+            print(
+                f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
+            )
             attributes["size_id"] = (
                 session.query(Size)
                 .filter(Size.name == attributes["size"])
@@ -736,16 +777,21 @@ def create_monsters():
                     .type_id
                 )
                 del attributes["type"]
+            classes: List[Class] = None
+            subclasses: List[Subclass] = None
             if "classes" in attributes.keys():
-                attributes["classes"] = [
+                print("Classes")
+                classes = [
                     session.query(Class).filter(Class.name == attribute).first()
                     for attribute in attributes["classes"]
                 ]
+                del attributes["classes"]
             if "subclasses" in attributes.keys():
-                attributes["subclasses"] = [
+                subclasses = [
                     session.query(Subclass).filter(Subclass.name == attribute).first()
                     for attribute in attributes["subclasses"]
                 ]
+                del attributes["subclasses"]
             if "resistances" in attributes.keys():
                 attributes["resistances"] = [
                     session.query(Effect).filter(Effect.name == attribute).first()
@@ -764,10 +810,31 @@ def create_monsters():
 
             new_monster = Monster(name=monster, **attributes)
             session.add(new_monster)
+            session.flush()
+
+            # Adds classes and subclasses to CreatureClasses cross-reference table
+            if classes:
+                for cls in classes:
+                    linked_subclasses = [
+                        sc for sc in subclasses if sc.class_id == cls.class_id
+                    ]
+                    if linked_subclasses:
+                        for subclass in linked_subclasses:
+                            creature_class_entry = CreatureClasses(
+                                creature_id=new_monster.id,
+                                class_id=cls.class_id,
+                                subclass_id=subclass.subclass_id,
+                            )
+                            session.add(creature_class_entry)
+                    else:
+                        creature_class_entry = CreatureClasses(
+                            creature_id=new_monster.id, class_id=cls.class_id
+                        )
+                        session.add(creature_class_entry)
     session.commit()
 
 
-def main():
+def main() -> None:
     """
     Main function that runs to add initial data to the database.
     """

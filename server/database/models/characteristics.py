@@ -19,6 +19,7 @@ class Size(Base):
     size_id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
 
+    # Relationship references
     creatures = relationship("Creature", back_populates="size")
     races = relationship("Race", back_populates="size")
 
@@ -55,6 +56,7 @@ class Type(Base):
     type_id = Column(Integer, primary_key=True)
     name = Column(Text, nullable=False)
 
+    # Relationship references
     creatures = relationship("Creature", back_populates="creature_type")
 
     def __repr__(self) -> str:
@@ -91,6 +93,7 @@ class Effect(Base):
     effect_id = Column(Integer, primary_key=True)
     name = Column(Text, nullable=False)
 
+    # Relationship references
     race_resistances = relationship(
         "Race",
         secondary="race_resistances",

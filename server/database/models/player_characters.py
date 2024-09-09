@@ -1,19 +1,47 @@
 from typing import Any, Dict
 
-from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
 from .base import Base, Creature
 
 
 class PlayerCharacter(Creature):
+    """
+    Table that holds all pc that are linked to an active or inactive party.
+    Table inherits from Creature table.
+
+    Parameters:
+        - name (str): The name of the monster.
+        - description (str): Description about how the monster looks like (optional).
+        - information (str): Notes and extra information about the monster (optional).
+        - alive (bool): Boolean check if monster is alive (True), or dead (False).
+        - active (bool): Boolean check if the monster is visible for party (True) or not (False).
+        - amour_class (int): The armour class the monster has (optional).
+        - image (BLOB): An image of the monster (optional).
+
+        - race (int): The race of the creature, FK to id of the race in the races table (optional).
+        - subrace (int): The race of the creature, FK to id of the subrace in the subraces table (optional).
+        - size_id (int): The size of the creature, FK to id of the size in the sizes table.
+        - type_id (int): The type of the creature, FK to id of the type in the types table (optional).
+        - user_id (int): The user to whom this character belongs to, FK to the id of the user table.
+
+        - parties (List[Party]): The party(s) this character belongs to. Linked to actual model.
+        - classes (List[Class]): The class(es) the creature belongs to. Linked to actual model (optional).
+        - immunities (List[Effect]): The effect(s) the creature is immune to. Linked to actual model (optional).
+        - resistances (List[Effect]): The effect(s) the creature is resistance to. Linked to actual model (optional).
+        - vulnerabilities (List[Effect]): The effect(s) the creature is vulnerable to. Linked to actual model (optional).
+    """
+
     __tablename__ = "pc_characters"
     __mapper_args__ = {"polymorphic_identity": "pc_characters"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 
+    # n-1 relationships
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 
+    # n-n relationships
     parties = relationship(
         "Party",
         secondary="character_parties",

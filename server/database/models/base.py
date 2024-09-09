@@ -2,10 +2,34 @@ from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+
 Base = declarative_base()
 
 
 class Creature(Base):
+    """
+    Base table all creature types inherit from.
+
+    Parameters:
+        - name (str): The name of the monster.
+        - description (str): Description about how the monster looks like (optional).
+        - information (str): Notes and extra information about the monster (optional).
+        - alive (bool): Boolean check if monster is alive (True), or dead (False).
+        - active (bool): Boolean check if the monster is visible for party (True) or not (False).
+        - amour_class (int): The armour class the monster has (optional).
+        - image (BLOB): An image of the monster (optional).
+
+        - race (int): The race of the creature, FK to id of the races table (optional).
+        - subrace (int): The race of the creature, FK to id of the subraces table (optional).
+        - size_id (int): The size of the creature, FK to id of the sizes table.
+        - type_id (int): The type of the creature, FK to id of the types table (optional).
+
+        - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
+        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
+        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
+    """
+
     __tablename__ = "creatures"
 
     id = Column(Integer, primary_key=True)
@@ -17,19 +41,24 @@ class Creature(Base):
     armour_class = Column(Integer, nullable=True)
     image = Column(BLOB, nullable=True)
 
-    # 1-n
+    # 1-n relationships
     race = Column(Integer, ForeignKey("races.race_id"), nullable=True)
     subrace = Column(Integer, ForeignKey("subraces.subrace_id"), nullable=True)
     type_id = Column(Integer, ForeignKey("types.type_id"), nullable=True)
     size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=True)
 
-    # n-n
-    classes = relationship("Class", secondary="creature_classes")
+    # n-n relationships
+    classes = relationship(
+        "Class", secondary="creature_classes", back_populates="creatures"
+    )
+    subclasses = relationship(
+        "Subclass", secondary="creature_classes", back_populates="creatures"
+    )
     immunities = relationship("Effect", secondary="creature_immunities")
     resistances = relationship("Effect", secondary="creature_resistances")
     vulnerabilities = relationship("Effect", secondary="creature_vulnerabilities")
 
-    # Relationships
+    # Relationship references
     creature_type = relationship("Type", back_populates="creatures")
     size = relationship("Size", back_populates="creatures")
 
@@ -43,50 +72,49 @@ class Creature(Base):
 
 
 class CreatureClasses(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature, class and subclass.
+    """
+
     __tablename__ = "creature_classes"
 
     id = Column(Integer, primary_key=True)
-    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    class_id = Column("class_id", Integer, ForeignKey("classes.class_id"))
-    subclass_id = Column(
-        "subclass_id",
-        Integer,
-        ForeignKey("subclasses.subclass_id"),
-        nullable=True,
-    )
+    creature_id = Column(Integer, ForeignKey("creatures.id"))
+    class_id = Column(Integer, ForeignKey("classes.class_id"))
+    subclass_id = Column(Integer, ForeignKey("subclasses.subclass_id"))
 
 
 class CreatureResistances(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature and its resistances.
+    """
+
     __tablename__ = "creature_resistances"
 
     id = Column(Integer, primary_key=True)
-    creature_id = Column(
-        "creature_id", Integer, ForeignKey("creatures.id"), nullable=False
-    )
-    effect_id = Column(
-        "effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False
-    )
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
 
 
 class CreatureImmunities(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature and its immunities.
+    """
+
     __tablename__ = "creature_immunities"
 
     id = Column(Integer, primary_key=True)
-    creature_id = Column(
-        "creature_id", Integer, ForeignKey("creatures.id"), nullable=False
-    )
-    effect_id = Column(
-        "effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False
-    )
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
 
 
 class CreatureVulnerabilities(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature and its vulnerabilities.
+    """
+
     __tablename__ = "creature_vulnerabilities"
 
     id = Column(Integer, primary_key=True)
-    creature_id = Column(
-        "creature_id", Integer, ForeignKey("creatures.id"), nullable=False
-    )
-    effect_id = Column(
-        "effect_id", Integer, ForeignKey("effects.effect_id"), nullable=False
-    )
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
