@@ -14,3 +14,9 @@ pipenv install
 ```shell
 python -m server.database.setup
 ```
+
+## To generate new ERD
+
+```shell
+python -m server.database.create_erd
+```

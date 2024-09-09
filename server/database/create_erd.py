@@ -1,6 +1,6 @@
 from eralchemy2 import render_er
 
-from models.base import Base
+from server.database.models.base import Base
 
 
 def create_erd():
