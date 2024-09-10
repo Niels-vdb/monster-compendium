@@ -5,11 +5,10 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
-bcrypt = "*"
 
 [dev-packages]
+graphviz = "*"
 eralchemy2 = "*"
-sqlalchemy-schemadisplay = "*"
 
 [requires]
 python_version = "3.11"
