@@ -25,6 +25,9 @@ class User(Base):
     password = Column(String(80), nullable=True)
     image = Column(BLOB, nullable=True)
 
+    # 1-n relationships
+    characters = relationship("PlayerCharacter", back_populates="user")
+
     # n-n relationships
     parties = relationship(
         "Party",

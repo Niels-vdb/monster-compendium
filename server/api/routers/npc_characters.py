@@ -1,4 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from server.api import get_db
+
+from ...database.models.non_player_characters import NPCCharacter
 
 router = APIRouter(
     prefix="/api/npc_characters",
@@ -8,5 +13,36 @@ router = APIRouter(
 
 
 @router.get("/")
-def get_npc_characters():
-    return {"message": "npc_characters router"}
+def get_npc_characters(db: Session = Depends(get_db)):
+    npc_characters = db.query(NPCCharacter).all()
+    if not npc_characters:
+        raise HTTPException(status_code=404, detail="No NPC characters found")
+    return {"npc_characters": npc_characters}
+
+
+@router.get("/{npc_character_id}")
+def get_npc_character(npc_character_id: int, db: Session = Depends(get_db)):
+    npc_character = (
+        db.query(NPCCharacter).filter(NPCCharacter.id == npc_character_id).first()
+    )
+    if not npc_character:
+        raise HTTPException(status_code=404, detail="NPC character not found")
+    return {
+        "id": npc_character.id,
+        "name": npc_character.name,
+        "active": npc_character.active,
+        "alive": npc_character.alive,
+        "armour_class": npc_character.armour_class,
+        "classes": npc_character.classes,
+        "subclasses": npc_character.subclasses,
+        "race": npc_character.race,
+        "subrace": npc_character.subrace,
+        "creature_type": npc_character.creature_type,
+        "description": npc_character.description,
+        "information": npc_character.information,
+        "size": npc_character.size,
+        "resistances": npc_character.resistances,
+        "immunities": npc_character.immunities,
+        "vulnerabilities": npc_character.vulnerabilities,
+        "image": npc_character.image,
+    }

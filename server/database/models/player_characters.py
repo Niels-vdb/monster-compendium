@@ -48,6 +48,9 @@ class PlayerCharacter(Creature):
         back_populates="characters",
     )
 
+    # Relationships
+    user = relationship("User", back_populates="characters")
+
     def __repr__(self) -> str:
         """
         This method provides a readable string of the instance including all
