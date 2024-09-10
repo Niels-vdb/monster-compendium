@@ -9,10 +9,16 @@ pipenv install
 > [!NOTE]
 > Don't forget to select the python interpreter.
 
-## To run initialize database
+## Run to initialize database
 
 ```shell
 python -m server.database.setup
+```
+
+## Run to start api server
+
+```shell
+fastapi dev server/api/main.py
 ```
 
 ## To work with dev packages
