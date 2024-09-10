@@ -39,7 +39,7 @@ class PlayerCharacter(Creature):
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 
     # n-1 relationships
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     # n-n relationships
     parties = relationship(

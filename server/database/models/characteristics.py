@@ -16,7 +16,7 @@ class Size(Base):
 
     __tablename__ = "sizes"
 
-    size_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
 
     # Relationship references
@@ -31,7 +31,7 @@ class Size(Base):
         :returns: A string representation of the Size instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.size_id}', '{self.name}')"
+        return f"{self.__class__.__tablename__}('{self.id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -41,7 +41,7 @@ class Size(Base):
         :returns: A dictionary representation of the Size instance.
         :rtype: Dict[str, Any]
         """
-        return {"size_id": self.size_id, "size": self.name}
+        return {"size_id": self.id, "size": self.name}
 
 
 class Type(Base):
@@ -53,7 +53,7 @@ class Type(Base):
 
     __tablename__ = "types"
 
-    type_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(Text, nullable=False)
 
     # Relationship references
@@ -67,7 +67,7 @@ class Type(Base):
         :returns: A string representation of the Types instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.type_id}', '{self.name}')"
+        return f"{self.__class__.__tablename__}('{self.id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -77,65 +77,4 @@ class Type(Base):
         :returns: A dictionary representation of the Types instance.
         :rtype: Dict[str, Any]
         """
-        return {"type_id": self.type_id, "type": self.name}
-
-
-class Effect(Base):
-    """
-    Table that holds all the effects a character can have a venerability, immunity or resistance to.
-
-    Parameters:
-        - name (str): The name of the effect.
-    """
-
-    __tablename__ = "effects"
-
-    effect_id = Column(Integer, primary_key=True)
-    name = Column(Text, nullable=False)
-
-    # Relationship references
-    race_resistances = relationship(
-        "Race",
-        secondary="race_resistances",
-        back_populates="resistances",
-    )
-    subrace_resistances = relationship(
-        "Subrace",
-        secondary="subrace_resistances",
-        back_populates="resistances",
-    )
-    creature_resistances = relationship(
-        "Creature",
-        secondary="creature_resistances",
-        back_populates="resistances",
-    )
-    creature_immunities = relationship(
-        "Creature",
-        secondary="creature_immunities",
-        back_populates="immunities",
-    )
-    creature_vulnerabilities = relationship(
-        "Creature",
-        secondary="creature_vulnerabilities",
-        back_populates="vulnerabilities",
-    )
-
-    def __repr__(self) -> str:
-        """
-        This method provides a readable string of the instance including all
-        its attributes.
-
-        :returns: A string representation of the Effect instance.
-        :rtype: str
-        """
-        return f"{self.__class__.__tablename__}('{self.effect_id}', '{self.name}')"
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Effect instance.
-        :rtype: Dict[str, Any]
-        """
-        return {"effect_id": self.effect_id, "effect": self.name}
+        return {"type_id": self.id, "type": self.name}

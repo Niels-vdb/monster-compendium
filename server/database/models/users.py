@@ -20,7 +20,7 @@ class User(Base):
 
     __tablename__ = "users"
 
-    user_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False, unique=True)
     password = Column(String(80), nullable=True)
     image = Column(BLOB, nullable=True)
@@ -45,9 +45,7 @@ class User(Base):
         :returns: A string representation of the Role instance.
         :rtype: str
         """
-        return (
-            f"User('{self.user_id}', '{self.name}', '{self.roles}', '{self.parties}')"
-        )
+        return f"User('{self.id}', '{self.name}', '{self.roles}', '{self.parties}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -58,7 +56,7 @@ class User(Base):
         :rtype: Dict[str, Any]
         """
         return {
-            "user_id": self.user_id,
+            "user_id": self.id,
             "name": self.name,
             "role": self.roles,
             "party": self.parties,
@@ -75,7 +73,7 @@ class Party(Base):
 
     __tablename__ = "parties"
 
-    party_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name: str = Column(String(50), nullable=False, unique=True)
 
     # n-n relationships
@@ -98,7 +96,7 @@ class Party(Base):
         :returns: A string representation of the Party instance.
         :rtype: str
         """
-        return f"Party('{self.party_id}', '{self.name}')"
+        return f"Party('{self.id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -108,7 +106,7 @@ class Party(Base):
         :returns: A dictionary representation of the Party instance.
         :rtype: Dict[str, Any]
         """
-        return {"party_id": self.party_id, "name": self.name}
+        return {"party_id": self.id, "name": self.name}
 
 
 class Role(Base):
@@ -121,7 +119,7 @@ class Role(Base):
 
     __tablename__ = "roles"
 
-    role_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name: str = Column(String(20), nullable=False, unique=True)
 
     # n-n relationships
@@ -139,7 +137,7 @@ class Role(Base):
         :returns: A string representation of the Role instance.
         :rtype: str
         """
-        return f"Role('{self.role_id}', '{self.name}')"
+        return f"Role('{self.id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -149,7 +147,7 @@ class Role(Base):
         :returns: A dictionary representation of the Role instance.
         :rtype: Dict[str, Any]
         """
-        return {"role_id": self.role_id, "name": self.name}
+        return {"role_id": self.id, "name": self.name}
 
 
 class UserParties(Base):
@@ -160,8 +158,8 @@ class UserParties(Base):
     __tablename__ = "user_parties"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column("user_id", Integer, ForeignKey("users.user_id"))
-    party_id = Column("party_id", Integer, ForeignKey("parties.party_id"))
+    user_id = Column("user_id", Integer, ForeignKey("users.id"))
+    party_id = Column("party_id", Integer, ForeignKey("parties.id"))
 
 
 class CharacterParties(Base):
@@ -173,7 +171,7 @@ class CharacterParties(Base):
 
     id = Column(Integer, primary_key=True)
     character_id = Column("character_id", Integer, ForeignKey("creatures.id"))
-    party_id = Column("party_id", Integer, ForeignKey("parties.party_id"))
+    party_id = Column("party_id", Integer, ForeignKey("parties.id"))
 
 
 class UserRoles(Base):
@@ -184,5 +182,5 @@ class UserRoles(Base):
     __tablename__ = "user_roles"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column("user_id", Integer, ForeignKey("users.user_id"))
-    role_id = Column("role_id", Integer, ForeignKey("roles.role_id"))
+    user_id = Column("user_id", Integer, ForeignKey("users.id"))
+    role_id = Column("role_id", Integer, ForeignKey("roles.id"))

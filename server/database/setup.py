@@ -7,7 +7,8 @@ from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NPCCharacter
 from server.database.models.races import Race, Subrace
 from server.database.models.classes import Class, Subclass
-from server.database.models.characteristics import Size, Type, Effect
+from server.database.models.characteristics import Size, Type
+from server.database.models.effects import Effect
 from server.database.models.users import User, Party, Role
 
 
@@ -340,7 +341,7 @@ def initialize_subclasses() -> None:
                 print(
                     f"Adding '{subclass}' to the subclasses table with '{parent_class}' as parent class."
                 )
-                new_subclass = Subclass(name=subclass, class_id=cls.class_id)
+                new_subclass = Subclass(name=subclass, class_id=cls.id)
                 session.add(new_subclass)
     session.commit()
 
@@ -408,9 +409,7 @@ def initialize_races() -> None:
                 resistance for resistance in resistance_list if resistance is not None
             ]
             for size in size_list:
-                new_race = Race(
-                    name=race, size_id=size.size_id, resistances=resistance_list
-                )
+                new_race = Race(name=race, size_id=size.id, resistances=resistance_list)
                 session.add(new_race)
         session.commit()
 
@@ -593,10 +592,7 @@ def create_pcs() -> None:
             )
 
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -605,7 +601,7 @@ def create_pcs() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
 
@@ -628,14 +624,14 @@ def create_pcs() -> None:
                     session.query(Race)
                     .filter(Race.name == attributes["race"])
                     .first()
-                    .race_id
+                    .id
                 )
             if "subrace" in attributes.keys():
                 attributes["subrace"] = (
                     session.query(Subrace)
                     .filter(Subrace.name == attributes["subrace"])
                     .first()
-                    .subrace_id
+                    .id
                 )
 
             if "parties" in attributes.keys():
@@ -648,7 +644,7 @@ def create_pcs() -> None:
                     session.query(User)
                     .filter(User.name == attributes["user"])
                     .first()
-                    .user_id
+                    .id
                 )
                 del attributes["user"]
 
@@ -661,19 +657,19 @@ def create_pcs() -> None:
             if classes:
                 for cls in classes:
                     linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.class_id
+                        sc for sc in subclasses if sc.class_id == cls.id
                     ]
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
                                 creature_id=new_pc.id,
-                                class_id=cls.class_id,
-                                subclass_id=subclass.subclass_id,
+                                class_id=cls.id,
+                                subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_pc.id, class_id=cls.class_id
+                            creature_id=new_pc.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
 
@@ -704,10 +700,7 @@ def create_npcs() -> None:
                 f"Adding '{npc}' to npc_characters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -716,7 +709,7 @@ def create_npcs() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
 
@@ -762,10 +755,7 @@ def create_monsters() -> None:
                 f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -774,7 +764,7 @@ def create_monsters() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
             classes: List[Class] = None
@@ -816,19 +806,19 @@ def create_monsters() -> None:
             if classes:
                 for cls in classes:
                     linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.class_id
+                        sc for sc in subclasses if sc.class_id == cls.id
                     ]
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
                                 creature_id=new_monster.id,
-                                class_id=cls.class_id,
-                                subclass_id=subclass.subclass_id,
+                                class_id=cls.id,
+                                subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_monster.id, class_id=cls.class_id
+                            creature_id=new_monster.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
     session.commit()

@@ -40,10 +40,10 @@ class Creature(Base):
     image = Column(BLOB, nullable=True)
 
     # 1-n relationships
-    race = Column(Integer, ForeignKey("races.race_id"), nullable=True)
-    subrace = Column(Integer, ForeignKey("subraces.subrace_id"), nullable=True)
-    type_id = Column(Integer, ForeignKey("types.type_id"), nullable=True)
-    size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=True)
+    race = Column(Integer, ForeignKey("races.id"), nullable=True)
+    subrace = Column(Integer, ForeignKey("subraces.id"), nullable=True)
+    type_id = Column(Integer, ForeignKey("types.id"), nullable=True)
+    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=True)
 
     # n-n relationships
     classes = relationship(
@@ -84,8 +84,8 @@ class CreatureClasses(Base):
 
     id = Column(Integer, primary_key=True)
     creature_id = Column(Integer, ForeignKey("creatures.id"))
-    class_id = Column(Integer, ForeignKey("classes.class_id"))
-    subclass_id = Column(Integer, ForeignKey("subclasses.subclass_id"))
+    class_id = Column(Integer, ForeignKey("classes.id"))
+    subclass_id = Column(Integer, ForeignKey("subclasses.id"))
 
 
 class CreatureResistances(Base):
@@ -97,7 +97,7 @@ class CreatureResistances(Base):
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
 
 
 class CreatureImmunities(Base):
@@ -109,7 +109,7 @@ class CreatureImmunities(Base):
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
 
 
 class CreatureVulnerabilities(Base):
@@ -121,4 +121,4 @@ class CreatureVulnerabilities(Base):
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
