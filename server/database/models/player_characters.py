@@ -3,7 +3,7 @@ from typing import Any, Dict
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
-from .base import Base, Creature
+from .creatures import Creature
 
 
 class PlayerCharacter(Creature):

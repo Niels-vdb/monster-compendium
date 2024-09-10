@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from sqlalchemy import Column, Integer, ForeignKey
 
-from .base import Creature
+from .creatures import Creature
 
 
 class Monster(Creature):

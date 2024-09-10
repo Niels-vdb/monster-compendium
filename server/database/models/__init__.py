@@ -1,4 +1,5 @@
-from .base import Base, Creature
+from .base import Base
+from .creatures import Creature
 from .monsters import Monster
 from .player_characters import PlayerCharacter
 from .non_player_characters import NPCCharacter

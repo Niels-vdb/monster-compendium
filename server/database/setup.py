@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from server.database.create import session
-from server.database.models.base import CreatureClasses
+from server.database.models.creatures import CreatureClasses
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NPCCharacter

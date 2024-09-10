@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from sqlalchemy import Column, ForeignKey, Integer
-from .base import Creature
+from .creatures import Creature
 
 
 class NPCCharacter(Creature):
