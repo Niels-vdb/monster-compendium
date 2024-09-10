@@ -3,6 +3,6 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get("api/nps_characters")
-def get_nps_characters():
-    return {"message": "nps_characters router"}
+@router.get("/api/npc_characters")
+def get_npc_characters():
+    return {"message": "npc_characters router"}

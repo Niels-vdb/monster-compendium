@@ -27,14 +27,14 @@ app.include_router(roles.router)
 app.include_router(users.router)
 
 
-@app.get("/item/{item_id}")
-async def root(item_id: int):
-    """
-    Gets an item
+# @app.get("/item/{item_id}")
+# async def root(item_id: int):
+#     """
+#     Gets an item
 
-    :param item_id: The id for the given item
-    :type item_id: int
-    :return: dictionary containing a message and the item id
-    :rtype: dict[str, Any]
-    """
-    return {"message": "Hello World", "item": item_id}
+#     :param item_id: The id for the given item
+#     :type item_id: int
+#     :return: dictionary containing a message and the item id
+#     :rtype: dict[str, Any]
+#     """
+#     return {"message": "Hello World", "item": item_id}
