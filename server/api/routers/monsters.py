@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/monsters",
+    tags=["monsters"],
+    responses={404: {"description": "Not found"}},
+)
 
 
-@router.get("/api/monsters")
+@router.get("/")
 def get_monsters():
     return {"message": "monsters router"}

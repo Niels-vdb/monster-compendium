@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/parties",
+    tags=["parties"],
+    responses={404: {"description": "Not found"}},
+)
 
 
-@router.get("/api/parties")
+@router.get("/")
 def get_parties():
     return {"message": "parties router"}

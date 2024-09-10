@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/roles",
+    tags=["roles"],
+    responses={404: {"description": "Not found"}},
+)
 
 
-@router.get("/api/roles")
+@router.get("/")
 def get_roles():
     return {"message": "roles router"}
