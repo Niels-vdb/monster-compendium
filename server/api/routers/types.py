@@ -7,7 +7,7 @@ from ...database.models.characteristics import Type
 
 router = APIRouter(
     prefix="/api/types",
-    tags=["types"],
+    tags=["Types"],
     responses={404: {"description": "Not found"}},
 )
 

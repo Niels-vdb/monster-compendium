@@ -7,7 +7,7 @@ from ...database.models.users import Role
 
 router = APIRouter(
     prefix="/api/roles",
-    tags=["roles"],
+    tags=["Roles"],
     responses={404: {"description": "Not found"}},
 )
 

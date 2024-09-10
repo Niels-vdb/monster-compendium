@@ -7,7 +7,7 @@ from ...database.models.characteristics import Size
 
 router = APIRouter(
     prefix="/api/sizes",
-    tags=["sizes"],
+    tags=["Sizes"],
     responses={404: {"description": "Not found"}},
 )
 

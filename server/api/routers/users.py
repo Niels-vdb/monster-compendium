@@ -7,7 +7,7 @@ from ...database.models.users import User
 
 router = APIRouter(
     prefix="/api/users",
-    tags=["users"],
+    tags=["Users"],
     responses={404: {"description": "Not found"}},
 )
 

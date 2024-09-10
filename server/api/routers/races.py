@@ -7,7 +7,7 @@ from ...database.models.races import Race
 
 router = APIRouter(
     prefix="/api/races",
-    tags=["races"],
+    tags=["Races"],
     responses={404: {"description": "Not found"}},
 )
 

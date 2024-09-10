@@ -7,7 +7,7 @@ from ...database.models.monsters import Monster
 
 router = APIRouter(
     prefix="/api/monsters",
-    tags=["monsters"],
+    tags=["Monsters"],
     responses={404: {"description": "Not found"}},
 )
 

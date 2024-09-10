@@ -7,7 +7,7 @@ from ...database.models.non_player_characters import NPCCharacter
 
 router = APIRouter(
     prefix="/api/npc_characters",
-    tags=["npc_characters"],
+    tags=["NPC characters"],
     responses={404: {"description": "Not found"}},
 )
 

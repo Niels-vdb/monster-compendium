@@ -7,7 +7,7 @@ from ...database.models.effects import Effect
 
 router = APIRouter(
     prefix="/api/effects",
-    tags=["effects"],
+    tags=["Effects"],
     responses={404: {"description": "Not found"}},
 )
 

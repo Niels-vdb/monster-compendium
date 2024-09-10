@@ -21,6 +21,12 @@ python -m server.database.setup
 fastapi dev server/api/main.py
 ```
 
+### To go to API docs
+
+```url
+http://127.0.0.1:8000/docs
+```
+
 ## To work with dev packages
 
 pygraphviz sometime gives some trouble on mac intel and mac silicon.

@@ -7,7 +7,7 @@ from ...database.models.player_characters import PlayerCharacter
 
 router = APIRouter(
     prefix="/api/pc_characters",
-    tags=["pc_characters"],
+    tags=["PC characters"],
     responses={404: {"description": "Not found"}},
 )
 

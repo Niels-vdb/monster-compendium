@@ -7,7 +7,7 @@ from ...database.models.users import Party
 
 router = APIRouter(
     prefix="/api/parties",
-    tags=["parties"],
+    tags=["Parties"],
     responses={404: {"description": "Not found"}},
 )
 

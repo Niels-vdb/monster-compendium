@@ -7,7 +7,7 @@ from ...database.models.races import Subrace
 
 router = APIRouter(
     prefix="/api/subraces",
-    tags=["races"],
+    tags=["Races"],
     responses={404: {"description": "Not found"}},
 )
 

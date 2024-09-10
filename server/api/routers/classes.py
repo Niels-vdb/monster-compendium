@@ -8,7 +8,7 @@ from ...database.models.classes import Class
 
 router = APIRouter(
     prefix="/api/classes",
-    tags=["classes"],
+    tags=["Classes"],
     responses={404: {"description": "Not found"}},
 )
 
