@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
 from .routers import (
-    characteristics,
     classes,
     effects,
     monsters,
@@ -10,12 +9,13 @@ from .routers import (
     parties,
     races,
     roles,
+    sizes,
+    types,
     users,
 )
 
 app = FastAPI()
 
-app.include_router(characteristics.router)
 app.include_router(classes.router)
 app.include_router(effects.router)
 app.include_router(monsters.router)
@@ -24,6 +24,8 @@ app.include_router(pc_characters.router)
 app.include_router(parties.router)
 app.include_router(races.router)
 app.include_router(roles.router)
+app.include_router(sizes.router)
+app.include_router(types.router)
 app.include_router(users.router)
 
 
