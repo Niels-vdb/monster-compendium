@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
@@ -16,7 +17,7 @@ router = APIRouter(
 
 
 class ClassBase(BaseModel):
-    class_name: str
+    class_name: Annotated[str, Field(min_length=1)]
 
 
 @router.get("/")

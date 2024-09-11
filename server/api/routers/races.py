@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -18,9 +19,9 @@ router = APIRouter(
 
 
 class RaceBase(BaseModel):
-    race_name: str
-    sizes: list[int]
-    resistances: list[int]
+    race_name: Annotated[str, Field(min_length=1)]
+    sizes: list[int] = None
+    resistances: list[int] = None
 
 
 @router.get("/")
