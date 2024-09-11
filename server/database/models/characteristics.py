@@ -21,7 +21,11 @@ class Size(Base):
 
     # Relationship references
     creatures = relationship("Creature", back_populates="size")
-    races = relationship("Race", back_populates="size")
+    races = relationship(
+        "Race",
+        secondary="race_sizes",
+        back_populates="sizes",
+    )
 
     def __repr__(self) -> str:
         """

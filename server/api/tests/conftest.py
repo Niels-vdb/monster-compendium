@@ -121,7 +121,7 @@ def create_subclass(create_class, db_session):
 
 @pytest.fixture
 def create_race(create_size, db_session):
-    new_race = Race(name="Dwarf", size_id=create_size.id)
+    new_race = Race(name="Dwarf", sizes=[create_size])
     db_session.add(new_race)
     db_session.commit()
     return new_race

@@ -399,6 +399,7 @@ def initialize_races() -> None:
                 session.query(Size).filter(Size.name == size.capitalize()).first()
                 for size in values["size"]
             ]
+            print("size_list: ", size_list)
             resistance_list = [
                 session.query(Effect)
                 .filter(Effect.name == resistance.capitalize())
@@ -408,9 +409,8 @@ def initialize_races() -> None:
             resistance_list = [
                 resistance for resistance in resistance_list if resistance is not None
             ]
-            for size in size_list:
-                new_race = Race(name=race, size_id=size.id, resistances=resistance_list)
-                session.add(new_race)
+            new_race = Race(name=race, sizes=size_list, resistances=resistance_list)
+            session.add(new_race)
         session.commit()
 
 

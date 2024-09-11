@@ -20,10 +20,14 @@ class Race(Base):
     __tablename__ = "races"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False)
-    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=False)
+    name = Column(String(20), nullable=False, unique=True)
 
     # n-n relationships
+    sizes = relationship(
+        "Size",
+        secondary="race_sizes",
+        back_populates="races",
+    )
     resistances = relationship(
         "Effect",
         secondary="race_resistances",
@@ -31,7 +35,6 @@ class Race(Base):
     )
 
     # Relationships
-    size = relationship("Size", back_populates="races")
     subraces = relationship("Subrace", back_populates="race")
 
     def __repr__(self) -> str:
@@ -42,8 +45,8 @@ class Race(Base):
         :returns: A string representation of the Race instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.id}', 
-                '{self.name}', '{self.size_id}', '{self.resistances}')"""
+        return f"""{self.__class__.__tablename__}('{self.id}',
+                '{self.name}', '{self.sizes}', '{self.resistances}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -56,7 +59,7 @@ class Race(Base):
         return {
             "race_id": self.id,
             "name": self.name,
-            "size": self.size_id,
+            "size": self.sizes,
             "resistances": self.resistances,
         }
 
@@ -114,6 +117,18 @@ class Subrace(Base):
             "race_id": self.race,
             "resistances": self.resistances,
         }
+
+
+class RaceSizes(Base):
+    """
+    Cross-reference table for many-to-many relationship between a race and it's sizes.
+    """
+
+    __tablename__ = "race_sizes"
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    size_id = Column("size_id", Integer, ForeignKey("sizes.id"))
 
 
 class RaceResistances(Base):
