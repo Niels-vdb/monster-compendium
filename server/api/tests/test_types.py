@@ -38,13 +38,13 @@ def test_post_type(db_session):
     response = client.post(
         "/api/types",
         json={
-            "type_name": "Medium",
+            "type_name": "Humanoid",
         },
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New type 'Medium' has been added tot he database.",
-        "type": {"id": 1, "name": "Medium"},
+        "message": "New type 'Humanoid' has been added tot he database.",
+        "type": {"id": 1, "name": "Humanoid"},
     }
 
 
@@ -52,13 +52,13 @@ def test_post_duplicate_type(db_session):
     client.post(
         "/api/types",
         json={
-            "type_name": "Medium",
+            "type_name": "Humanoid",
         },
     )
     response = client.post(
         "/api/types",
         json={
-            "type_name": "Medium",
+            "type_name": "Humanoid",
         },
     )
     assert response.status_code == 400
