@@ -8,7 +8,7 @@ from ...database.models.effects import Effect
 router = APIRouter(
     prefix="/api/effects",
     tags=["Effects"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_effects(db: Session = Depends(get_db)):
     effects = db.query(Effect).all()
     if not effects:
-        raise HTTPException(status_code=404, detail="No effects found")
+        raise HTTPException(status_code=404, detail="No effects found.")
     return {"effects": effects}
 
 
@@ -24,5 +24,5 @@ def get_effects(db: Session = Depends(get_db)):
 def get_effect(effect_id: int, db: Session = Depends(get_db)):
     effect = db.query(Effect).filter(Effect.id == effect_id).first()
     if not effect:
-        raise HTTPException(status_code=404, detail="Effect not found")
+        raise HTTPException(status_code=404, detail="Effect not found.")
     return {"id": effect.id, "name": effect.name}

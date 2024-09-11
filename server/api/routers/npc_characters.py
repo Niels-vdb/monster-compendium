@@ -8,7 +8,7 @@ from ...database.models.non_player_characters import NPCCharacter
 router = APIRouter(
     prefix="/api/npc_characters",
     tags=["NPC characters"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_npc_characters(db: Session = Depends(get_db)):
     npc_characters = db.query(NPCCharacter).all()
     if not npc_characters:
-        raise HTTPException(status_code=404, detail="No NPC characters found")
+        raise HTTPException(status_code=404, detail="No NPC characters found.")
     return {"npc_characters": npc_characters}
 
 
@@ -26,7 +26,7 @@ def get_npc_character(npc_character_id: int, db: Session = Depends(get_db)):
         db.query(NPCCharacter).filter(NPCCharacter.id == npc_character_id).first()
     )
     if not npc_character:
-        raise HTTPException(status_code=404, detail="NPC character not found")
+        raise HTTPException(status_code=404, detail="NPC character not found.")
     return {
         "id": npc_character.id,
         "name": npc_character.name,

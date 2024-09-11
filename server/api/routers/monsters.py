@@ -8,7 +8,7 @@ from ...database.models.monsters import Monster
 router = APIRouter(
     prefix="/api/monsters",
     tags=["Monsters"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_monsters(db: Session = Depends(get_db)):
     monsters = db.query(Monster).all()
     if not monsters:
-        raise HTTPException(status_code=404, detail="No monsters found")
+        raise HTTPException(status_code=404, detail="No monsters found.")
     return {"monsters": monsters}
 
 
@@ -24,7 +24,7 @@ def get_monsters(db: Session = Depends(get_db)):
 def get_monster(monster_id: int, db: Session = Depends(get_db)):
     monster = db.query(Monster).filter(Monster.id == monster_id).first()
     if not monster:
-        raise HTTPException(status_code=404, detail="Monster not found")
+        raise HTTPException(status_code=404, detail="Monster not found.")
     return {
         "id": monster.id,
         "name": monster.name,

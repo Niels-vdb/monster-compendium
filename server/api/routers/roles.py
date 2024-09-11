@@ -8,7 +8,7 @@ from ...database.models.users import Role
 router = APIRouter(
     prefix="/api/roles",
     tags=["Roles"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_roles(db: Session = Depends(get_db)):
     roles = db.query(Role).all()
     if not roles:
-        raise HTTPException(status_code=404, detail="No roles found")
+        raise HTTPException(status_code=404, detail="No roles found.")
     return {"roles": roles}
 
 
@@ -24,5 +24,5 @@ def get_roles(db: Session = Depends(get_db)):
 def get_role(role_id: int, db: Session = Depends(get_db)):
     role = db.query(Role).filter(Role.id == role_id).first()
     if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
+        raise HTTPException(status_code=404, detail="Role not found.")
     return {"id": role.id, "name": role.name, "users": role.users}

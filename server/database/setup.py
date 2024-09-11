@@ -556,7 +556,7 @@ def create_pcs() -> None:
             "alive": True,
             "active": True,
             "size": "Medium",
-            "description": "A centaur barbarian",
+            "description": "A centaur barbarian.",
             "information": "Some information about Rhoetus.",
             "armour_class": 17,
             "classes": ["Barbarian"],
@@ -612,13 +612,13 @@ def create_pcs() -> None:
                     session.query(Class).filter(Class.name == attribute).first()
                     for attribute in attributes["classes"]
                 ]
-            del attributes["classes"]
+                del attributes["classes"]
             if "subclasses" in attributes.keys():
                 subclasses = [
                     session.query(Subclass).filter(Subclass.name == attribute).first()
                     for attribute in attributes["subclasses"]
                 ]
-            del attributes["subclasses"]
+                del attributes["subclasses"]
             if "race" in attributes.keys():
                 attributes["race"] = (
                     session.query(Race)
@@ -633,7 +633,6 @@ def create_pcs() -> None:
                     .first()
                     .id
                 )
-
             if "parties" in attributes.keys():
                 attributes["parties"] = [
                     session.query(Party).filter(Party.name == attribute).first()

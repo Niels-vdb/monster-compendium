@@ -8,7 +8,7 @@ from ...database.models.characteristics import Size
 router = APIRouter(
     prefix="/api/sizes",
     tags=["Sizes"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_sizes(db: Session = Depends(get_db)):
     sizes = db.query(Size).all()
     if not sizes:
-        raise HTTPException(status_code=404, detail="No sizes found")
+        raise HTTPException(status_code=404, detail="No sizes found.")
     return {"sizes": sizes}
 
 
@@ -24,7 +24,7 @@ def get_sizes(db: Session = Depends(get_db)):
 def get_size(size_id: int, db: Session = Depends(get_db)):
     size = db.query(Size).filter(Size.id == size_id).first()
     if not size:
-        raise HTTPException(status_code=404, detail="Size not found")
+        raise HTTPException(status_code=404, detail="Size not found.")
     return {
         "id": size.id,
         "name": size.name,

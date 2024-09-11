@@ -8,7 +8,7 @@ from ...database.models.player_characters import PlayerCharacter
 router = APIRouter(
     prefix="/api/pc_characters",
     tags=["PC characters"],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found."}},
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 def get_pc_characters(db: Session = Depends(get_db)):
     pc_characters = db.query(PlayerCharacter).all()
     if not pc_characters:
-        raise HTTPException(status_code=404, detail="No PC characters found")
+        raise HTTPException(status_code=404, detail="No PC characters found.")
     return {"pc_characters": pc_characters}
 
 
@@ -26,7 +26,7 @@ def get_pc_character(pc_character_id: int, db: Session = Depends(get_db)):
         db.query(PlayerCharacter).filter(PlayerCharacter.id == pc_character_id).first()
     )
     if not pc_character:
-        raise HTTPException(status_code=404, detail="PC character not found")
+        raise HTTPException(status_code=404, detail="PC character not found.")
     return {
         "id": pc_character.id,
         "name": pc_character.name,
