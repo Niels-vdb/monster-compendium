@@ -32,7 +32,23 @@ def test_get_class(create_class, db_session):
     }
 
 
-def test_get_no_class():
+def test_get_no_class(db_session):
     response = client.get("/api/classes/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "Class not found."}
+
+
+def test_post_class(db_session):
+    response = client.post("/api/classes", json={"name": "Test"})
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New class classes('1', 'Test') has been added tot he database.",
+        "class": {"name": "Test", "id": 1},
+    }
+
+
+def test_post_duplicate_class(db_session):
+    client.post("/api/classes", json={"name": "Test"})
+    response = client.post("/api/classes", json={"name": "Test"})
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Class already exists."}

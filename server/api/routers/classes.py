@@ -1,8 +1,10 @@
+from pydantic import BaseModel
+
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
-
 from ...database.models.classes import Class
 
 
@@ -11,6 +13,10 @@ router = APIRouter(
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class ClassBase(BaseModel):
+    name: str
 
 
 @router.get("/")
@@ -27,3 +33,18 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
     if not cls:
         raise HTTPException(status_code=404, detail="Class not found.")
     return {"id": cls.id, "name": cls.name, "subclasses": cls.subclasses}
+
+
+@router.post("/")
+def post_class(cls: ClassBase, db: Session = Depends(get_db)):
+    try:
+        new_class = Class(name=cls.name)
+        db.add(new_class)
+        db.commit()
+        db.refresh(new_class)
+        return {
+            "message": f"New class {new_class} has been added tot he database.",
+            "class": new_class,
+        }
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail="Class already exists.")
