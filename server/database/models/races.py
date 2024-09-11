@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -74,6 +74,7 @@ class Subrace(Base):
     """
 
     __tablename__ = "subraces"
+    __table_args__ = (UniqueConstraint("name", "race_id", name="_name_race_id_uc"),)
 
     id = Column(Integer, primary_key=True)
     name = Column(String(30), nullable=False)
