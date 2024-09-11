@@ -39,16 +39,16 @@ def test_get_no_class(db_session):
 
 
 def test_post_class(db_session):
-    response = client.post("/api/classes", json={"name": "Test"})
+    response = client.post("/api/classes", json={"class_name": "Test"})
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New class classes('1', 'Test') has been added tot he database.",
+        "message": "New class 'Test' has been added tot he database.",
         "class": {"name": "Test", "id": 1},
     }
 
 
 def test_post_duplicate_class(db_session):
-    client.post("/api/classes", json={"name": "Test"})
-    response = client.post("/api/classes", json={"name": "Test"})
+    client.post("/api/classes", json={"class_name": "Test"})
+    response = client.post("/api/classes", json={"class_name": "Test"})
     assert response.status_code == 400
     assert response.json() == {"detail": "Class already exists."}

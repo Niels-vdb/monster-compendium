@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 class ClassBase(BaseModel):
-    name: str
+    class_name: str
 
 
 @router.get("/")
@@ -38,12 +38,12 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
 @router.post("/")
 def post_class(cls: ClassBase, db: Session = Depends(get_db)):
     try:
-        new_class = Class(name=cls.name)
+        new_class = Class(name=cls.class_name)
         db.add(new_class)
         db.commit()
         db.refresh(new_class)
         return {
-            "message": f"New class {new_class} has been added tot he database.",
+            "message": f"New class '{new_class.name}' has been added tot he database.",
             "class": new_class,
         }
     except IntegrityError as e:
