@@ -12,20 +12,20 @@ def test_get_npc_characters(create_npc, db_session):
     assert response.json() == {
         "npc_characters": [
             {
-                "type_id": 1,
-                "id": 1,
-                "name": "Fersi (Oracle)",
-                "description": None,
-                "size_id": 1,
                 "information": None,
+                "subrace": None,
+                "type_id": 1,
+                "name": "Fersi (Oracle)",
+                "size_id": 1,
+                "description": None,
                 "alive": True,
                 "creature": "npc_characters",
                 "active": True,
                 "armour_class": None,
+                "id": 1,
                 "image": None,
                 "race": None,
-                "subrace": None,
-            },
+            }
         ]
     }
 
@@ -39,25 +39,26 @@ def test_get_no_npc_characters(db_session):
 def test_get_npc_character(create_npc, db_session):
     response = client.get("/api/npc_characters/1")
     assert response.status_code == 200
-    print(response.json())
     assert response.json() == {
         "id": 1,
         "name": "Fersi (Oracle)",
+        "description": None,
+        "information": None,
         "active": True,
         "alive": True,
         "armour_class": None,
-        "classes": [],
-        "subclasses": [],
+        "image": None,
         "race": None,
         "subrace": None,
-        "creature_type": {"id": 1, "name": "Aberration"},
-        "description": None,
-        "information": None,
         "size": {"name": "Tiny", "id": 1},
+        "type": 1,
+        "creature_type": {"name": "Aberration", "id": 1},
+        "parties": [],
+        "classes": [],
+        "subclasses": [],
         "resistances": [],
         "immunities": [],
         "vulnerabilities": [],
-        "image": None,
     }
 
 

@@ -15,12 +15,11 @@ def test_get_parties(create_party, db_session):
 def test_get_party(create_party, db_session):
     response = client.get("/api/parties/1")
     assert response.status_code == 200
-    print(response.json())
     assert response.json() == {
         "id": 1,
         "name": "Murder Hobo Party",
         "users": [],
-        "characters": [],
+        "creatures": [],
     }
 
 

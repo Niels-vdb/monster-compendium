@@ -684,12 +684,14 @@ def create_npcs() -> None:
             "alive": True,
             "active": True,
             "size": "Medium",
+            "parties": ["Murder Hobo Party"],
         },
         "Fersi (Oracle)": {
             "alive": True,
             "active": True,
             "type": "Celestial",
             "size": "Medium",
+            "parties": ["Murder Hobo Party"],
         },
     }
 
@@ -711,6 +713,11 @@ def create_npcs() -> None:
                     .id
                 )
                 del attributes["type"]
+            if "parties" in attributes.keys():
+                attributes["parties"] = [
+                    session.query(Party).filter(Party.name == attribute).first()
+                    for attribute in attributes["parties"]
+                ]
 
             new_npc = NPCCharacter(name=npc, **attributes)
             session.add(new_npc)
@@ -735,6 +742,7 @@ def create_monsters() -> None:
             "immunities": ["Fire"],
             "resistances": ["Cold"],
             "vulnerabilities": ["Acid"],
+            "parties": ["Murder Hobo Party"],
         },
         "Froghemoth": {
             "alive": True,
@@ -795,6 +803,11 @@ def create_monsters() -> None:
                 attributes["vulnerabilities"] = [
                     session.query(Effect).filter(Effect.name == attribute).first()
                     for attribute in attributes["vulnerabilities"]
+                ]
+            if "parties" in attributes.keys():
+                attributes["parties"] = [
+                    session.query(Party).filter(Party.name == attribute).first()
+                    for attribute in attributes["parties"]
                 ]
 
             new_monster = Monster(name=monster, **attributes)

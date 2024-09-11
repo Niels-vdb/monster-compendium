@@ -85,9 +85,9 @@ class Party(Base):
         secondary="user_parties",
         back_populates="parties",
     )
-    characters = relationship(
-        "PlayerCharacter",
-        secondary="character_parties",
+    creatures = relationship(
+        "Creature",
+        secondary="creature_parties",
         back_populates="parties",
     )
 
@@ -162,18 +162,6 @@ class UserParties(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column("user_id", Integer, ForeignKey("users.id"))
-    party_id = Column("party_id", Integer, ForeignKey("parties.id"))
-
-
-class CharacterParties(Base):
-    """
-    Cross-reference table for many-to-many relationship between pc characters and parties.
-    """
-
-    __tablename__ = "character_parties"
-
-    id = Column(Integer, primary_key=True)
-    character_id = Column("character_id", Integer, ForeignKey("creatures.id"))
     party_id = Column("party_id", Integer, ForeignKey("parties.id"))
 
 

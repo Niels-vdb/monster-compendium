@@ -53,10 +53,11 @@ class PlayerCharacter(Creature):
         :rtype: str
         """
         return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
-        '{self.description}', '{self.information}', '{self.alive}',
-        '{self.active}', '{self.armour_class}', '{self.image}', '{self.race}',
-        '{self.subrace}', '{self.user_id}', '{self.classes}', '{self.immunities}',
-        '{self.resistances}', '{self.vulnerabilities}')"""
+            '{self.description}', '{self.information}', '{self.alive}',
+            '{self.active}', '{self.armour_class}', '{self.image}', 
+            '{self.race}', '{self.subrace}', '{self.size}', '{self.type_id}', 
+            '{self.parties}', '{self.classes}', '{self.subclasses}', '{self.user}',
+            '{self.immunities}', '{self.resistances}', '{self.vulnerabilities}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -67,7 +68,7 @@ class PlayerCharacter(Creature):
         :rtype: Dict[str, Any]
         """
         return {
-            "pc_id": self.id,
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "information": self.information,
@@ -77,8 +78,12 @@ class PlayerCharacter(Creature):
             "image": self.image,
             "race": self.race,
             "subrace": self.subrace,
+            "size": self.size,
+            "type": self.type_id,
             "user_id": self.user_id,
+            "parties": self.parties,
             "classes": [cls.to_dict() for cls in self.classes],
+            "subclasses": [subclass.to_dict() for subclass in self.subclasses],
             "immunities": [imm.to_dict() for imm in self.immunities],
             "resistances": [res.to_dict() for res in self.resistances],
             "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],

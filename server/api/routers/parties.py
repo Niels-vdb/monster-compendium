@@ -29,5 +29,5 @@ def get_party(party_id: int, db: Session = Depends(get_db)):
         "id": party.id,
         "name": party.name,
         "users": party.users,
-        "characters": party.characters,
+        "creatures": party.creatures,
     }

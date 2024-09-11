@@ -49,8 +49,8 @@ class Creature(Base):
     # n-n relationships
     parties = relationship(
         "Party",
-        secondary="character_parties",
-        back_populates="characters",
+        secondary="creature_parties",
+        back_populates="creatures",
     )
     classes = relationship(
         "Class",
@@ -92,6 +92,18 @@ class CreatureClasses(Base):
     creature_id = Column(Integer, ForeignKey("creatures.id"))
     class_id = Column(Integer, ForeignKey("classes.id"))
     subclass_id = Column(Integer, ForeignKey("subclasses.id"))
+
+
+class CreatureParties(Base):
+    """
+    Cross-reference table for many-to-many relationship between creatures and parties.
+    """
+
+    __tablename__ = "creature_parties"
+
+    id = Column(Integer, primary_key=True)
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    party_id = Column("party_id", Integer, ForeignKey("parties.id"))
 
 
 class CreatureResistances(Base):
