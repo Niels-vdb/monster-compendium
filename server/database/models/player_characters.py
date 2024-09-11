@@ -26,7 +26,7 @@ class PlayerCharacter(Creature):
         - type_id (int): The type of the creature, FK to id of the type in the types table (optional).
         - user_id (int): The user to whom this character belongs to, FK to the id of the user table.
 
-        - parties (List[Party]): The party(s) this character belongs to. Linked to actual model.
+        - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
         - classes (List[Class]): The class(es) the creature belongs to. Linked to actual model (optional).
         - immunities (List[Effect]): The effect(s) the creature is immune to. Linked to actual model (optional).
         - resistances (List[Effect]): The effect(s) the creature is resistance to. Linked to actual model (optional).
@@ -40,13 +40,6 @@ class PlayerCharacter(Creature):
 
     # n-1 relationships
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-    # n-n relationships
-    parties = relationship(
-        "Party",
-        secondary="character_parties",
-        back_populates="characters",
-    )
 
     # Relationships
     user = relationship("User", back_populates="characters")
