@@ -3,7 +3,7 @@ from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.database.models.characteristics import Type
