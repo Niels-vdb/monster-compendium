@@ -32,3 +32,34 @@ def test_get_no_size(create_size, db_session):
     response = client.get("/api/sizes/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "Size not found."}
+
+
+def test_post_size(db_session):
+    response = client.post(
+        "/api/sizes",
+        json={
+            "size_name": "Medium",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New size 'Medium' has been added tot he database.",
+        "size": {"id": 1, "name": "Medium"},
+    }
+
+
+def test_post_duplicate_size(db_session):
+    client.post(
+        "/api/sizes",
+        json={
+            "size_name": "Medium",
+        },
+    )
+    response = client.post(
+        "/api/sizes",
+        json={
+            "size_name": "Medium",
+        },
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Size already exists."}
