@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from .base import Base
@@ -56,6 +56,7 @@ class Class(Base):
 class Subclass(Base):
     """
     Table that holds all subclasses that can belong to a class.
+    Subclass names cannot be repeated with the same class_id FK.
 
     Parameters:
         - name (str): The name of the subclass.
@@ -63,6 +64,7 @@ class Subclass(Base):
     """
 
     __tablename__ = "subclasses"
+    __table_args__ = (UniqueConstraint("name", "class_id", name="_name_class_id_uc"),)
 
     id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)

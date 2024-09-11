@@ -1,8 +1,11 @@
+from pydantic import BaseModel
+
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
-
+from ...database.models.classes import Class
 from ...database.models.classes import Subclass
 
 
@@ -11,6 +14,11 @@ router = APIRouter(
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class SubclassBase(BaseModel):
+    class_id: int
+    subclass_name: str
 
 
 @router.get("/")
@@ -31,3 +39,24 @@ def get_subclass(subclass_id: int, db: Session = Depends(get_db)):
         "name": subclass.name,
         "classes": subclass.parent_class,
     }
+
+
+@router.post("/")
+def post_class(subclass: SubclassBase, db: Session = Depends(get_db)):
+    try:
+        if not db.query(Class).filter(Class.id == subclass.class_id).first():
+            raise HTTPException(
+                status_code=400,
+                detail="The class you are trying to add a subclass to does not exists.",
+            )
+
+        new_subclass = Subclass(name=subclass.subclass_name, class_id=subclass.class_id)
+        db.add(new_subclass)
+        db.commit()
+        db.refresh(new_subclass)
+        return {
+            "message": f"New subclass '{new_subclass.name}' has been added tot he database.",
+            "class": new_subclass,
+        }
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail="Subclass already exists.")

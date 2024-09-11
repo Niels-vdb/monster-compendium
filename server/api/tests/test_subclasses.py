@@ -36,3 +36,39 @@ def test_get_no_subclass(create_subclass, db_session):
     response = client.get("/api/subclasses/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass not found."}
+
+
+def test_post_subclass(create_class, db_session):
+    response = client.post(
+        "/api/subclasses",
+        json={"class_id": 1, "subclass_name": "Alchemist"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New subclass 'Alchemist' has been added tot he database.",
+        "class": {"id": 1, "name": "Alchemist", "class_id": 1},
+    }
+
+
+def test_post_duplicate_subclass(create_class, db_session):
+    client.post(
+        "/api/subclasses",
+        json={"class_id": 1, "subclass_name": "Alchemist"},
+    )
+    response = client.post(
+        "/api/subclasses",
+        json={"class_id": 1, "subclass_name": "Alchemist"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Subclass already exists."}
+
+
+def test_post_subclass_no_class(db_session):
+    response = client.post(
+        "/api/subclasses",
+        json={"class_id": 1, "subclass_name": "Alchemist"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The class you are trying to add a subclass to does not exists."
+    }
