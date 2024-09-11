@@ -58,7 +58,7 @@ class Type(Base):
     __tablename__ = "types"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text, nullable=False)
+    name = Column(Text, nullable=False, unique=True)
 
     # Relationship references
     creatures = relationship("Creature", back_populates="creature_type")

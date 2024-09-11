@@ -32,3 +32,34 @@ def test_get_no_type(create_type, db_session):
     response = client.get("/api/types/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "Type not found."}
+
+
+def test_post_type(db_session):
+    response = client.post(
+        "/api/types",
+        json={
+            "type_name": "Medium",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New type 'Medium' has been added tot he database.",
+        "type": {"id": 1, "name": "Medium"},
+    }
+
+
+def test_post_duplicate_type(db_session):
+    client.post(
+        "/api/types",
+        json={
+            "type_name": "Medium",
+        },
+    )
+    response = client.post(
+        "/api/types",
+        json={
+            "type_name": "Medium",
+        },
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Type already exists."}
