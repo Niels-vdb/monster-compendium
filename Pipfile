@@ -5,11 +5,13 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
-bcrypt = "*"
+fastapi = {extras = ["standard"], version = "*"}
 
 [dev-packages]
+graphviz = "*"
 eralchemy2 = "*"
-sqlalchemy-schemadisplay = "*"
+httpx = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.11"

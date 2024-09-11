@@ -3,7 +3,7 @@ from typing import Any, Dict
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
-from .base import Base, Creature
+from .creatures import Creature
 
 
 class PlayerCharacter(Creature):
@@ -26,7 +26,7 @@ class PlayerCharacter(Creature):
         - type_id (int): The type of the creature, FK to id of the type in the types table (optional).
         - user_id (int): The user to whom this character belongs to, FK to the id of the user table.
 
-        - parties (List[Party]): The party(s) this character belongs to. Linked to actual model.
+        - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
         - classes (List[Class]): The class(es) the creature belongs to. Linked to actual model (optional).
         - immunities (List[Effect]): The effect(s) the creature is immune to. Linked to actual model (optional).
         - resistances (List[Effect]): The effect(s) the creature is resistance to. Linked to actual model (optional).
@@ -39,14 +39,10 @@ class PlayerCharacter(Creature):
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 
     # n-1 relationships
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    # n-n relationships
-    parties = relationship(
-        "Party",
-        secondary="character_parties",
-        back_populates="characters",
-    )
+    # Relationships
+    user = relationship("User", back_populates="characters")
 
     def __repr__(self) -> str:
         """
@@ -57,10 +53,11 @@ class PlayerCharacter(Creature):
         :rtype: str
         """
         return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
-        '{self.description}', '{self.information}', '{self.alive}',
-        '{self.active}', '{self.armour_class}', '{self.image}', '{self.race}',
-        '{self.subrace}', '{self.user_id}', '{self.classes}', '{self.immunities}',
-        '{self.resistances}', '{self.vulnerabilities}')"""
+            '{self.description}', '{self.information}', '{self.alive}',
+            '{self.active}', '{self.armour_class}', '{self.image}', 
+            '{self.race}', '{self.subrace}', '{self.size}', '{self.type_id}', 
+            '{self.parties}', '{self.classes}', '{self.subclasses}', '{self.user}',
+            '{self.immunities}', '{self.resistances}', '{self.vulnerabilities}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -71,7 +68,7 @@ class PlayerCharacter(Creature):
         :rtype: Dict[str, Any]
         """
         return {
-            "pc_id": self.id,
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "information": self.information,
@@ -81,8 +78,12 @@ class PlayerCharacter(Creature):
             "image": self.image,
             "race": self.race,
             "subrace": self.subrace,
+            "size": self.size,
+            "type": self.type_id,
             "user_id": self.user_id,
+            "parties": self.parties,
             "classes": [cls.to_dict() for cls in self.classes],
+            "subclasses": [subclass.to_dict() for subclass in self.subclasses],
             "immunities": [imm.to_dict() for imm in self.immunities],
             "resistances": [res.to_dict() for res in self.resistances],
             "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],

@@ -16,15 +16,20 @@ class Class(Base):
 
     __tablename__ = "classes"
 
-    class_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
 
     # Relationship references
     subclasses = relationship(
-        "Subclass", back_populates="parent_class", passive_deletes=True
+        "Subclass",
+        back_populates="parent_class",
+        passive_deletes=True,
     )
     creatures = relationship(
-        "Creature", secondary="creature_classes", back_populates="classes"
+        "Creature",
+        secondary="creature_classes",
+        back_populates="classes",
+        overlaps="subclasses,creatures",
     )
 
     def __repr__(self) -> str:
@@ -35,7 +40,7 @@ class Class(Base):
         :returns: A string representation of the Class instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.class_id}', '{self.name}')"
+        return f"{self.__class__.__tablename__}('{self.id}', '{self.name}')"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -45,7 +50,7 @@ class Class(Base):
         :returns: A dictionary representation of the Class instance.
         :rtype: Dict[str, Any]
         """
-        return {"class_id": self.class_id, "name": self.name}
+        return {"class_id": self.id, "name": self.name}
 
 
 class Subclass(Base):
@@ -59,16 +64,19 @@ class Subclass(Base):
 
     __tablename__ = "subclasses"
 
-    subclass_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
-    class_id = Column(Integer, ForeignKey("classes.class_id", ondelete="CASCADE"))
+    class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"))
 
     # n-1 relationships
     parent_class = relationship("Class", back_populates="subclasses")
 
     # Relationship references
     creatures = relationship(
-        "Creature", secondary="creature_classes", back_populates="subclasses"
+        "Creature",
+        secondary="creature_classes",
+        back_populates="subclasses",
+        overlaps="classes,creatures",
     )
 
     def __repr__(self) -> str:
@@ -79,7 +87,7 @@ class Subclass(Base):
         :returns: A string representation of the Subclass instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.subclass_id}',
+        return f"""{self.__class__.__tablename__}('{self.id}',
                 '{self.name}', '{self.class_id}')"""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -91,7 +99,7 @@ class Subclass(Base):
         :rtype: Dict[str, Any]
         """
         return {
-            "subclass_id": self.class_id,
+            "subclass_id": self.id,
             "name": self.name,
             "class_id": self.class_id,
         }

@@ -19,9 +19,9 @@ class Race(Base):
 
     __tablename__ = "races"
 
-    race_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False)
-    size_id = Column(Integer, ForeignKey("sizes.size_id"), nullable=False)
+    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=False)
 
     # n-n relationships
     resistances = relationship(
@@ -42,7 +42,7 @@ class Race(Base):
         :returns: A string representation of the Race instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.race_id}', 
+        return f"""{self.__class__.__tablename__}('{self.id}', 
                 '{self.name}', '{self.size_id}', '{self.resistances}')"""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -54,7 +54,7 @@ class Race(Base):
         :rtype: Dict[str, Any]
         """
         return {
-            "race_id": self.race_id,
+            "race_id": self.id,
             "name": self.name,
             "size": self.size_id,
             "resistances": self.resistances,
@@ -72,11 +72,11 @@ class Subrace(Base):
 
     __tablename__ = "subraces"
 
-    subrace_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(30), nullable=False)
     race_id = Column(
         Integer,
-        ForeignKey("races.race_id", ondelete="CASCADE"),
+        ForeignKey("races.id", ondelete="CASCADE"),
     )
 
     # n-1 relationships
@@ -97,7 +97,7 @@ class Subrace(Base):
         :returns: A string representation of the Subrace instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.subrace_id}',
+        return f"""{self.__class__.__tablename__}('{self.id}',
                 '{self.name}', '{self.race}', '{self.resistances}')"""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -109,7 +109,7 @@ class Subrace(Base):
         :rtype: Dict[str, Any]
         """
         return {
-            "subrace_id": self.subrace_id,
+            "subrace_id": self.id,
             "name": self.name,
             "race_id": self.race,
             "resistances": self.resistances,
@@ -124,8 +124,8 @@ class RaceResistances(Base):
     __tablename__ = "race_resistances"
 
     id = Column(Integer, primary_key=True)
-    race_id = Column("race_id", Integer, ForeignKey("races.race_id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
 
 
 class SubraceResistances(Base):
@@ -136,5 +136,5 @@ class SubraceResistances(Base):
     __tablename__ = "subrace_resistances"
 
     id = Column(Integer, primary_key=True)
-    subrace_id = Column("subrace_id", Integer, ForeignKey("subraces.subrace_id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.effect_id"))
+    subrace_id = Column("subrace_id", Integer, ForeignKey("subraces.id"))
+    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))

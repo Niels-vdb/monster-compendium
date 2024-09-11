@@ -1,13 +1,14 @@
 from typing import Dict, List
 
 from server.database.create import session
-from server.database.models.base import CreatureClasses
+from server.database.models.creatures import CreatureClasses
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NPCCharacter
 from server.database.models.races import Race, Subrace
 from server.database.models.classes import Class, Subclass
-from server.database.models.characteristics import Size, Type, Effect
+from server.database.models.characteristics import Size, Type
+from server.database.models.effects import Effect
 from server.database.models.users import User, Party, Role
 
 
@@ -340,7 +341,7 @@ def initialize_subclasses() -> None:
                 print(
                     f"Adding '{subclass}' to the subclasses table with '{parent_class}' as parent class."
                 )
-                new_subclass = Subclass(name=subclass, class_id=cls.class_id)
+                new_subclass = Subclass(name=subclass, class_id=cls.id)
                 session.add(new_subclass)
     session.commit()
 
@@ -408,9 +409,7 @@ def initialize_races() -> None:
                 resistance for resistance in resistance_list if resistance is not None
             ]
             for size in size_list:
-                new_race = Race(
-                    name=race, size_id=size.size_id, resistances=resistance_list
-                )
+                new_race = Race(name=race, size_id=size.id, resistances=resistance_list)
                 session.add(new_race)
         session.commit()
 
@@ -557,7 +556,7 @@ def create_pcs() -> None:
             "alive": True,
             "active": True,
             "size": "Medium",
-            "description": "A centaur barbarian",
+            "description": "A centaur barbarian.",
             "information": "Some information about Rhoetus.",
             "armour_class": 17,
             "classes": ["Barbarian"],
@@ -593,10 +592,7 @@ def create_pcs() -> None:
             )
 
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -605,7 +601,7 @@ def create_pcs() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
 
@@ -616,28 +612,27 @@ def create_pcs() -> None:
                     session.query(Class).filter(Class.name == attribute).first()
                     for attribute in attributes["classes"]
                 ]
-            del attributes["classes"]
+                del attributes["classes"]
             if "subclasses" in attributes.keys():
                 subclasses = [
                     session.query(Subclass).filter(Subclass.name == attribute).first()
                     for attribute in attributes["subclasses"]
                 ]
-            del attributes["subclasses"]
+                del attributes["subclasses"]
             if "race" in attributes.keys():
                 attributes["race"] = (
                     session.query(Race)
                     .filter(Race.name == attributes["race"])
                     .first()
-                    .race_id
+                    .id
                 )
             if "subrace" in attributes.keys():
                 attributes["subrace"] = (
                     session.query(Subrace)
                     .filter(Subrace.name == attributes["subrace"])
                     .first()
-                    .subrace_id
+                    .id
                 )
-
             if "parties" in attributes.keys():
                 attributes["parties"] = [
                     session.query(Party).filter(Party.name == attribute).first()
@@ -648,7 +643,7 @@ def create_pcs() -> None:
                     session.query(User)
                     .filter(User.name == attributes["user"])
                     .first()
-                    .user_id
+                    .id
                 )
                 del attributes["user"]
 
@@ -661,19 +656,19 @@ def create_pcs() -> None:
             if classes:
                 for cls in classes:
                     linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.class_id
+                        sc for sc in subclasses if sc.class_id == cls.id
                     ]
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
                                 creature_id=new_pc.id,
-                                class_id=cls.class_id,
-                                subclass_id=subclass.subclass_id,
+                                class_id=cls.id,
+                                subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_pc.id, class_id=cls.class_id
+                            creature_id=new_pc.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
 
@@ -689,12 +684,14 @@ def create_npcs() -> None:
             "alive": True,
             "active": True,
             "size": "Medium",
+            "parties": ["Murder Hobo Party"],
         },
         "Fersi (Oracle)": {
             "alive": True,
             "active": True,
             "type": "Celestial",
             "size": "Medium",
+            "parties": ["Murder Hobo Party"],
         },
     }
 
@@ -704,10 +701,7 @@ def create_npcs() -> None:
                 f"Adding '{npc}' to npc_characters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -716,9 +710,14 @@ def create_npcs() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
+            if "parties" in attributes.keys():
+                attributes["parties"] = [
+                    session.query(Party).filter(Party.name == attribute).first()
+                    for attribute in attributes["parties"]
+                ]
 
             new_npc = NPCCharacter(name=npc, **attributes)
             session.add(new_npc)
@@ -743,6 +742,7 @@ def create_monsters() -> None:
             "immunities": ["Fire"],
             "resistances": ["Cold"],
             "vulnerabilities": ["Acid"],
+            "parties": ["Murder Hobo Party"],
         },
         "Froghemoth": {
             "alive": True,
@@ -762,10 +762,7 @@ def create_monsters() -> None:
                 f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
-                session.query(Size)
-                .filter(Size.name == attributes["size"])
-                .first()
-                .size_id
+                session.query(Size).filter(Size.name == attributes["size"]).first().id
             )
             del attributes["size"]
 
@@ -774,7 +771,7 @@ def create_monsters() -> None:
                     session.query(Type)
                     .filter(Type.name == attributes["type"])
                     .first()
-                    .type_id
+                    .id
                 )
                 del attributes["type"]
             classes: List[Class] = None
@@ -807,6 +804,11 @@ def create_monsters() -> None:
                     session.query(Effect).filter(Effect.name == attribute).first()
                     for attribute in attributes["vulnerabilities"]
                 ]
+            if "parties" in attributes.keys():
+                attributes["parties"] = [
+                    session.query(Party).filter(Party.name == attribute).first()
+                    for attribute in attributes["parties"]
+                ]
 
             new_monster = Monster(name=monster, **attributes)
             session.add(new_monster)
@@ -816,19 +818,19 @@ def create_monsters() -> None:
             if classes:
                 for cls in classes:
                     linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.class_id
+                        sc for sc in subclasses if sc.class_id == cls.id
                     ]
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
                                 creature_id=new_monster.id,
-                                class_id=cls.class_id,
-                                subclass_id=subclass.subclass_id,
+                                class_id=cls.id,
+                                subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_monster.id, class_id=cls.class_id
+                            creature_id=new_monster.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
     session.commit()

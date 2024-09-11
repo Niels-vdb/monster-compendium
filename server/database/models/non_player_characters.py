@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from sqlalchemy import Column, ForeignKey, Integer
-from .base import Creature
+from .creatures import Creature
 
 
 class NPCCharacter(Creature):
@@ -23,6 +23,7 @@ class NPCCharacter(Creature):
         - size_id (int): The size of the creature, FK to id of the sizes table.
         - type_id (int): The type of the creature, FK to id of the types table (optional).
 
+        - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
         - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
         - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
         - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
@@ -43,10 +44,11 @@ class NPCCharacter(Creature):
         :rtype: str
         """
         return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
-        '{self.description}', '{self.information}', '{self.alive}', '{self.active}',
-        '{self.armour_class}', '{self.image}', '{self.race}', '{self.subrace}',
-        '{self.classes}', '{self.immunities}', '{self.resistances}',
-        '{self.vulnerabilities}')"""
+            '{self.description}', '{self.information}', '{self.alive}',
+            '{self.active}', '{self.armour_class}', '{self.image}', 
+            '{self.race}', '{self.subrace}', '{self.size}', '{self.creature_type}', 
+            '{self.parties}', '{self.classes}', '{self.subclasses}', 
+            '{self.immunities}', '{self.resistances}', '{self.vulnerabilities}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -57,7 +59,7 @@ class NPCCharacter(Creature):
         :rtype: Dict[str, Any]
         """
         return {
-            "npc_id": self.id,
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "information": self.information,
@@ -67,7 +69,11 @@ class NPCCharacter(Creature):
             "image": self.image,
             "race": self.race,
             "subrace": self.subrace,
+            "size": self.size,
+            "type": self.creature_type,
+            "parties": self.parties,
             "classes": [cls.to_dict() for cls in self.classes],
+            "subclasses": [subclass.to_dict() for subclass in self.subclasses],
             "immunities": [imm.to_dict() for imm in self.immunities],
             "resistances": [res.to_dict() for res in self.resistances],
             "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
