@@ -17,7 +17,7 @@ class Effect(Base):
     __tablename__ = "effects"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text, nullable=False)
+    name = Column(Text, nullable=False, unique=True)
 
     # Relationship references
     race_resistances = relationship(
