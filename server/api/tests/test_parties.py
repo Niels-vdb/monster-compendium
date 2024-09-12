@@ -27,3 +27,17 @@ def test_get_no_party(create_party, db_session):
     response = client.get("/api/parties/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "Party not found."}
+
+
+def test_post_party(db_session):
+    response = client.post(
+        "/api/parties",
+        json={
+            "party_name": "Murder Hobo Party",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New party 'Murder Hobo Party' has been added tot he database.",
+        "party": {"name": "Murder Hobo Party", "id": 1},
+    }

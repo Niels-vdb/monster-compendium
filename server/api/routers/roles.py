@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from ...database.models.users import Role
+from server.database.models.users import Role
 
 router = APIRouter(
     prefix="/api/roles",
@@ -38,13 +38,13 @@ def get_role(role_id: int, db: Session = Depends(get_db)):
 @router.post("/")
 def post_role(role: RoleBase, db: Session = Depends(get_db)):
     try:
-        role = Role(name=role.role_name)
-        db.add(role)
+        new_role = Role(name=role.role_name)
+        db.add(new_role)
         db.commit()
-        db.refresh(role)
+        db.refresh(new_role)
         return {
-            "message": f"New role '{role.name}' has been added tot he database.",
-            "role": role,
+            "message": f"New role '{new_role.name}' has been added tot he database.",
+            "role": new_role,
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Role already exists.")
