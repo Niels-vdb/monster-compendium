@@ -36,3 +36,34 @@ def test_get_no_role(create_role, db_session):
     response = client.get("/api/roles/1000")
     assert response.status_code == 404
     assert response.json() == {"detail": "Role not found."}
+
+
+def test_post_role(db_session):
+    response = client.post(
+        "/api/roles",
+        json={
+            "role_name": "Admin",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "New role 'Admin' has been added tot he database.",
+        "role": {"name": "Admin", "id": 1},
+    }
+
+
+def test_post_duplicate_role(db_session):
+    client.post(
+        "/api/roles",
+        json={
+            "role_name": "Admin",
+        },
+    )
+    response = client.post(
+        "/api/roles",
+        json={
+            "role_name": "Admin",
+        },
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Role already exists."}
