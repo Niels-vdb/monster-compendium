@@ -45,17 +45,20 @@ def initialize_users() -> None:
     """
     users: Dict[str, Dict[str, str]] = {
         "admin": {
-            "name": "admin",
+            "name": "Admin",
+            "username": "admin",
             "roles": ["Admin", "Player"],
             "parties": ["Murder Hobo Party"],
         },
         "player": {
-            "name": "player",
+            "name": "Player",
+            "username": "player",
             "roles": ["Player"],
             "parties": ["Murder Hobo Party"],
         },
         "dungeonmaster": {
-            "name": "dungeonmaster",
+            "name": "Dungeon Master",
+            "username": "dungeonmaster",
             "roles": ["Dungeon Master"],
             "parties": ["Murder Hobo Party"],
         },
@@ -641,7 +644,7 @@ def create_pcs() -> None:
             if "user" in attributes.keys():
                 attributes["user_id"] = (
                     session.query(User)
-                    .filter(User.name == attributes["user"])
+                    .filter(User.username == attributes["user"])
                     .first()
                     .id
                 )

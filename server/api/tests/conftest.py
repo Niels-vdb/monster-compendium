@@ -7,7 +7,6 @@ from ..main import app
 from .. import get_db
 
 from server.database.models.base import Base
-from server.database.models.creatures import CreatureClasses
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NPCCharacter
@@ -80,7 +79,10 @@ def create_role(db_session):
 @pytest.fixture
 def create_user(db_session, create_role, create_party):
     user = "test"
-    new_user = User(name=user, roles=[create_role], parties=[create_party])
+    username = "Test"
+    new_user = User(
+        username=username, name=user, roles=[create_role], parties=[create_party]
+    )
     db_session.add(new_user)
     db_session.commit()
 
