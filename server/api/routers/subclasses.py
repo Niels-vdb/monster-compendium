@@ -17,9 +17,14 @@ router = APIRouter(
 )
 
 
-class SubclassBase(BaseModel):
+class SubclassPostBase(BaseModel):
     subclass_name: Annotated[str, Field(min_length=1)]
     class_id: int
+
+
+class SubclassPutBase(BaseModel):
+    subclass_name: str = None
+    class_id: int = None
 
 
 @router.get("/")
@@ -43,7 +48,7 @@ def get_subclass(subclass_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_class(subclass: SubclassBase, db: Session = Depends(get_db)):
+def post_class(subclass: SubclassPostBase, db: Session = Depends(get_db)):
     try:
         if not db.query(Class).filter(Class.id == subclass.class_id).first():
             raise HTTPException(
@@ -61,3 +66,43 @@ def post_class(subclass: SubclassBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Subclass already exists.")
+
+
+@router.put("/{subclass_id}")
+def put_subclass(
+    subclass_id: int, subclass: SubclassPutBase, db: Session = Depends(get_db)
+):
+    updated_subclass = db.query(Subclass).filter(Subclass.id == subclass_id).first()
+    if not updated_subclass:
+        raise HTTPException(
+            status_code=404,
+            detail="The subclass you are trying to update does not exist.",
+        )
+    if subclass.subclass_name != None:
+        updated_subclass.name = subclass.subclass_name
+    if subclass.class_id != None:
+        cls = db.query(Class).filter(Class.id == subclass.class_id).first()
+        if not cls:
+            raise HTTPException(
+                status_code=404,
+                detail="The class you are trying to link to this subclass does not exist.",
+            )
+        updated_subclass.class_id = cls.id
+    db.commit()
+    return {
+        "message": f"Subclass '{updated_subclass.name}' has been updated.",
+        "subclass": updated_subclass,
+    }
+
+
+@router.delete("/{subclass_id}")
+def delete_race(subclass_id: int, db: Session = Depends(get_db)):
+    subclass = db.query(Subclass).filter(Subclass.id == subclass_id).first()
+    if not subclass:
+        raise HTTPException(
+            status_code=404,
+            detail="The subclass you are trying to delete does not exist.",
+        )
+    db.delete(subclass)
+    db.commit()
+    return {"message": "Subclass has been deleted."}

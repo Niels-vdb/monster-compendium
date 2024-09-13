@@ -56,7 +56,7 @@ def post_class(cls: ClassPostBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{class_id}")
-def put_race(class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)):
+def put_class(class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)):
     updated_class = db.query(Class).filter(Class.id == class_id).first()
     if not updated_class:
         raise HTTPException(
@@ -68,7 +68,7 @@ def put_race(class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)):
     db.commit()
     return {
         "message": f"Class '{updated_class.name}' has been updated.",
-        "race": updated_class,
+        "class": updated_class,
     }
 
 

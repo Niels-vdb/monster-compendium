@@ -66,7 +66,7 @@ def test_class_name_put(create_class, db_session):
     assert cls.name == "Barbarian"
     assert response.json() == {
         "message": "Class 'Barbarian' has been updated.",
-        "race": {"id": 1, "name": "Barbarian"},
+        "class": {"id": 1, "name": "Barbarian"},
     }
 
 
