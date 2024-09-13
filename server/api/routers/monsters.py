@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 
@@ -95,19 +94,19 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
     if monster.image:
         attributes["image"] = monster.image
     if monster.race:
-        attributes["race"] = db.query(Race).filter(Race.id == monster.race).first()
-        if not attributes["race"]:
+        race = db.query(Race).filter(Race.id == monster.race).first()
+        if not race:
             raise HTTPException(
                 status_code=404, detail="Race with this id does not exist."
             )
+        attributes["race"] = race.id
     if monster.subrace:
-        attributes["subrace"] = (
-            db.query(Subrace).filter(Subrace.id == monster.subrace).first()
-        )
-        if not attributes["subrace"]:
+        subrace = db.query(Subrace).filter(Subrace.id == monster.subrace).first()
+        if not subrace:
             raise HTTPException(
                 status_code=404, detail="Subrace with this id does not exist."
             )
+        attributes["subrace"] = subrace.id
     if monster.size_id:
         size = db.query(Size).filter(Size.id == monster.size_id).first()
         if not size:
@@ -144,7 +143,7 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
     if monster.subclasses:
         attributes["subclasses"] = [
             db.query(Subclass).filter(Subclass.id == subclass).first()
-            for subclass in monster.classes
+            for subclass in monster.subclasses
         ]
         for value in attributes["subclasses"]:
             if value == None:
@@ -187,8 +186,8 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_monster)
         return {
-            "message": f"New party '{new_monster.name}' has been added tot he database.",
-            "party": new_monster,
+            "message": f"New monster '{new_monster.name}' has been added tot he database.",
+            "monster": new_monster,
         }
     except Exception as e:
         raise HTTPException(

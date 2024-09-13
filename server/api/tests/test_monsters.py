@@ -68,17 +68,29 @@ def test_get_no_monster(create_monster, db_session):
 
 
 def test_post_monster(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
+            "classes": [1],
+            "subclasses": [1],
+            "race": 1,
+            "subrace": 1,
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
@@ -89,34 +101,186 @@ def test_post_monster(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New party 'Baphomet' has been added tot he database.",
-        "party": {
+        "message": "New monster 'Volothamp Geddarm' has been added tot he database.",
+        "monster": {
             "id": 1,
-            "name": "Baphomet",
+            "name": "Volothamp Geddarm",
             "size_id": 1,
-            "description": "A large minotaur looking devil",
+            "description": " Volo for short",
             "alive": True,
             "creature": "monsters",
             "active": True,
             "armour_class": None,
             "image": None,
-            "race": None,
-            "information": "Baphomet is no ordinary demon lord.",
-            "subrace": None,
+            "race": 1,
+            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "subrace": 1,
             "type_id": 1,
         },
     }
 
 
-def test_post_monster_fake_size(
-    create_size, create_type, create_party, create_effect, db_session
+def test_post_monster_fake_class(
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "alive": True,
+            "active": True,
+            "armour_class": 22,
+            "classes": [2],
+            "subclasses": [1],
+            "race": 1,
+            "subrace": 1,
+            "size_id": 1,
+            "type_id": 1,
+            "parties": [1],
+            "resistances": [1],
+            "immunities": [1],
+            "vulnerabilities": [1],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Class with this id does not exist."}
+
+
+def test_post_monster_fake_subclass(
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
+):
+    response = client.post(
+        "/api/monsters",
+        json={
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "alive": True,
+            "active": True,
+            "armour_class": 22,
+            "classes": [1],
+            "subclasses": [2],
+            "race": 1,
+            "subrace": 1,
+            "size_id": 1,
+            "type_id": 1,
+            "parties": [1],
+            "resistances": [1],
+            "immunities": [1],
+            "vulnerabilities": [1],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Subclass with this id does not exist."}
+
+
+def test_post_monster_fake_race(
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
+):
+    response = client.post(
+        "/api/monsters",
+        json={
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "alive": True,
+            "active": True,
+            "armour_class": 22,
+            "classes": [1],
+            "subclasses": [1],
+            "race": 2,
+            "subrace": 1,
+            "size_id": 1,
+            "type_id": 1,
+            "parties": [1],
+            "resistances": [1],
+            "immunities": [1],
+            "vulnerabilities": [1],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Race with this id does not exist."}
+
+
+def test_post_monster_fake_subrace(
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
+):
+    response = client.post(
+        "/api/monsters",
+        json={
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "alive": True,
+            "active": True,
+            "armour_class": 22,
+            "classes": [1],
+            "subclasses": [1],
+            "race": 1,
+            "subrace": 2,
+            "size_id": 1,
+            "type_id": 1,
+            "parties": [1],
+            "resistances": [1],
+            "immunities": [1],
+            "vulnerabilities": [1],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Subrace with this id does not exist."}
+
+
+def test_post_monster_fake_size(
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
+):
+    response = client.post(
+        "/api/monsters",
+        json={
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -133,14 +297,22 @@ def test_post_monster_fake_size(
 
 
 def test_post_monster_fake_type(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -157,14 +329,22 @@ def test_post_monster_fake_type(
 
 
 def test_post_monster_fake_party(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -181,14 +361,22 @@ def test_post_monster_fake_party(
 
 
 def test_post_monster_fake_resistance(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -205,14 +393,22 @@ def test_post_monster_fake_resistance(
 
 
 def test_post_monster_fake_immunity(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -229,14 +425,22 @@ def test_post_monster_fake_immunity(
 
 
 def test_post_monster_fake_vulnerabilities(
-    create_size, create_type, create_party, create_effect, db_session
+    create_class,
+    create_subclass,
+    create_race,
+    create_subrace,
+    create_size,
+    create_type,
+    create_party,
+    create_effect,
+    db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Baphomet",
-            "description": "A large minotaur looking devil",
-            "information": "Baphomet is no ordinary demon lord.",
+            "name": "Volothamp Geddarm",
+            "description": " Volo for short",
+            "information": "A widely traveled human wizard and sage of Faerûn.",
             "alive": True,
             "active": True,
             "armour_class": 22,
