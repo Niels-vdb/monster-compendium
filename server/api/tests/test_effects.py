@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from server.database.models.effects import Effect
+
 from .conftest import app
 
 client = TestClient(app)
@@ -62,3 +64,44 @@ def test_post_duplicate_effect(db_session):
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Effect already exists."}
+
+
+def test_effect_name_put(create_effect, db_session):
+    response = client.put(
+        f"/api/effects/{create_effect.id}",
+        json={"effect_name": "Slashing"},
+    )
+    effect = db_session.query(Effect).first()
+    assert response.status_code == 200
+    assert effect.name == "Slashing"
+    assert response.json() == {
+        "message": "Effect 'Slashing' has been updated.",
+        "effect": {"id": 1, "name": "Slashing"},
+    }
+
+
+def test_effect_fake_effect_put(create_race, create_effect, db_session):
+    response = client.put(
+        "/api/effects/2",
+        json={"effect_name": "Slashing"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The effect you are trying to update does not exist.",
+    }
+
+
+def test_effect_delete(create_effect, db_session):
+    response = client.delete(f"/api/effects/{create_effect.id}")
+    effect = db_session.query(Effect).filter(Effect.id == create_effect.id).first()
+    assert response.status_code == 200
+    assert response.json() == {"message": f"Effect has been deleted."}
+    assert effect == None
+
+
+def test_effect_fake_delete(create_effect, db_session):
+    response = client.delete(f"/api/effects/2")
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The effect you are trying to delete does not exist."
+    }

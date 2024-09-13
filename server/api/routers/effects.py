@@ -16,7 +16,11 @@ router = APIRouter(
 )
 
 
-class EffectBase(BaseModel):
+class EffectPostBase(BaseModel):
+    effect_name: Annotated[str, Field(min_length=1)]
+
+
+class EffectPutBase(BaseModel):
     effect_name: Annotated[str, Field(min_length=1)]
 
 
@@ -37,7 +41,7 @@ def get_effect(effect_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_effect(effect: EffectBase, db: Session = Depends(get_db)):
+def post_effect(effect: EffectPostBase, db: Session = Depends(get_db)):
     try:
         new_effect = Effect(name=effect.effect_name)
         db.add(new_effect)
@@ -49,3 +53,33 @@ def post_effect(effect: EffectBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Effect already exists.")
+
+
+@router.put("/{effect_id}")
+def put_effect(effect_id: int, effect: EffectPutBase, db: Session = Depends(get_db)):
+    updated_effect = db.query(Effect).filter(Effect.id == effect_id).first()
+    if not updated_effect:
+        raise HTTPException(
+            status_code=404,
+            detail="The effect you are trying to update does not exist.",
+        )
+    if effect.effect_name != None:
+        updated_effect.name = effect.effect_name
+    db.commit()
+    return {
+        "message": f"Effect '{updated_effect.name}' has been updated.",
+        "effect": updated_effect,
+    }
+
+
+@router.delete("/{effect_id}")
+def delete_effect(effect_id: int, db: Session = Depends(get_db)):
+    effect = db.query(Effect).filter(Effect.id == effect_id).first()
+    if not effect:
+        raise HTTPException(
+            status_code=404,
+            detail="The effect you are trying to delete does not exist.",
+        )
+    db.delete(effect)
+    db.commit()
+    return {"message": f"Effect has been deleted."}
