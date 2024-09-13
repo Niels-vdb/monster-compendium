@@ -15,8 +15,12 @@ router = APIRouter(
 )
 
 
-class SizeBase(BaseModel):
+class SizePostBase(BaseModel):
     size_name: Annotated[str, Field(min_length=1)]
+
+
+class SizePutBase(BaseModel):
+    size_name: str = None
 
 
 @router.get("/")
@@ -41,7 +45,7 @@ def get_size(size_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_size(size: SizeBase, db: Session = Depends(get_db)):
+def post_size(size: SizePostBase, db: Session = Depends(get_db)):
     try:
         new_size = Size(name=size.size_name)
         db.add(new_size)
@@ -53,3 +57,33 @@ def post_size(size: SizeBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Size already exists.")
+
+
+@router.put("/{size_id}")
+def put_size(size_id: int, size: SizePutBase, db: Session = Depends(get_db)):
+    updated_size = db.query(Size).filter(Size.id == size_id).first()
+    if not updated_size:
+        raise HTTPException(
+            status_code=404,
+            detail="The size you are trying to update does not exist.",
+        )
+    if size.size_name != None:
+        updated_size.name = size.size_name
+    db.commit()
+    return {
+        "message": f"Size '{updated_size.name}' has been updated.",
+        "size": updated_size,
+    }
+
+
+@router.delete("/{size_id}")
+def delete_size(size_id: int, db: Session = Depends(get_db)):
+    size = db.query(Size).filter(Size.id == size_id).first()
+    if not size:
+        raise HTTPException(
+            status_code=404,
+            detail="The size you are trying to delete does not exist.",
+        )
+    db.delete(size)
+    db.commit()
+    return {"message": f"Size has been deleted."}
