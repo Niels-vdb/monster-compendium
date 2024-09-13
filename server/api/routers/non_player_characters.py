@@ -13,7 +13,7 @@ from server.database.models.races import Race, Subrace
 from server.database.models.users import Party
 
 router = APIRouter(
-    prefix="/api/npc_characters",
+    prefix="/api/non_player_characters",
     tags=["NPC characters"],
     responses={404: {"description": "Not found."}},
 )

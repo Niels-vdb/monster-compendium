@@ -7,7 +7,7 @@ client = TestClient(app)
 
 
 def test_get_npc_characters(create_npc, db_session):
-    response = client.get("/api/npc_characters")
+    response = client.get("/api/non_player_characters")
     assert response.status_code == 200
     assert response.json() == {
         "npc_characters": [
@@ -31,13 +31,13 @@ def test_get_npc_characters(create_npc, db_session):
 
 
 def test_get_no_npc_characters(db_session):
-    response = client.get("/api/npc_characters")
+    response = client.get("/api/non_player_characters")
     assert response.status_code == 404
     assert response.json() == {"detail": "No NPC characters found."}
 
 
 def test_get_npc_character(create_npc, db_session):
-    response = client.get("/api/npc_characters/1")
+    response = client.get("/api/non_player_characters/1")
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
@@ -63,7 +63,7 @@ def test_get_npc_character(create_npc, db_session):
 
 
 def test_get_no_npc_character(create_npc, db_session):
-    response = client.get("/api/npc_characters/2")
+    response = client.get("/api/non_player_characters/2")
     assert response.status_code == 404
     assert response.json() == {"detail": "NPC character not found."}
 
@@ -80,7 +80,7 @@ def test_post_npc(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -133,7 +133,7 @@ def test_post_npc_fake_class(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -169,7 +169,7 @@ def test_post_npc_fake_subclass(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -205,7 +205,7 @@ def test_post_npc_fake_race(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -241,7 +241,7 @@ def test_post_npc_fake_subrace(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -277,7 +277,7 @@ def test_post_npc_fake_size(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -309,7 +309,7 @@ def test_post_npc_fake_type(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -341,7 +341,7 @@ def test_post_npc_fake_party(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -373,7 +373,7 @@ def test_post_npc_fake_resistance(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -405,7 +405,7 @@ def test_post_npc_fake_immunity(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",
@@ -437,7 +437,7 @@ def test_post_npc_fake_vulnerabilities(
     db_session,
 ):
     response = client.post(
-        "/api/npc_characters",
+        "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
             "description": " Volo for short",

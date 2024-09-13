@@ -4,7 +4,7 @@ from .routers import (
     classes,
     effects,
     monsters,
-    npc_characters,
+    non_player_characters,
     parties,
     player_characters,
     races,
@@ -68,7 +68,7 @@ app = FastAPI(openapi_tags=tags_metadata, title="DnD Creature Compendium")
 app.include_router(classes.router)
 app.include_router(effects.router)
 app.include_router(monsters.router)
-app.include_router(npc_characters.router)
+app.include_router(non_player_characters.router)
 app.include_router(player_characters.router)
 app.include_router(parties.router)
 app.include_router(races.router)
