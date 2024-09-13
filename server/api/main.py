@@ -5,8 +5,8 @@ from .routers import (
     effects,
     monsters,
     npc_characters,
-    pc_characters,
     parties,
+    player_characters,
     races,
     roles,
     sizes,
@@ -69,7 +69,7 @@ app.include_router(classes.router)
 app.include_router(effects.router)
 app.include_router(monsters.router)
 app.include_router(npc_characters.router)
-app.include_router(pc_characters.router)
+app.include_router(player_characters.router)
 app.include_router(parties.router)
 app.include_router(races.router)
 app.include_router(roles.router)
