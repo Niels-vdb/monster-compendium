@@ -121,24 +121,6 @@ def test_race_name_put(create_race, db_session):
     }
 
 
-# def test_race_subrace_put(create_race, create_size, db_session):
-#     new_race = Race(name="Wood", sizes=[create_size])
-#     db_session.add(new_race)
-#     db_session.commit()
-#     response = client.put(
-#         f"/api/races/{create_race.id}",
-#         json={"subraces": 2},
-#     )
-#     race = db_session.query(Race).first()
-
-#     assert response.status_code == 200
-#     assert race.race_id == 2
-#     assert response.json() == {
-#         "message": "race 'Duergar' has been updated.",
-#         "race": {"name": "Duergar", "race_id": 2, "id": 1},
-#     }
-
-
 def test_race_resistance_put(create_race, create_effect, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",
@@ -189,7 +171,7 @@ def test_race_fake_size_put(create_race, create_effect, db_session):
     }
 
 
-def test_race_fake_race_put(create_race, db_session):
+def test_fake_race_put(create_race, db_session):
     response = client.put(
         "/api/races/2",
         json={"race_name": "Elf"},

@@ -16,8 +16,12 @@ router = APIRouter(
 )
 
 
-class ClassBase(BaseModel):
+class ClassPostBase(BaseModel):
     class_name: Annotated[str, Field(min_length=1)]
+
+
+class ClassPutBase(BaseModel):
+    class_name: str = None
 
 
 @router.get("/")
@@ -37,7 +41,7 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_class(cls: ClassBase, db: Session = Depends(get_db)):
+def post_class(cls: ClassPostBase, db: Session = Depends(get_db)):
     try:
         new_class = Class(name=cls.class_name)
         db.add(new_class)
@@ -49,3 +53,33 @@ def post_class(cls: ClassBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Class already exists.")
+
+
+@router.put("/{class_id}")
+def put_race(class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)):
+    updated_class = db.query(Class).filter(Class.id == class_id).first()
+    if not updated_class:
+        raise HTTPException(
+            status_code=404,
+            detail="The class you are trying to update does not exist.",
+        )
+    if cls.class_name != None:
+        updated_class.name = cls.class_name
+    db.commit()
+    return {
+        "message": f"Class '{updated_class.name}' has been updated.",
+        "race": updated_class,
+    }
+
+
+@router.delete("/{class_id}")
+def delete_race(class_id: int, db: Session = Depends(get_db)):
+    cls = db.query(Class).filter(Class.id == class_id).first()
+    if not cls:
+        raise HTTPException(
+            status_code=404,
+            detail="The class you are trying to delete does not exist.",
+        )
+    db.delete(cls)
+    db.commit()
+    return {"message": "Class has been deleted."}
