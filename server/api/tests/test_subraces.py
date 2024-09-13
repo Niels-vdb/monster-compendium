@@ -156,7 +156,9 @@ def test_subrace_resistance_put(create_subrace, create_effect, db_session):
         f"/api/subraces/{create_subrace.id}",
         json={"resistances": [1]},
     )
+    subrace = db_session.query(Subrace).first()
     assert response.status_code == 200
+    assert subrace.resistances[0].id == 1
     assert response.json() == {
         "message": "Subrace 'Duergar' has been updated.",
         "subrace": {"race_id": 1, "name": "Duergar", "id": 1},

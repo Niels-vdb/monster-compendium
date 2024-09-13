@@ -18,8 +18,14 @@ router = APIRouter(
 )
 
 
-class RaceBase(BaseModel):
+class RacePostBase(BaseModel):
     race_name: Annotated[str, Field(min_length=1)]
+    sizes: list[int] = None
+    resistances: list[int] = None
+
+
+class RacePutBase(BaseModel):
+    race_name: str = None
     sizes: list[int] = None
     resistances: list[int] = None
 
@@ -47,7 +53,7 @@ def get_race(race_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_race(race: RaceBase, db: Session = Depends(get_db)):
+def post_race(race: RacePostBase, db: Session = Depends(get_db)):
     try:
         sizes = [
             db.query(Size).filter(Size.id == size_id).first() for size_id in race.sizes
@@ -71,3 +77,55 @@ def post_race(race: RaceBase, db: Session = Depends(get_db)):
             status_code=400,
             detail="The size or resistance you are trying to bind to this race does not exist.",
         )
+
+
+@router.put("/{race_id}")
+def put_race(race_id: int, race: RacePutBase, db: Session = Depends(get_db)):
+    updated_race = db.query(Race).filter(Race.id == race_id).first()
+    if not updated_race:
+        raise HTTPException(
+            status_code=404,
+            detail="The race you are trying to update does not exist.",
+        )
+    if race.race_name != None:
+        updated_race.name = race.race_name
+    if race.sizes != None:
+        sizes: list = []
+        for size_id in race.sizes:
+            size = db.query(Size).filter(Size.id == size_id).first()
+            if not size:
+                raise HTTPException(
+                    status_code=404,
+                    detail="The size you are trying to link to this subrace does not exist.",
+                )
+            sizes.append(size)
+        updated_race.sizes = sizes
+    if race.resistances != None:
+        resistances: list = []
+        for resistance in race.resistances:
+            effect = db.query(Effect).filter(Effect.id == resistance).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404,
+                    detail="The effect you are trying to link to this subrace does not exist.",
+                )
+            resistances.append(effect)
+        updated_race.resistances = resistances
+    db.commit()
+    return {
+        "message": f"Subrace '{updated_race.name}' has been updated.",
+        "subrace": updated_race,
+    }
+
+
+@router.delete("/{race_id}")
+def delete_race(race_id: int, db: Session = Depends(get_db)):
+    race = db.query(Race).filter(Race.id == race_id).first()
+    if not race:
+        raise HTTPException(
+            status_code=404,
+            detail="The race you are trying to delete does not exist.",
+        )
+    db.delete(race)
+    db.commit()
+    return {"message": "Race has been deleted."}

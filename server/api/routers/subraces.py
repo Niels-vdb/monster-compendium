@@ -25,9 +25,9 @@ class SubracePostBase(BaseModel):
 
 
 class SubracePutBase(BaseModel):
-    subrace_name: str | None = None
-    race_id: int | None = None
-    resistances: list[int] | None = None
+    subrace_name: str = None
+    race_id: int = None
+    resistances: list[int] = None
 
 
 @router.get("/")
