@@ -1,3 +1,4 @@
+import re
 from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
@@ -48,19 +49,24 @@ def get_subrace(subrace_id: int, db: Session = Depends(get_db)):
 def post_subrace(subrace: SubraceBase, db: Session = Depends(get_db)):
     try:
         race = db.query(Race).filter(Race.id == subrace.race_id).first()
+        if not race:
+            raise HTTPException(
+                status_code=404,
+                detail="The race you are trying to bind to this subrace does not exist.",
+            )
         resistances = [
             db.query(Effect).filter(Effect.id == effect_id).first()
             for effect_id in subrace.resistances
         ]
-        subrace = Subrace(
+        new_subrace = Subrace(
             name=subrace.subrace_name, race_id=race.id, resistances=resistances
         )
-        db.add(subrace)
+        db.add(new_subrace)
         db.commit()
-        db.refresh(subrace)
+        db.refresh(new_subrace)
         return {
-            "message": f"New subrace '{subrace.name}' has been added tot he database.",
-            "subrace": subrace,
+            "message": f"New subrace '{new_subrace.name}' has been added to the database.",
+            "subrace": new_subrace,
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Subrace already exists.")
@@ -69,8 +75,43 @@ def post_subrace(subrace: SubraceBase, db: Session = Depends(get_db)):
             status_code=400,
             detail="The resistance you are trying to bind to this subrace does not exist.",
         )
-    except AttributeError as e:
+
+
+@router.put("/{subrace_id}")
+def put_subrace(subrace_id: int, subrace: SubraceBase, db: Session = Depends(get_db)):
+    updated_subrace = db.query(Subrace).filter(Subrace.id == subrace_id).first()
+    if not updated_subrace:
         raise HTTPException(
-            status_code=400,
-            detail="The class you are trying to bind to this subrace does not exist.",
+            status_code=404,
+            detail="The subrace you are trying to update does not exist.",
         )
+    if subrace.race_id:
+        race = db.query(Race).filter(Race.id == subrace.race_id).first()
+        if not race:
+            raise HTTPException(
+                status_code=404,
+                detail="The race you are trying to link to this subrace does not exist.",
+            )
+        updated_subrace.race_id = race.id
+
+    updated_subrace.name = subrace.subrace_name
+    db.add(updated_subrace)
+    db.commit()
+    db.refresh(updated_subrace)
+    return {
+        "message": f"Subrace '{updated_subrace.name}' has been updated.",
+        "subrace": subrace,
+    }
+
+
+@router.delete("/{subrace_id}")
+def delete_subrace(subrace_id: int, db: Session = Depends(get_db)):
+    subrace = db.query(Subrace).filter(Subrace.id == subrace_id).first()
+    if not subrace:
+        raise HTTPException(
+            status_code=404,
+            detail="The subrace you are trying to delete does not exist.",
+        )
+    db.delete(subrace)
+    db.commit()
+    return {"message": f"Subrace has been deleted."}

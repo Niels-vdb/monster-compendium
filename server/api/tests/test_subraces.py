@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from server.database.models.races import Race, Subrace
+
 from .conftest import app
 
 
@@ -50,7 +52,7 @@ def test_post_subrace(create_race, create_effect, db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New subrace 'Locathah' has been added tot he database.",
+        "message": "New subrace 'Locathah' has been added to the database.",
         "subrace": {"id": 1, "name": "Locathah", "race_id": 1},
     }
 
@@ -85,9 +87,9 @@ def test_post_subrace_wrong_race(create_race, create_effect, db_session):
             "resistances": [1],
         },
     )
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.json() == {
-        "detail": "The class you are trying to bind to this subrace does not exist."
+        "detail": "The race you are trying to bind to this subrace does not exist."
     }
 
 
@@ -103,4 +105,76 @@ def test_post_subrace_wrong_effect(create_race, create_effect, db_session):
     assert response.status_code == 400
     assert response.json() == {
         "detail": "The resistance you are trying to bind to this subrace does not exist."
+    }
+
+
+def test_subrace_name_put(create_race, create_subrace, db_session):
+    response = client.put(
+        f"/api/subraces/{create_subrace.id}",
+        json={"subrace_name": "Hill", "race_id": 1},
+    )
+    subrace = db_session.query(Subrace).first()
+
+    assert response.status_code == 200
+    assert subrace.name == "Hill"
+    assert response.json() == {
+        "message": "Subrace 'Hill' has been updated.",
+        "subrace": {"subrace_name": "Hill", "race_id": 1, "resistances": None},
+    }
+
+
+def test_subrace_race_put(create_subrace, create_size, db_session):
+    new_race = Race(name="Halfling", sizes=[create_size])
+    db_session.add(new_race)
+    db_session.commit()
+    response = client.put(
+        f"/api/subraces/{create_subrace.id}",
+        json={"subrace_name": "Hill", "race_id": 2},
+    )
+    subrace = db_session.query(Subrace).first()
+
+    assert response.status_code == 200
+    assert subrace.name == "Hill"
+    assert subrace.race_id == 2
+    assert response.json() == {
+        "message": "Subrace 'Hill' has been updated.",
+        "subrace": {"subrace_name": "Hill", "race_id": 2, "resistances": None},
+    }
+
+
+def test_subrace_fake_subrace_put(create_race, create_subrace, db_session):
+    response = client.put(
+        "/api/subraces/2",
+        json={"subrace_name": "Hill", "race_id": 1},
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The subrace you are trying to update does not exist.",
+    }
+
+
+def test_subrace_fake_race_put(create_race, create_subrace, db_session):
+    response = client.put(
+        f"/api/subraces/{create_subrace.id}",
+        json={"subrace_name": "Hill", "race_id": 2},
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The race you are trying to link to this subrace does not exist.",
+    }
+
+
+def test_subrace_delete(create_subrace, db_session):
+    response = client.delete(f"/api/subraces/{create_subrace.id}")
+    subrace = db_session.query(Subrace).filter(Subrace.id == create_subrace.id).first()
+    assert response.status_code == 200
+    assert response.json() == {"message": f"Subrace has been deleted."}
+    assert subrace == None
+
+
+def test_subrace_delete(create_subrace, db_session):
+    response = client.delete(f"/api/subraces/2")
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The subrace you are trying to delete does not exist."
     }
