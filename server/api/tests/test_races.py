@@ -190,7 +190,7 @@ def test_race_delete(create_race, db_session):
     assert race == None
 
 
-def test_race_delete(create_race, db_session):
+def test_race_fake_delete(create_race, db_session):
     response = client.delete(f"/api/races/2")
     assert response.status_code == 404
     assert response.json() == {

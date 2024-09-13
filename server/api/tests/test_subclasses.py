@@ -141,7 +141,7 @@ def test_subclass_delete(create_subclass, db_session):
     assert subclass == None
 
 
-def test_subclass_delete(create_subclass, db_session):
+def test_subclass_fake_delete(create_subclass, db_session):
     response = client.delete(f"/api/subclasses/2")
     assert response.status_code == 404
     assert response.json() == {

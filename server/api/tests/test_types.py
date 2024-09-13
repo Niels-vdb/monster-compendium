@@ -94,13 +94,13 @@ def test_type_fake_type_put(create_race, create_type, db_session):
 
 def test_type_delete(create_type, db_session):
     response = client.delete(f"/api/types/{create_type.id}")
-    type = db_session.query(type).filter(type.id == create_type.id).first()
+    type = db_session.query(Type).filter(Type.id == create_type.id).first()
     assert response.status_code == 200
     assert response.json() == {"message": f"Type has been deleted."}
     assert type == None
 
 
-def test_type_delete(create_type, db_session):
+def test_type_fake_delete(create_type, db_session):
     response = client.delete(f"/api/types/2")
     assert response.status_code == 404
     assert response.json() == {

@@ -195,7 +195,7 @@ def test_subrace_delete(create_subrace, db_session):
     assert subrace == None
 
 
-def test_subrace_delete(create_subrace, db_session):
+def test_subrace_fake_delete(create_subrace, db_session):
     response = client.delete(f"/api/subraces/2")
     assert response.status_code == 404
     assert response.json() == {
