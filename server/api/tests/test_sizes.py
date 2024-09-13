@@ -43,7 +43,7 @@ def test_post_size(db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New size 'Medium' has been added tot he database.",
+        "message": "New size 'Medium' has been added to the database.",
         "size": {"id": 1, "name": "Medium"},
     }
 

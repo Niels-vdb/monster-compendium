@@ -47,7 +47,7 @@ def test_post_role(db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New role 'Admin' has been added tot he database.",
+        "message": "New role 'Admin' has been added to the database.",
         "role": {"name": "Admin", "id": 1},
     }
 

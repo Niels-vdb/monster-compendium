@@ -43,7 +43,7 @@ def test_post_type(db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New type 'Humanoid' has been added tot he database.",
+        "message": "New type 'Humanoid' has been added to the database.",
         "type": {"id": 1, "name": "Humanoid"},
     }
 

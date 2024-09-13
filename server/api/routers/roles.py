@@ -43,7 +43,7 @@ def post_role(role: RoleBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_role)
         return {
-            "message": f"New role '{new_role.name}' has been added tot he database.",
+            "message": f"New role '{new_role.name}' has been added to the database.",
             "role": new_role,
         }
     except IntegrityError as e:

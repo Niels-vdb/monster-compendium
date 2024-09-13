@@ -56,7 +56,7 @@ def post_class(subclass: SubclassBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_subclass)
         return {
-            "message": f"New subclass '{new_subclass.name}' has been added tot he database.",
+            "message": f"New subclass '{new_subclass.name}' has been added to the database.",
             "class": new_subclass,
         }
     except IntegrityError as e:

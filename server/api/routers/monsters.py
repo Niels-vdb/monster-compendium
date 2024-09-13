@@ -186,7 +186,7 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_monster)
         return {
-            "message": f"New monster '{new_monster.name}' has been added tot he database.",
+            "message": f"New monster '{new_monster.name}' has been added to the database.",
             "monster": new_monster,
         }
     except Exception as e:

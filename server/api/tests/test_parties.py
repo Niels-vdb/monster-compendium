@@ -38,6 +38,6 @@ def test_post_party(db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New party 'Murder Hobo Party' has been added tot he database.",
+        "message": "New party 'Murder Hobo Party' has been added to the database.",
         "party": {"name": "Murder Hobo Party", "id": 1},
     }

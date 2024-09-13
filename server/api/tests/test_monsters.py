@@ -101,7 +101,7 @@ def test_post_monster(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New monster 'Volothamp Geddarm' has been added tot he database.",
+        "message": "New monster 'Volothamp Geddarm' has been added to the database.",
         "monster": {
             "id": 1,
             "name": "Volothamp Geddarm",

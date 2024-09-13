@@ -111,7 +111,7 @@ def test_post_pc(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New pc 'Gobby' has been added tot he database.",
+        "message": "New pc 'Gobby' has been added to the database.",
         "pc_character": {
             "name": "Gobby",
             "size_id": 1,

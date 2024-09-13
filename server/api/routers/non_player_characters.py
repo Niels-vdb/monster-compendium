@@ -187,7 +187,7 @@ def post_npc(npc: NPCBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_npc)
         return {
-            "message": f"New npc '{new_npc.name}' has been added tot he database.",
+            "message": f"New npc '{new_npc.name}' has been added to the database.",
             "npc_character": new_npc,
         }
     except Exception as e:

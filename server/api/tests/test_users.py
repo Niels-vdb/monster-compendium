@@ -60,7 +60,7 @@ def test_post_user(create_party, create_role, create_pc, db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New user 'Player' has been added tot he database.",
+        "message": "New user 'Player' has been added to the database.",
         "user": {
             "id": 2,
             "password": None,

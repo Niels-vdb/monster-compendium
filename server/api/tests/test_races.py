@@ -49,7 +49,7 @@ def test_post_race(create_size, create_effect, db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New race 'Locathah' has been added tot he database.",
+        "message": "New race 'Locathah' has been added to the database.",
         "race": {"name": "Locathah", "id": 1},
     }
 

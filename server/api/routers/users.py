@@ -76,7 +76,7 @@ def post_user(user: UserBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_user)
         return {
-            "message": f"New user '{new_user.name}' has been added tot he database.",
+            "message": f"New user '{new_user.name}' has been added to the database.",
             "user": new_user,
         }
     except IntegrityError as e:

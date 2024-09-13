@@ -61,7 +61,7 @@ def post_race(race: RaceBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(race)
         return {
-            "message": f"New race '{race.name}' has been added tot he database.",
+            "message": f"New race '{race.name}' has been added to the database.",
             "race": race,
         }
     except IntegrityError as e:

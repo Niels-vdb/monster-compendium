@@ -42,7 +42,7 @@ def test_post_class(db_session):
     response = client.post("/api/classes", json={"class_name": "Test"})
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New class 'Test' has been added tot he database.",
+        "message": "New class 'Test' has been added to the database.",
         "class": {"name": "Test", "id": 1},
     }
 

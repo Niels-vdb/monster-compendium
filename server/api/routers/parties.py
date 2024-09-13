@@ -48,7 +48,7 @@ def post_party(party: PartyBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_party)
         return {
-            "message": f"New party '{new_party.name}' has been added tot he database.",
+            "message": f"New party '{new_party.name}' has been added to the database.",
             "party": new_party,
         }
     except IntegrityError as e:

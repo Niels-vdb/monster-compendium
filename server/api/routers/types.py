@@ -44,7 +44,7 @@ def post_type(type: TypeBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_type)
         return {
-            "message": f"New type '{new_type.name}' has been added tot he database.",
+            "message": f"New type '{new_type.name}' has been added to the database.",
             "type": new_type,
         }
     except IntegrityError as e:

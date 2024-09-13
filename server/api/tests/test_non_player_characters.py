@@ -102,7 +102,7 @@ def test_post_npc(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New npc 'Volothamp Geddarm' has been added tot he database.",
+        "message": "New npc 'Volothamp Geddarm' has been added to the database.",
         "npc_character": {
             "active": True,
             "creature": "npc_characters",

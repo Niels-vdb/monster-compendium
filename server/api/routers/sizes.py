@@ -48,7 +48,7 @@ def post_size(size: SizeBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_size)
         return {
-            "message": f"New size '{new_size.name}' has been added tot he database.",
+            "message": f"New size '{new_size.name}' has been added to the database.",
             "size": new_size,
         }
     except IntegrityError as e:

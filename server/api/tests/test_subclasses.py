@@ -45,7 +45,7 @@ def test_post_subclass(create_class, db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New subclass 'Alchemist' has been added tot he database.",
+        "message": "New subclass 'Alchemist' has been added to the database.",
         "class": {"id": 1, "name": "Alchemist", "class_id": 1},
     }
 

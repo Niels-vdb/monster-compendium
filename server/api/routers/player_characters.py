@@ -188,7 +188,7 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_pc)
         return {
-            "message": f"New pc '{new_pc.name}' has been added tot he database.",
+            "message": f"New pc '{new_pc.name}' has been added to the database.",
             "pc_character": new_pc,
         }
     except Exception as e:

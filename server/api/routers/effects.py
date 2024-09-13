@@ -44,7 +44,7 @@ def post_effect(effect: EffectBase, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_effect)
         return {
-            "message": f"New effect '{new_effect.name}' has been added tot he database.",
+            "message": f"New effect '{new_effect.name}' has been added to the database.",
             "effect": new_effect,
         }
     except IntegrityError as e:

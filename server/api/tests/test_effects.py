@@ -42,7 +42,7 @@ def test_post_effect(db_session):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New effect 'Fire' has been added tot he database.",
+        "message": "New effect 'Fire' has been added to the database.",
         "effect": {"id": 1, "name": "Fire"},
     }
 
