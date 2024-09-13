@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from server.database.models.characteristics import Type
+
 from .conftest import app
 
 
@@ -63,3 +65,44 @@ def test_post_duplicate_type(db_session):
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Type already exists."}
+
+
+def test_type_name_put(create_type, db_session):
+    response = client.put(
+        f"/api/types/{create_type.id}",
+        json={"type_name": "Celestial"},
+    )
+    type = db_session.query(Type).first()
+    assert response.status_code == 200
+    assert type.name == "Celestial"
+    assert response.json() == {
+        "message": "type 'Celestial' has been updated.",
+        "type": {"id": 1, "name": "Celestial"},
+    }
+
+
+def test_type_fake_type_put(create_race, create_type, db_session):
+    response = client.put(
+        "/api/types/2",
+        json={"type_name": "Celestial"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The type you are trying to update does not exist.",
+    }
+
+
+def test_type_delete(create_type, db_session):
+    response = client.delete(f"/api/types/{create_type.id}")
+    type = db_session.query(type).filter(type.id == create_type.id).first()
+    assert response.status_code == 200
+    assert response.json() == {"message": f"Type has been deleted."}
+    assert type == None
+
+
+def test_type_delete(create_type, db_session):
+    response = client.delete(f"/api/types/2")
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The type you are trying to delete does not exist."
+    }

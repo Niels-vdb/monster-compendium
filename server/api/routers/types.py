@@ -16,8 +16,12 @@ router = APIRouter(
 )
 
 
-class TypeBase(BaseModel):
+class TypePostBase(BaseModel):
     type_name: Annotated[str, Field(min_length=1)]
+
+
+class TypePutBase(BaseModel):
+    type_name: str = None
 
 
 @router.get("/")
@@ -37,7 +41,7 @@ def get_type(type_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_type(type: TypeBase, db: Session = Depends(get_db)):
+def post_type(type: TypePostBase, db: Session = Depends(get_db)):
     try:
         new_type = Type(name=type.type_name)
         db.add(new_type)
@@ -49,3 +53,33 @@ def post_type(type: TypeBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Type already exists.")
+
+
+@router.put("/{type_id}")
+def put_type(type_id: int, type: TypePutBase, db: Session = Depends(get_db)):
+    updated_type = db.query(Type).filter(Type.id == type_id).first()
+    if not updated_type:
+        raise HTTPException(
+            status_code=404,
+            detail="The type you are trying to update does not exist.",
+        )
+    if type.type_name != None:
+        updated_type.name = type.type_name
+    db.commit()
+    return {
+        "message": f"type '{updated_type.name}' has been updated.",
+        "type": updated_type,
+    }
+
+
+@router.delete("/{type_id}")
+def delete_type(type_id: int, db: Session = Depends(get_db)):
+    type = db.query(Type).filter(Type.id == type_id).first()
+    if not type:
+        raise HTTPException(
+            status_code=404,
+            detail="The type you are trying to delete does not exist.",
+        )
+    db.delete(type)
+    db.commit()
+    return {"message": f"Type has been deleted."}
