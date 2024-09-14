@@ -96,7 +96,7 @@ def put_subclass(
 
 
 @router.delete("/{subclass_id}")
-def delete_race(subclass_id: int, db: Session = Depends(get_db)):
+def delete_subclass(subclass_id: int, db: Session = Depends(get_db)):
     subclass = db.query(Subclass).filter(Subclass.id == subclass_id).first()
     if not subclass:
         raise HTTPException(
