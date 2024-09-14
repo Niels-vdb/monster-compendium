@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 
@@ -20,13 +21,13 @@ router = APIRouter(
 )
 
 
-class MonsterBase(BaseModel):
+class MonsterPostBase(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     description: str = None
     information: str = None
     alive: bool = None
     active: bool = None
-    amour_class: int = None
+    armour_class: int = None
     image: bytes = None
 
     race: int = None
@@ -40,6 +41,34 @@ class MonsterBase(BaseModel):
     immunities: list[int] = None
     resistances: list[int] = None
     vulnerabilities: list[int] = None
+
+
+class MonsterPutBase(BaseModel):
+    name: str = None
+    description: str = None
+    information: str = None
+    alive: bool = None
+    active: bool = None
+    armour_class: int = None
+    image: bytes = None
+
+    race: int = None
+    subrace: int = None
+    size_id: int = None
+    type_id: int = None
+
+    classes: list[int] = None
+    add_class: bool = None
+    subclasses: list[int] = None
+    add_subclass: bool = None
+    parties: list[int] = None
+    add_parties: bool = None
+    immunities: list[int] = None
+    add_immunities: bool = None
+    resistances: list[int] = None
+    add_resistances: bool = None
+    vulnerabilities: list[int] = None
+    add_vulnerabilities: bool = None
 
 
 @router.get("/")
@@ -78,7 +107,7 @@ def get_monster(monster_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
+def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
     attributes: dict[str, Any] = {}
 
     if monster.description:
@@ -89,8 +118,8 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
         attributes["alive"] = monster.alive
     if monster.active:
         attributes["active"] = monster.active
-    if monster.amour_class:
-        attributes["amour_class"] = monster.amour_class
+    if monster.armour_class:
+        attributes["armour_class"] = monster.armour_class
     if monster.image:
         attributes["image"] = monster.image
     if monster.race:
@@ -193,3 +222,171 @@ def post_monster(monster: MonsterBase, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
         )
+
+
+@router.put("/{monster_id}")
+def post_monster(
+    monster_id: str, monster: MonsterPutBase, db: Session = Depends(get_db)
+):
+    try:
+        updated_monster = db.query(Monster).filter(Monster.id == monster_id).first()
+        if monster.name:
+            updated_monster.name = monster.name
+        if monster.description:
+            updated_monster.description = monster.description
+        if monster.information:
+            updated_monster.information = monster.information
+        if monster.alive != None:
+            updated_monster.alive = monster.alive
+        if monster.active != None:
+            updated_monster.active = monster.active
+        if monster.armour_class:
+            updated_monster.armour_class = monster.armour_class
+        if monster.image:
+            updated_monster.image = monster.image
+        if monster.race:
+            race = db.query(Race).filter(Race.id == monster.race).first()
+            if not race:
+                raise HTTPException(
+                    status_code=404, detail="Race with this id does not exist."
+                )
+            updated_monster.race = race.id
+        if monster.subrace:
+            subrace = db.query(Subrace).filter(Subrace.id == monster.subrace).first()
+            if not subrace:
+                raise HTTPException(
+                    status_code=404, detail="Subrace with this id does not exist."
+                )
+            updated_monster.subrace = subrace.id
+        if monster.size_id:
+            size = db.query(Size).filter(Size.id == monster.size_id).first()
+            if not size:
+                raise HTTPException(
+                    status_code=404, detail="Size with this id does not exist."
+                )
+            updated_monster.size_id = size.id
+        if monster.type_id:
+            creature_type = db.query(Type).filter(Type.id == monster.type_id).first()
+            if not creature_type:
+                raise HTTPException(
+                    status_code=404, detail="Type with this id does not exist."
+                )
+            updated_monster.type_id = creature_type.id
+        if monster.classes:
+            classes = [
+                db.query(Class).filter(Class.id == cls).first()
+                for cls in monster.classes
+            ]
+            for cls in classes:
+                if cls == None:
+                    raise HTTPException(
+                        status_code=404, detail="Class with this id does not exist."
+                    )
+            if monster.add_class:
+                updated_monster.classes += classes
+            else:
+                for cls in classes:
+                    if cls in updated_monster.classes:
+                        updated_monster.classes.remove(cls)
+        if monster.subclasses:
+            subclasses = [
+                db.query(Subclass).filter(Subclass.id == subclass).first()
+                for subclass in monster.subclasses
+            ]
+            for subclass in subclasses:
+                if subclass == None:
+                    raise HTTPException(
+                        status_code=404, detail="Subclass with this id does not exist."
+                    )
+            if monster.add_subclass:
+                updated_monster.subclasses += subclasses
+            else:
+                for subclass in subclasses:
+                    if subclass in updated_monster.subclasses:
+                        updated_monster.subclasses.remove(subclass)
+        if monster.parties:
+            parties = [
+                db.query(Party).filter(Party.id == party).first()
+                for party in monster.parties
+            ]
+            for party in parties:
+                if party == None:
+                    raise HTTPException(
+                        status_code=404, detail="Party with this id does not exist."
+                    )
+            if monster.add_parties:
+                updated_monster.parties += parties
+            else:
+                for party in parties:
+                    if party in updated_monster.parties:
+                        updated_monster.parties.remove(party)
+        if monster.immunities:
+            immunities = [
+                db.query(Effect).filter(Effect.id == immunity).first()
+                for immunity in monster.immunities
+            ]
+            for immunity in immunities:
+                if immunity == None:
+                    raise HTTPException(
+                        status_code=404, detail="Effect with this id does not exist."
+                    )
+            if monster.add_immunities:
+                updated_monster.immunities += immunities
+            else:
+                for immunity in immunities:
+                    if immunity in updated_monster.immunities:
+                        updated_monster.immunities.remove(immunity)
+        if monster.resistances:
+            resistances = [
+                db.query(Effect).filter(Effect.id == resistance).first()
+                for resistance in monster.resistances
+            ]
+            for resistance in resistances:
+                if resistance == None:
+                    raise HTTPException(
+                        status_code=404, detail="Effect with this id does not exist."
+                    )
+            if monster.add_resistances:
+                updated_monster.resistances += resistances
+            else:
+                for resistance in resistances:
+                    if resistance in updated_monster.resistances:
+                        updated_monster.resistances.remove(resistance)
+        if monster.vulnerabilities:
+            vulnerabilities = [
+                db.query(Effect).filter(Effect.id == vulnerability).first()
+                for vulnerability in monster.vulnerabilities
+            ]
+            for vulnerability in vulnerabilities:
+                if vulnerability == None:
+                    raise HTTPException(
+                        status_code=404, detail="Effect with this id does not exist."
+                    )
+            if monster.add_vulnerabilities:
+                updated_monster.vulnerabilities += vulnerabilities
+            else:
+                for vulnerability in vulnerabilities:
+                    if vulnerability in updated_monster.vulnerabilities:
+                        updated_monster.vulnerabilities.remove(vulnerability)
+        db.commit()
+        return {
+            "message": f"Monster '{updated_monster.name}' has been updated.",
+            "monster": updated_monster,
+        }
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400, detail="The name you are trying to use already exists."
+        )
+
+
+@router.delete("/{monster_id}")
+def delete_monster(monster_id: int, db: Session = Depends(get_db)):
+    monster = db.query(Monster).filter(Monster.id == monster_id).first()
+    if not monster:
+        raise HTTPException(
+            status_code=404,
+            detail="The monster you are trying to delete does not exist.",
+        )
+    db.delete(monster)
+    db.commit()
+    return {"message": f"Monster has been deleted."}

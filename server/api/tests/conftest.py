@@ -198,11 +198,12 @@ def create_monster(
     create_subclass,
     create_size,
     create_type,
+    create_effect,
     db_session,
 ):
     monster = "Giff"
     attributes: dict[str, Any] = {}
-    # attributes["parties"] = [create_party]
+    attributes["parties"] = [create_party]
     attributes["description"] = "A large hippo like creature"
     attributes["information"] = (
         "Some information about this big hippo, like his knowledge about firearms."
@@ -210,6 +211,9 @@ def create_monster(
     attributes["armour_class"] = 16
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
+    attributes["immunities"] = [create_effect]
+    attributes["resistances"] = [create_effect]
+    attributes["vulnerabilities"] = [create_effect]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
