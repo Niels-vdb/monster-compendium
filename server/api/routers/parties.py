@@ -15,8 +15,12 @@ router = APIRouter(
 )
 
 
-class PartyBase(BaseModel):
+class PartyPostBase(BaseModel):
     party_name: Annotated[str, Field(min_length=1)]
+
+
+class PartyPutBase(BaseModel):
+    party_name: str = None
 
 
 @router.get("/")
@@ -41,7 +45,7 @@ def get_party(party_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_party(party: PartyBase, db: Session = Depends(get_db)):
+def post_party(party: PartyPostBase, db: Session = Depends(get_db)):
     try:
         new_party = Party(name=party.party_name)
         db.add(new_party)
@@ -53,3 +57,33 @@ def post_party(party: PartyBase, db: Session = Depends(get_db)):
         }
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail="Party already exists.")
+
+
+@router.put("/{party_id}")
+def put_party(party_id: int, party: PartyPutBase, db: Session = Depends(get_db)):
+    updated_party = db.query(Party).filter(Party.id == party_id).first()
+    if not updated_party:
+        raise HTTPException(
+            status_code=404,
+            detail="The party you are trying to update does not exist.",
+        )
+    if party.party_name != None:
+        updated_party.name = party.party_name
+    db.commit()
+    return {
+        "message": f"Party '{updated_party.name}' has been updated.",
+        "party": updated_party,
+    }
+
+
+@router.delete("/{party_id}")
+def delete_party(party_id: int, db: Session = Depends(get_db)):
+    party = db.query(Party).filter(Party.id == party_id).first()
+    if not party:
+        raise HTTPException(
+            status_code=404,
+            detail="The party you are trying to delete does not exist.",
+        )
+    db.delete(party)
+    db.commit()
+    return {"message": "Party has been deleted."}
