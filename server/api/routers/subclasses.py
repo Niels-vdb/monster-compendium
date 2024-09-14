@@ -72,27 +72,32 @@ def post_subclass(subclass: SubclassPostBase, db: Session = Depends(get_db)):
 def put_subclass(
     subclass_id: int, subclass: SubclassPutBase, db: Session = Depends(get_db)
 ):
-    updated_subclass = db.query(Subclass).filter(Subclass.id == subclass_id).first()
-    if not updated_subclass:
-        raise HTTPException(
-            status_code=404,
-            detail="The subclass you are trying to update does not exist.",
-        )
-    if subclass.subclass_name != None:
-        updated_subclass.name = subclass.subclass_name
-    if subclass.class_id != None:
-        cls = db.query(Class).filter(Class.id == subclass.class_id).first()
-        if not cls:
+    try:
+        updated_subclass = db.query(Subclass).filter(Subclass.id == subclass_id).first()
+        if not updated_subclass:
             raise HTTPException(
                 status_code=404,
-                detail="The class you are trying to link to this subclass does not exist.",
+                detail="The subclass you are trying to update does not exist.",
             )
-        updated_subclass.class_id = cls.id
-    db.commit()
-    return {
-        "message": f"Subclass '{updated_subclass.name}' has been updated.",
-        "subclass": updated_subclass,
-    }
+        if subclass.subclass_name != None:
+            updated_subclass.name = subclass.subclass_name
+        if subclass.class_id != None:
+            cls = db.query(Class).filter(Class.id == subclass.class_id).first()
+            if not cls:
+                raise HTTPException(
+                    status_code=404,
+                    detail="The class you are trying to link to this subclass does not exist.",
+                )
+            updated_subclass.class_id = cls.id
+        db.commit()
+        return {
+            "message": f"Subclass '{updated_subclass.name}' has been updated.",
+            "subclass": updated_subclass,
+        }
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400, detail="The name you are trying to use already exists."
+        )
 
 
 @router.delete("/{subclass_id}")

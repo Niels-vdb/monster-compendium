@@ -70,6 +70,20 @@ def test_class_name_put(create_class, db_session):
     }
 
 
+def test_class_duplicate_name_put(create_class, db_session):
+    cls = Class(name="Barbarian")
+    db_session.add(cls)
+    db_session.commit()
+    response = client.put(
+        f"/api/classes/{cls.id}",
+        json={"class_name": "Artificer"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_fake_class_put(create_class, db_session):
     response = client.put(
         "/api/classes/2",
@@ -85,11 +99,11 @@ def test_class_delete(create_class, db_session):
     response = client.delete(f"/api/classes/{create_class.id}")
     cls = db_session.query(Class).filter(Class.id == create_class.id).first()
     assert response.status_code == 200
-    assert response.json() == {"message": "class has been deleted."}
+    assert response.json() == {"message": "Class has been deleted."}
     assert cls == None
 
 
-def test_class_delete(create_class, db_session):
+def test_class_fake_delete(create_class, db_session):
     response = client.delete(f"/api/classes/2")
     assert response.status_code == 404
     assert response.json() == {

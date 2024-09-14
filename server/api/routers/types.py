@@ -57,19 +57,24 @@ def post_type(type: TypePostBase, db: Session = Depends(get_db)):
 
 @router.put("/{type_id}")
 def put_type(type_id: int, type: TypePutBase, db: Session = Depends(get_db)):
-    updated_type = db.query(Type).filter(Type.id == type_id).first()
-    if not updated_type:
+    try:
+        updated_type = db.query(Type).filter(Type.id == type_id).first()
+        if not updated_type:
+            raise HTTPException(
+                status_code=404,
+                detail="The type you are trying to update does not exist.",
+            )
+        if type.type_name != None:
+            updated_type.name = type.type_name
+        db.commit()
+        return {
+            "message": f"type '{updated_type.name}' has been updated.",
+            "type": updated_type,
+        }
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="The type you are trying to update does not exist.",
+            status_code=400, detail="The name you are trying to use already exists."
         )
-    if type.type_name != None:
-        updated_type.name = type.type_name
-    db.commit()
-    return {
-        "message": f"type '{updated_type.name}' has been updated.",
-        "type": updated_type,
-    }
 
 
 @router.delete("/{type_id}")

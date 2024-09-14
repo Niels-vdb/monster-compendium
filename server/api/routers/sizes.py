@@ -61,19 +61,24 @@ def post_size(size: SizePostBase, db: Session = Depends(get_db)):
 
 @router.put("/{size_id}")
 def put_size(size_id: int, size: SizePutBase, db: Session = Depends(get_db)):
-    updated_size = db.query(Size).filter(Size.id == size_id).first()
-    if not updated_size:
+    try:
+        updated_size = db.query(Size).filter(Size.id == size_id).first()
+        if not updated_size:
+            raise HTTPException(
+                status_code=404,
+                detail="The size you are trying to update does not exist.",
+            )
+        if size.size_name != None:
+            updated_size.name = size.size_name
+        db.commit()
+        return {
+            "message": f"Size '{updated_size.name}' has been updated.",
+            "size": updated_size,
+        }
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="The size you are trying to update does not exist.",
+            status_code=400, detail="The name you are trying to use already exists."
         )
-    if size.size_name != None:
-        updated_size.name = size.size_name
-    db.commit()
-    return {
-        "message": f"Size '{updated_size.name}' has been updated.",
-        "size": updated_size,
-    }
 
 
 @router.delete("/{size_id}")

@@ -56,19 +56,24 @@ def post_role(role: RolePostBase, db: Session = Depends(get_db)):
 
 @router.put("/{role_id}")
 def put_role(role_id: int, role: RolePutBase, db: Session = Depends(get_db)):
-    updated_role = db.query(Role).filter(Role.id == role_id).first()
-    if not updated_role:
+    try:
+        updated_role = db.query(Role).filter(Role.id == role_id).first()
+        if not updated_role:
+            raise HTTPException(
+                status_code=404,
+                detail="The role you are trying to update does not exist.",
+            )
+        if role.role_name != None:
+            updated_role.name = role.role_name
+        db.commit()
+        return {
+            "message": f"Role '{updated_role.name}' has been updated.",
+            "role": updated_role,
+        }
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="The role you are trying to update does not exist.",
+            status_code=400, detail="The name you are trying to use already exists."
         )
-    if role.role_name != None:
-        updated_role.name = role.role_name
-    db.commit()
-    return {
-        "message": f"Role '{updated_role.name}' has been updated.",
-        "role": updated_role,
-    }
 
 
 @router.delete("/{role_id}")

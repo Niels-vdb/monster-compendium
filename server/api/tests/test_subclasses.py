@@ -90,6 +90,20 @@ def test_subclass_name_put(create_subclass, db_session):
     }
 
 
+def test_subclass_duplicate_name_put(create_class, create_subclass, db_session):
+    subclass = Subclass(name="Armourer", class_id=1)
+    db_session.add(subclass)
+    db_session.commit()
+    response = client.put(
+        f"/api/subclasses/{subclass.id}",
+        json={"subclass_name": "Alchemist"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_subclass_class_put(create_subclass, db_session):
     cls = Class(name="Barbarian")
     db_session.add(cls)

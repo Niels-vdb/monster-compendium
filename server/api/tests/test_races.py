@@ -121,6 +121,20 @@ def test_race_name_put(create_race, db_session):
     }
 
 
+def test_race_duplicate_name_put(create_size, create_race, db_session):
+    race = Race(name="Elf", sizes=[create_size])
+    db_session.add(race)
+    db_session.commit()
+    response = client.put(
+        f"/api/races/{race.id}",
+        json={"race_name": "Dwarf"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_race_resistance_put(create_race, create_effect, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",

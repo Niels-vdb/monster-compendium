@@ -122,6 +122,20 @@ def test_subrace_name_put(create_subrace, db_session):
     }
 
 
+def test_subrace_duplicate_name_put(create_subrace, create_race, db_session):
+    subrace = Subrace(name="Hill", race_id=1)
+    db_session.add(subrace)
+    db_session.commit()
+    response = client.put(
+        f"/api/subraces/{subrace.id}",
+        json={"subrace_name": "Duergar"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_subrace_race_put(create_subrace, create_size, db_session):
     new_race = Race(name="Halfling")
     db_session.add(new_race)

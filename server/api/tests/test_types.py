@@ -81,6 +81,20 @@ def test_type_name_put(create_type, db_session):
     }
 
 
+def test_type_duplicate_name_put(create_type, db_session):
+    type = Type(name="Celestial")
+    db_session.add(type)
+    db_session.commit()
+    response = client.put(
+        f"/api/types/{type.id}",
+        json={"type_name": "Aberration"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_type_fake_type_put(create_race, create_type, db_session):
     response = client.put(
         "/api/types/2",

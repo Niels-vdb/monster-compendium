@@ -81,6 +81,20 @@ def test_size_name_put(create_size, db_session):
     }
 
 
+def test_size_duplicate_name_put(create_size, db_session):
+    size = Size(name="Small")
+    db_session.add(size)
+    db_session.commit()
+    response = client.put(
+        f"/api/sizes/{size.id}",
+        json={"size_name": "Tiny"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_size_fake_size_put(create_race, create_size, db_session):
     response = client.put(
         "/api/sizes/2",

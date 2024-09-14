@@ -57,19 +57,24 @@ def post_class(cls: ClassPostBase, db: Session = Depends(get_db)):
 
 @router.put("/{class_id}")
 def put_class(class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)):
-    updated_class = db.query(Class).filter(Class.id == class_id).first()
-    if not updated_class:
+    try:
+        updated_class = db.query(Class).filter(Class.id == class_id).first()
+        if not updated_class:
+            raise HTTPException(
+                status_code=404,
+                detail="The class you are trying to update does not exist.",
+            )
+        if cls.class_name != None:
+            updated_class.name = cls.class_name
+        db.commit()
+        return {
+            "message": f"Class '{updated_class.name}' has been updated.",
+            "class": updated_class,
+        }
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="The class you are trying to update does not exist.",
+            status_code=400, detail="The name you are trying to use already exists."
         )
-    if cls.class_name != None:
-        updated_class.name = cls.class_name
-    db.commit()
-    return {
-        "message": f"Class '{updated_class.name}' has been updated.",
-        "class": updated_class,
-    }
 
 
 @router.delete("/{class_id}")

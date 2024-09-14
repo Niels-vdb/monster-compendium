@@ -87,38 +87,43 @@ def post_subrace(subrace: SubracePostBase, db: Session = Depends(get_db)):
 def put_subrace(
     subrace_id: int, subrace: SubracePutBase, db: Session = Depends(get_db)
 ):
-    updated_subrace = db.query(Subrace).filter(Subrace.id == subrace_id).first()
-    if not updated_subrace:
-        raise HTTPException(
-            status_code=404,
-            detail="The subrace you are trying to update does not exist.",
-        )
-    if subrace.subrace_name != None:
-        updated_subrace.name = subrace.subrace_name
-    if subrace.race_id != None:
-        race = db.query(Race).filter(Race.id == subrace.race_id).first()
-        if not race:
+    try:
+        updated_subrace = db.query(Subrace).filter(Subrace.id == subrace_id).first()
+        if not updated_subrace:
             raise HTTPException(
                 status_code=404,
-                detail="The race you are trying to link to this subrace does not exist.",
+                detail="The subrace you are trying to update does not exist.",
             )
-        updated_subrace.race_id = race.id
-    if subrace.resistances != None:
-        resistances: list = []
-        for resistance in subrace.resistances:
-            effect = db.query(Effect).filter(Effect.id == resistance).first()
-            if not effect:
+        if subrace.subrace_name != None:
+            updated_subrace.name = subrace.subrace_name
+        if subrace.race_id != None:
+            race = db.query(Race).filter(Race.id == subrace.race_id).first()
+            if not race:
                 raise HTTPException(
                     status_code=404,
-                    detail="The effect you are trying to link to this subrace does not exist.",
+                    detail="The race you are trying to link to this subrace does not exist.",
                 )
-            resistances.append(effect)
-        updated_subrace.resistances = resistances
-    db.commit()
-    return {
-        "message": f"Subrace '{updated_subrace.name}' has been updated.",
-        "subrace": updated_subrace,
-    }
+            updated_subrace.race_id = race.id
+        if subrace.resistances != None:
+            resistances: list = []
+            for resistance in subrace.resistances:
+                effect = db.query(Effect).filter(Effect.id == resistance).first()
+                if not effect:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="The effect you are trying to link to this subrace does not exist.",
+                    )
+                resistances.append(effect)
+            updated_subrace.resistances = resistances
+        db.commit()
+        return {
+            "message": f"Subrace '{updated_subrace.name}' has been updated.",
+            "subrace": updated_subrace,
+        }
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400, detail="The name you are trying to use already exists."
+        )
 
 
 @router.delete("/{subrace_id}")

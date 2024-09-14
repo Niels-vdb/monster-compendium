@@ -98,58 +98,63 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)):
 
 @router.put("/{user_id}")
 def put_user(user_id: int, user: UserPutBase, db: Session = Depends(get_db)):
-    updated_user = db.query(User).filter(User.id == user_id).first()
-    if not updated_user:
-        raise HTTPException(
-            status_code=404,
-            detail="The user you are trying to update does not exist.",
-        )
-    if user.name != None:
-        updated_user.name = user.name
-    if user.username != None:
-        updated_user.username = user.username
-    if user.roles != None:
-        roles: list = []
-        for role in user.roles:
-            new_role = db.query(Role).filter(Role.id == role).first()
-            if not new_role:
-                raise HTTPException(
-                    status_code=404,
-                    detail="The role you are trying to link to this user does not exist.",
-                )
-            roles.append(new_role)
-        updated_user.roles = roles
-    if user.parties != None:
-        parties: list = []
-        for party in user.parties:
-            new_party = db.query(Party).filter(Party.id == party).first()
-            if not new_party:
-                raise HTTPException(
-                    status_code=404,
-                    detail="The party you are trying to link to this user does not exist.",
-                )
-            parties.append(new_party)
-        updated_user.parties = parties
-    if user.characters != None:
-        characters: list[PlayerCharacter] = []
-        for character in user.characters:
-            new_character = (
-                db.query(PlayerCharacter)
-                .filter(PlayerCharacter.id == character)
-                .first()
+    try:
+        updated_user = db.query(User).filter(User.id == user_id).first()
+        if not updated_user:
+            raise HTTPException(
+                status_code=404,
+                detail="The user you are trying to update does not exist.",
             )
-            if not new_character:
-                raise HTTPException(
-                    status_code=404,
-                    detail="The character you are trying to link to this user does not exist.",
+        if user.name != None:
+            updated_user.name = user.name
+        if user.username != None:
+            updated_user.username = user.username
+        if user.roles != None:
+            roles: list = []
+            for role in user.roles:
+                new_role = db.query(Role).filter(Role.id == role).first()
+                if not new_role:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="The role you are trying to link to this user does not exist.",
+                    )
+                roles.append(new_role)
+            updated_user.roles = roles
+        if user.parties != None:
+            parties: list = []
+            for party in user.parties:
+                new_party = db.query(Party).filter(Party.id == party).first()
+                if not new_party:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="The party you are trying to link to this user does not exist.",
+                    )
+                parties.append(new_party)
+            updated_user.parties = parties
+        if user.characters != None:
+            characters: list[PlayerCharacter] = []
+            for character in user.characters:
+                new_character = (
+                    db.query(PlayerCharacter)
+                    .filter(PlayerCharacter.id == character)
+                    .first()
                 )
-            characters.append(new_character)
-        updated_user.characters = characters
-    db.commit()
-    return {
-        "message": f"User '{updated_user.name}' has been updated.",
-        "user": updated_user,
-    }
+                if not new_character:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="The character you are trying to link to this user does not exist.",
+                    )
+                characters.append(new_character)
+            updated_user.characters = characters
+        db.commit()
+        return {
+            "message": f"User '{updated_user.name}' has been updated.",
+            "user": updated_user,
+        }
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400, detail="The username you are trying to use already exists."
+        )
 
 
 @router.delete("/{user_id}")

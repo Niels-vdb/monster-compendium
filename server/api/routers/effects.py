@@ -57,19 +57,24 @@ def post_effect(effect: EffectPostBase, db: Session = Depends(get_db)):
 
 @router.put("/{effect_id}")
 def put_effect(effect_id: int, effect: EffectPutBase, db: Session = Depends(get_db)):
-    updated_effect = db.query(Effect).filter(Effect.id == effect_id).first()
-    if not updated_effect:
+    try:
+        updated_effect = db.query(Effect).filter(Effect.id == effect_id).first()
+        if not updated_effect:
+            raise HTTPException(
+                status_code=404,
+                detail="The effect you are trying to update does not exist.",
+            )
+        if effect.effect_name != None:
+            updated_effect.name = effect.effect_name
+        db.commit()
+        return {
+            "message": f"Effect '{updated_effect.name}' has been updated.",
+            "effect": updated_effect,
+        }
+    except IntegrityError as e:
         raise HTTPException(
-            status_code=404,
-            detail="The effect you are trying to update does not exist.",
+            status_code=400, detail="The name you are trying to use already exists."
         )
-    if effect.effect_name != None:
-        updated_effect.name = effect.effect_name
-    db.commit()
-    return {
-        "message": f"Effect '{updated_effect.name}' has been updated.",
-        "effect": updated_effect,
-    }
 
 
 @router.delete("/{effect_id}")

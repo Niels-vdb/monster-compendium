@@ -170,6 +170,25 @@ def test_user_username_put(create_user, db_session):
     }
 
 
+def test_user_duplicate_name_put(create_user, create_role, create_party, db_session):
+    user = User(
+        name="Duplicate",
+        username="duplicate",
+        roles=[create_role],
+        parties=[create_party],
+    )
+    db_session.add(user)
+    db_session.commit()
+    response = client.put(
+        f"/api/users/{user.id}",
+        json={"username": "Test"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The username you are trying to use already exists.",
+    }
+
+
 def test_user_name_put(create_user, db_session):
     response = client.put(
         f"/api/users/{create_user.id}",

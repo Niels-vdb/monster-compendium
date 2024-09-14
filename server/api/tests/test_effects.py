@@ -80,6 +80,20 @@ def test_effect_name_put(create_effect, db_session):
     }
 
 
+def test_effect_duplicate_name_put(create_effect, db_session):
+    effect = Effect(name="Slashing")
+    db_session.add(effect)
+    db_session.commit()
+    response = client.put(
+        f"/api/effects/{effect.id}",
+        json={"effect_name": "Fire"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_effect_fake_effect_put(create_race, create_effect, db_session):
     response = client.put(
         "/api/effects/2",

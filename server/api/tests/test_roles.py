@@ -85,6 +85,20 @@ def test_role_name_put(create_role, db_session):
     }
 
 
+def test_role_duplicate_name_put(create_role, db_session):
+    role = Role(name="Admin")
+    db_session.add(role)
+    db_session.commit()
+    response = client.put(
+        f"/api/roles/{role.id}",
+        json={"role_name": "Player"},
+    )
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "The name you are trying to use already exists.",
+    }
+
+
 def test_role_fake_role_put(create_race, create_role, db_session):
     response = client.put(
         "/api/roles/2",
