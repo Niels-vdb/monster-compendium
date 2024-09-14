@@ -25,7 +25,7 @@ class PCBase(BaseModel):
     information: str = None
     alive: bool = None
     active: bool = None
-    amour_class: int = None
+    armour_class: int = None
     image: bytes = None
 
     user_id: int
@@ -92,8 +92,8 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
         attributes["alive"] = pc.alive
     if pc.active:
         attributes["active"] = pc.active
-    if pc.amour_class:
-        attributes["amour_class"] = pc.amour_class
+    if pc.armour_class:
+        attributes["armour_class"] = pc.armour_class
     if pc.image:
         attributes["image"] = pc.image
     if pc.race:

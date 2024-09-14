@@ -25,7 +25,7 @@ class NPCBase(BaseModel):
     information: str = None
     alive: bool = None
     active: bool = None
-    amour_class: int = None
+    armour_class: int = None
     image: bytes = None
 
     race: int = None
@@ -91,8 +91,8 @@ def post_npc(npc: NPCBase, db: Session = Depends(get_db)):
         attributes["alive"] = npc.alive
     if npc.active:
         attributes["active"] = npc.active
-    if npc.amour_class:
-        attributes["amour_class"] = npc.amour_class
+    if npc.armour_class:
+        attributes["armour_class"] = npc.armour_class
     if npc.image:
         attributes["image"] = npc.image
     if npc.race:

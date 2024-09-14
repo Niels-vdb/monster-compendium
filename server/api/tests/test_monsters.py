@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from server.database.models.monsters import Monster
+
 from .conftest import app
 
 
@@ -81,9 +83,9 @@ def test_post_monster(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -101,19 +103,19 @@ def test_post_monster(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New monster 'Volothamp Geddarm' has been added to the database.",
+        "message": "New monster 'Giff' has been added to the database.",
         "monster": {
             "id": 1,
-            "name": "Volothamp Geddarm",
+            "name": "Giff",
             "size_id": 1,
-            "description": " Volo for short",
+            "description": " A large hippo like creature",
             "alive": True,
             "creature": "monsters",
             "active": True,
-            "armour_class": None,
+            "armour_class": 22,
             "image": None,
             "race": 1,
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "subrace": 1,
             "type_id": 1,
         },
@@ -134,9 +136,9 @@ def test_post_monster_fake_class(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -170,9 +172,9 @@ def test_post_monster_fake_subclass(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -206,9 +208,9 @@ def test_post_monster_fake_race(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -242,9 +244,9 @@ def test_post_monster_fake_subrace(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -278,9 +280,9 @@ def test_post_monster_fake_size(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -310,9 +312,9 @@ def test_post_monster_fake_type(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -342,9 +344,9 @@ def test_post_monster_fake_party(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -374,9 +376,9 @@ def test_post_monster_fake_resistance(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -406,9 +408,9 @@ def test_post_monster_fake_immunity(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -438,9 +440,9 @@ def test_post_monster_fake_vulnerabilities(
     response = client.post(
         "/api/monsters",
         json={
-            "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
+            "name": "Giff",
+            "description": " A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "alive": True,
             "active": True,
             "armour_class": 22,
@@ -454,3 +456,19 @@ def test_post_monster_fake_vulnerabilities(
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
+
+
+def test_monster_delete(create_monster, db_session):
+    response = client.delete(f"/api/monsters/{create_monster.id}")
+    monster = db_session.query(Monster).filter(Monster.id == create_monster.id).first()
+    assert response.status_code == 200
+    assert response.json() == {"message": "Monster has been deleted."}
+    assert monster == None
+
+
+def test_monster_fake_delete(create_monster, db_session):
+    response = client.delete(f"/api/monsters/2")
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "The monster you are trying to delete does not exist."
+    }

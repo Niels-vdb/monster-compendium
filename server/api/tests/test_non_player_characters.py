@@ -104,12 +104,6 @@ def test_post_npc(
     assert response.json() == {
         "message": "New npc 'Volothamp Geddarm' has been added to the database.",
         "npc_character": {
-            "active": True,
-            "creature": "npc_characters",
-            "armour_class": None,
-            "image": None,
-            "id": 1,
-            "race": 1,
             "information": "A widely traveled human wizard and sage of Faerûn.",
             "subrace": 1,
             "type_id": 1,
@@ -117,6 +111,12 @@ def test_post_npc(
             "size_id": 1,
             "description": " Volo for short",
             "alive": True,
+            "creature": "npc_characters",
+            "active": True,
+            "armour_class": 22,
+            "id": 1,
+            "image": None,
+            "race": 1,
         },
     }
 

@@ -201,7 +201,7 @@ def initialize_subclasses() -> None:
             "College of Creation",
             "College of Eloquence",
             "College of Epic Poetry",
-            "College of Glamour",
+            "College of Glarmour",
             "College of Lore",
             "College of Spirits",
             "College of Swords",
