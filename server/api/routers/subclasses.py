@@ -48,7 +48,7 @@ def get_subclass(subclass_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_class(subclass: SubclassPostBase, db: Session = Depends(get_db)):
+def post_subclass(subclass: SubclassPostBase, db: Session = Depends(get_db)):
     try:
         if not db.query(Class).filter(Class.id == subclass.class_id).first():
             raise HTTPException(
