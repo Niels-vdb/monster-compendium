@@ -9,7 +9,7 @@ from .. import get_db
 from server.database.models.base import Base
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NPCCharacter
+from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race, Subrace
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
@@ -146,14 +146,32 @@ def create_type(db_session):
 
 
 @pytest.fixture
-def create_npc(create_size, create_type, db_session):
+def create_npc(
+    create_size,
+    create_party,
+    create_class,
+    create_subclass,
+    create_effect,
+    create_type,
+    db_session,
+):
     npc = "Fersi (Oracle)"
     attributes: dict[str, Any] = {}
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
-    # attributes["parties"] = [create_party]
+    attributes["parties"] = [create_party]
+    attributes["description"] = "A demigod female."
+    attributes["information"] = "Some say she knows everything, but shares very little."
+    attributes["armour_class"] = 16
+    attributes["classes"] = [create_class]
+    attributes["subclasses"] = [create_subclass]
+    attributes["immunities"] = [create_effect]
+    attributes["resistances"] = [create_effect]
+    attributes["vulnerabilities"] = [create_effect]
+    attributes["size_id"] = create_size.id
+    attributes["type_id"] = create_type.id
 
-    new_npc = NPCCharacter(name=npc, **attributes)
+    new_npc = NonPlayerCharacter(name=npc, **attributes)
     db_session.add(new_npc)
     db_session.commit()
     return new_npc

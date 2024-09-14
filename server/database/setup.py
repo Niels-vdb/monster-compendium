@@ -4,7 +4,7 @@ from server.database.create import session
 from server.database.models.creatures import CreatureClasses
 from server.database.models.monsters import Monster
 from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NPCCharacter
+from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race, Subrace
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
@@ -699,7 +699,11 @@ def create_npcs() -> None:
     }
 
     for npc, attributes in npcs.items():
-        if not session.query(NPCCharacter).filter(NPCCharacter.name == npc).first():
+        if (
+            not session.query(NonPlayerCharacter)
+            .filter(NonPlayerCharacter.name == npc)
+            .first()
+        ):
             print(
                 f"Adding '{npc}' to npc_characters table in the database with the following attributes: {attributes}."
             )
@@ -722,7 +726,7 @@ def create_npcs() -> None:
                     for attribute in attributes["parties"]
                 ]
 
-            new_npc = NPCCharacter(name=npc, **attributes)
+            new_npc = NonPlayerCharacter(name=npc, **attributes)
             session.add(new_npc)
     session.commit()
 
