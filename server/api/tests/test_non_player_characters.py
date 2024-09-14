@@ -16,7 +16,7 @@ def test_get_npc_characters(create_npc, db_session):
     response = client.get("/api/non_player_characters")
     assert response.status_code == 200
     assert response.json() == {
-        "NPCs": [
+        "non_player_characters": [
             {
                 "information": "Some say she knows everything, but shares very little.",
                 "subrace": None,
@@ -109,7 +109,7 @@ def test_post_npc(
     assert response.status_code == 200
     assert response.json() == {
         "message": "New npc 'Volothamp Geddarm' has been added to the database.",
-        "NPC": {
+        "non_player_character": {
             "description": "Volo for short",
             "alive": True,
             "creature": "non_player_characters",
@@ -473,7 +473,7 @@ def test_npc_name_put(create_npc, db_session):
     assert npc.name == "Endofyre"
     assert response.json() == {
         "message": "NPC 'Endofyre' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Endofyre",
             "size_id": 1,
             "id": 1,
@@ -501,7 +501,7 @@ def test_npc_information_put(create_npc, db_session):
     assert npc.information == "Some new information about the big hippo."
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "size_id": 1,
             "id": 1,
@@ -529,7 +529,7 @@ def test_npc_description_put(create_npc, db_session):
     assert npc.description == "Something else about the hippo."
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "size_id": 1,
             "id": 1,
@@ -557,7 +557,7 @@ def test_npc_alive_put(create_npc, db_session):
     assert npc.alive == False
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "active": True,
             "creature": "non_player_characters",
             "armour_class": 16,
@@ -585,7 +585,7 @@ def test_npc_active_put(create_npc, db_session):
     assert npc.active == False
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "active": False,
             "creature": "non_player_characters",
             "armour_class": 16,
@@ -613,7 +613,7 @@ def test_npc_armour_class_put(create_npc, db_session):
     assert npc.armour_class == 20
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "active": True,
             "creature": "non_player_characters",
             "armour_class": 20,
@@ -642,7 +642,7 @@ def test_npc_race_put(create_npc, create_race, db_session):
     assert npc.race == race_id
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -679,7 +679,7 @@ def test_npc_subrace_put(create_npc, create_subrace, db_session):
     assert npc.subrace == subrace_id
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -719,7 +719,7 @@ def test_npc_size_put(create_npc, create_size, db_session):
     assert npc.size_id == size_id
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": size_id,
@@ -759,7 +759,7 @@ def test_npc_type_put(create_npc, create_type, db_session):
     assert npc.type_id == type_id
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -798,7 +798,7 @@ def test_npc_add_class_put(create_npc, create_class, db_session):
     assert len(npc.classes) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -826,7 +826,7 @@ def test_npc_remove_class_put(create_npc, create_class, db_session):
     assert len(npc.classes) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -866,7 +866,7 @@ def test_npc_add_subclass_put(create_npc, create_subclass, db_session):
     assert len(npc.subclasses) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -894,7 +894,7 @@ def test_npc_remove_subclass_put(create_npc, create_subclass, db_session):
     assert len(npc.subclasses) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -934,7 +934,7 @@ def test_npc_add_party_put(create_npc, create_party, db_session):
     assert len(npc.parties) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -962,7 +962,7 @@ def test_npc_remove_party_put(create_npc, create_party, db_session):
     assert len(npc.parties) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1002,7 +1002,7 @@ def test_npc_add_resistance_put(create_npc, db_session):
     assert len(npc.resistances) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1030,7 +1030,7 @@ def test_npc_remove_resistance_put(create_npc, db_session):
     assert len(npc.resistances) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1070,7 +1070,7 @@ def test_npc_add_vulnerability_put(create_npc, db_session):
     assert len(npc.vulnerabilities) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1098,7 +1098,7 @@ def test_npc_remove_vulnerability_put(create_npc, db_session):
     assert len(npc.vulnerabilities) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1138,7 +1138,7 @@ def test_npc_add_immunity_put(create_npc, db_session):
     assert len(npc.immunities) == 2
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,
@@ -1166,7 +1166,7 @@ def test_npc_remove_immunity_put(create_npc, db_session):
     assert len(npc.immunities) == 0
     assert response.json() == {
         "message": "NPC 'Fersi (Oracle)' has been updated.",
-        "NPC": {
+        "non_player_character": {
             "name": "Fersi (Oracle)",
             "id": 1,
             "size_id": 1,

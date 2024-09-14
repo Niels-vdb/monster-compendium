@@ -75,7 +75,7 @@ def get_npcs(db: Session = Depends(get_db)):
     npc_characters = db.query(NonPlayerCharacter).all()
     if not npc_characters:
         raise HTTPException(status_code=404, detail="No NPC's found.")
-    return {"NPCs": npc_characters}
+    return {"non_player_characters": npc_characters}
 
 
 @router.get("/{npc_id}")
@@ -215,7 +215,7 @@ def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
         db.refresh(new_npc)
         return {
             "message": f"New npc '{new_npc.name}' has been added to the database.",
-            "NPC": new_npc,
+            "non_player_character": new_npc,
         }
     except Exception as e:
         raise HTTPException(
@@ -369,7 +369,7 @@ def post_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
         db.commit()
         return {
             "message": f"NPC '{updated_npc.name}' has been updated.",
-            "NPC": updated_npc,
+            "non_player_character": updated_npc,
         }
     except IntegrityError as e:
         raise HTTPException(
