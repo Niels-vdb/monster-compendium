@@ -33,8 +33,8 @@ class PlayerCharacter(Creature):
         - vulnerabilities (List[Effect]): The effect(s) the creature is vulnerable to. Linked to actual model (optional).
     """
 
-    __tablename__ = "pc_characters"
-    __mapper_args__ = {"polymorphic_identity": "pc_characters"}
+    __tablename__ = "player_characters"
+    __mapper_args__ = {"polymorphic_identity": "player_characters"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 

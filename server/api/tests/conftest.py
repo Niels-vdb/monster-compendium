@@ -187,6 +187,7 @@ def create_pc(
     create_subrace,
     create_size,
     create_type,
+    create_effect,
     db_session,
 ):
     npc = "Rhoetus"
@@ -200,6 +201,9 @@ def create_pc(
     attributes["subclasses"] = [create_subclass]
     attributes["race"] = create_race.id
     attributes["subrace"] = create_subrace.id
+    attributes["immunities"] = [create_effect]
+    attributes["resistances"] = [create_effect]
+    attributes["vulnerabilities"] = [create_effect]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
