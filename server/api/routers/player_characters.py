@@ -27,6 +27,9 @@ class PCBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     user_id: int
@@ -50,6 +53,9 @@ class PCPutBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -92,6 +98,9 @@ def get_pc(pc_id: int, db: Session = Depends(get_db)):
         "alive": pc.alive,
         "active": pc.active,
         "armour_class": pc.armour_class,
+        "walking_speed": pc.walking_speed,
+        "swimming_speed": pc.swimming_speed,
+        "flying_speed": pc.flying_speed,
         "image": pc.image,
         "race": pc.race,
         "subrace": pc.subrace,
@@ -121,6 +130,12 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
         attributes["active"] = pc.active
     if pc.armour_class:
         attributes["armour_class"] = pc.armour_class
+    if pc.walking_speed:
+        attributes["walking_speed"] = pc.walking_speed
+    if pc.swimming_speed:
+        attributes["swimming_speed"] = pc.swimming_speed
+    if pc.flying_speed:
+        attributes["flying_speed"] = pc.flying_speed
     if pc.image:
         attributes["image"] = pc.image
     if pc.race:
@@ -225,7 +240,7 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{pc_id}")
-def post_pc(pc_id: str, pc: PCPutBase, db: Session = Depends(get_db)):
+def put_pc(pc_id: str, pc: PCPutBase, db: Session = Depends(get_db)):
     try:
         updated_pc = (
             db.query(PlayerCharacter).filter(PlayerCharacter.id == pc_id).first()
@@ -242,6 +257,12 @@ def post_pc(pc_id: str, pc: PCPutBase, db: Session = Depends(get_db)):
             updated_pc.active = pc.active
         if pc.armour_class:
             updated_pc.armour_class = pc.armour_class
+        if pc.walking_speed:
+            updated_pc.walking_speed = pc.walking_speed
+        if pc.swimming_speed:
+            updated_pc.swimming_speed = pc.swimming_speed
+        if pc.flying_speed:
+            updated_pc.flying_speed = pc.flying_speed
         if pc.image:
             updated_pc.image = pc.image
         if pc.race:

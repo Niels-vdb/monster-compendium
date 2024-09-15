@@ -28,6 +28,9 @@ class MonsterPostBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -50,6 +53,9 @@ class MonsterPutBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -92,6 +98,9 @@ def get_monster(monster_id: int, db: Session = Depends(get_db)):
         "alive": monster.alive,
         "active": monster.active,
         "armour_class": monster.armour_class,
+        "walking_speed": monster.walking_speed,
+        "swimming_speed": monster.swimming_speed,
+        "flying_speed": monster.flying_speed,
         "image": monster.image,
         "race": monster.race,
         "subrace": monster.subrace,
@@ -120,6 +129,12 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
         attributes["active"] = monster.active
     if monster.armour_class:
         attributes["armour_class"] = monster.armour_class
+    if monster.walking_speed:
+        attributes["walking_speed"] = monster.walking_speed
+    if monster.swimming_speed:
+        attributes["swimming_speed"] = monster.swimming_speed
+    if monster.flying_speed:
+        attributes["flying_speed"] = monster.flying_speed
     if monster.image:
         attributes["image"] = monster.image
     if monster.race:
@@ -225,7 +240,7 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{monster_id}")
-def post_monster(
+def put_monster(
     monster_id: str, monster: MonsterPutBase, db: Session = Depends(get_db)
 ):
     try:
@@ -242,6 +257,12 @@ def post_monster(
             updated_monster.active = monster.active
         if monster.armour_class:
             updated_monster.armour_class = monster.armour_class
+        if monster.walking_speed:
+            updated_monster.walking_speed = monster.walking_speed
+        if monster.swimming_speed:
+            updated_monster.swimming_speed = monster.swimming_speed
+        if monster.flying_speed:
+            updated_monster.flying_speed = monster.flying_speed
         if monster.image:
             updated_monster.image = monster.image
         if monster.race:

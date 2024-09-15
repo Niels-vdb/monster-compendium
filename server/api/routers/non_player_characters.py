@@ -27,6 +27,9 @@ class NPCPostBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -49,6 +52,9 @@ class NPCPutBase(BaseModel):
     alive: bool = None
     active: bool = None
     armour_class: int = None
+    walking_speed: int = None
+    swimming_speed: int = None
+    flying_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -91,6 +97,9 @@ def get_npc(npc_id: int, db: Session = Depends(get_db)):
         "active": npc.active,
         "alive": npc.alive,
         "armour_class": npc.armour_class,
+        "walking_speed": npc.walking_speed,
+        "swimming_speed": npc.swimming_speed,
+        "swimming_speed": npc.swimming_speed,
         "image": npc.image,
         "race": npc.race,
         "subrace": npc.subrace,
@@ -120,6 +129,12 @@ def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
         attributes["active"] = npc.active
     if npc.armour_class:
         attributes["armour_class"] = npc.armour_class
+    if npc.walking_speed:
+        attributes["walking_speed"] = npc.walking_speed
+    if npc.swimming_speed:
+        attributes["swimming_speed"] = npc.swimming_speed
+    if npc.flying_speed:
+        attributes["flying_speed"] = npc.flying_speed
     if npc.image:
         attributes["image"] = npc.image
     if npc.race:
@@ -224,7 +239,7 @@ def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{npc_id}")
-def post_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
+def put_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
     try:
         updated_npc = (
             db.query(NonPlayerCharacter).filter(NonPlayerCharacter.id == npc_id).first()
@@ -241,6 +256,12 @@ def post_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
             updated_npc.active = npc.active
         if npc.armour_class:
             updated_npc.armour_class = npc.armour_class
+        if npc.walking_speed:
+            updated_npc.walking_speed = npc.walking_speed
+        if npc.flying_speed:
+            updated_npc.flying_speed = npc.flying_speed
+        if npc.swimming_speed:
+            updated_npc.swimming_speed = npc.swimming_speed
         if npc.image:
             updated_npc.image = npc.image
         if npc.race:

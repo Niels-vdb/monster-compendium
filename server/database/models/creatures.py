@@ -38,6 +38,9 @@ class Creature(Base):
     alive = Column(Boolean, nullable=False, default=True)
     active = Column(Boolean, nullable=False, default=True)
     armour_class = Column(Integer, nullable=True)
+    walking_speed = Column(Integer, nullable=True)
+    swimming_speed = Column(Integer, nullable=True)
+    flying_speed = Column(Integer, nullable=True)
     image = Column(BLOB, nullable=True)
 
     # 1-n relationships

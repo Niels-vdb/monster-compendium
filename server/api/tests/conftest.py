@@ -163,6 +163,9 @@ def create_npc(
     attributes["description"] = "A demigod female."
     attributes["information"] = "Some say she knows everything, but shares very little."
     attributes["armour_class"] = 16
+    attributes["walking_speed"] = 30
+    attributes["swimming_speed"] = 25
+    attributes["flying_speed"] = 5
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
     attributes["immunities"] = [create_effect]
@@ -190,13 +193,16 @@ def create_pc(
     create_effect,
     db_session,
 ):
-    npc = "Rhoetus"
+    pc = "Rhoetus"
     attributes: dict[str, Any] = {}
     attributes["user"] = create_user
     attributes["parties"] = [create_party]
     attributes["description"] = "A centaur barbarian."
     attributes["information"] = "Some information about Rhoetus."
     attributes["armour_class"] = 17
+    attributes["walking_speed"] = 40
+    attributes["swimming_speed"] = 10
+    attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
     attributes["race"] = create_race.id
@@ -207,7 +213,7 @@ def create_pc(
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
-    new_pc = PlayerCharacter(name=npc, **attributes)
+    new_pc = PlayerCharacter(name=pc, **attributes)
     db_session.add(new_pc)
     db_session.commit()
     return new_pc
@@ -231,6 +237,9 @@ def create_monster(
         "Some information about this big hippo, like his knowledge about firearms."
     )
     attributes["armour_class"] = 16
+    attributes["walking_speed"] = 30
+    attributes["swimming_speed"] = 20
+    attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
     attributes["immunities"] = [create_effect]
