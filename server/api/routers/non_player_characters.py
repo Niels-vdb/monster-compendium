@@ -15,7 +15,7 @@ from server.database.models.users import Party
 
 router = APIRouter(
     prefix="/api/non_player_characters",
-    tags=["Non PLayer Characters"],
+    tags=["Non Player Characters"],
     responses={404: {"description": "Not found."}},
 )
 
