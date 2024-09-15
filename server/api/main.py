@@ -30,11 +30,11 @@ tags_metadata = [
         "description": "All operations with monsters can be done here.",
     },
     {
-        "name": "NPC characters",
+        "name": "Non Player Characters",
         "description": "All operations with NPC characters can be done here.",
     },
     {
-        "name": "PC characters",
+        "name": "Player Characters",
         "description": "All operations with PC characters can be done here.",
     },
     {
