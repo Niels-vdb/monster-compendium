@@ -119,6 +119,7 @@ class CreatureResistances(Base):
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
     effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    condition = Column("condition", String(100))
 
 
 class CreatureImmunities(Base):
@@ -131,6 +132,7 @@ class CreatureImmunities(Base):
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
     effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    condition = Column("condition", String(100))
 
 
 class CreatureVulnerabilities(Base):
@@ -143,3 +145,4 @@ class CreatureVulnerabilities(Base):
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
     effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    condition = Column("condition", String(100))

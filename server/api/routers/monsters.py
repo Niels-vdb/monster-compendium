@@ -2,6 +2,7 @@ from typing import Annotated, Any
 from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -9,6 +10,11 @@ from server.api import get_db
 
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
+from server.database.models.creatures import (
+    CreatureImmunities,
+    CreatureResistances,
+    CreatureVulnerabilities,
+)
 from server.database.models.effects import Effect
 from server.database.models.monsters import Monster
 from server.database.models.races import Race, Subrace
@@ -19,6 +25,17 @@ router = APIRouter(
     tags=["Monsters"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class PostEffect(BaseModel):
+    effect_id: int
+    condition: str
+
+
+class PutEffect(BaseModel):
+    effect_id: int
+    condition: str = None
+    add_effect: bool
 
 
 class MonsterPostBase(BaseModel):
@@ -41,9 +58,9 @@ class MonsterPostBase(BaseModel):
     parties: list[int] = None
     classes: list[int] = None
     subclasses: list[int] = None
-    immunities: list[int] = None
-    resistances: list[int] = None
-    vulnerabilities: list[int] = None
+    immunities: list[PostEffect] = None
+    resistances: list[PostEffect] = None
+    vulnerabilities: list[PostEffect] = None
 
 
 class MonsterPutBase(BaseModel):
@@ -69,12 +86,9 @@ class MonsterPutBase(BaseModel):
     add_subclass: bool = None
     parties: list[int] = None
     add_parties: bool = None
-    immunities: list[int] = None
-    add_immunities: bool = None
-    resistances: list[int] = None
-    add_resistances: bool = None
-    vulnerabilities: list[int] = None
-    add_vulnerabilities: bool = None
+    immunities: list[PutEffect] = None
+    resistances: list[PutEffect] = None
+    vulnerabilities: list[PutEffect] = None
 
 
 @router.get("/")
@@ -194,41 +208,59 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=404, detail="Subclass with this id does not exist."
                 )
-    if monster.immunities:
-        attributes["immunities"] = [
-            db.query(Effect).filter(Effect.id == immunity).first()
-            for immunity in monster.immunities
-        ]
-        for value in attributes["immunities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if monster.resistances:
-        attributes["resistances"] = [
-            db.query(Effect).filter(Effect.id == resistance).first()
-            for resistance in monster.resistances
-        ]
-        for value in attributes["resistances"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if monster.vulnerabilities:
-        attributes["vulnerabilities"] = [
-            db.query(Effect).filter(Effect.id == vulnerability).first()
-            for vulnerability in monster.vulnerabilities
-        ]
-        for value in attributes["vulnerabilities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
     try:
         new_monster = Monster(name=monster.name, **attributes)
         db.add(new_monster)
         db.commit()
         db.refresh(new_monster)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
+        )
+
+    if monster.immunities:
+        for immunity in monster.immunities:
+            effect = db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            monster_immunity = CreatureImmunities(
+                creature_id=new_monster.id,
+                effect_id=effect.id,
+                condition=immunity.condition,
+            )
+            db.add(monster_immunity)
+    if monster.resistances:
+        for resistance in monster.resistances:
+            effect = db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            monster_resistance = CreatureResistances(
+                creature_id=new_monster.id,
+                effect_id=effect.id,
+                condition=resistance.condition,
+            )
+            db.add(monster_resistance)
+    if monster.vulnerabilities:
+        for vulnerability in monster.vulnerabilities:
+            effect = (
+                db.query(Effect).filter(Effect.id == vulnerability.effect_id).first()
+            )
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            monster_vulnerability = CreatureVulnerabilities(
+                creature_id=new_monster.id,
+                effect_id=effect.id,
+                condition=vulnerability.condition,
+            )
+            db.add(monster_vulnerability)
+    try:
+        db.commit()
         return {
             "message": f"New monster '{new_monster.name}' has been added to the database.",
             "monster": new_monster,
@@ -342,53 +374,91 @@ def put_monster(
                     if party in updated_monster.parties:
                         updated_monster.parties.remove(party)
         if monster.immunities:
-            immunities = [
-                db.query(Effect).filter(Effect.id == immunity).first()
-                for immunity in monster.immunities
-            ]
-            for immunity in immunities:
-                if immunity == None:
+            for immunity in monster.immunities:
+                effect = (
+                    db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if monster.add_immunities:
-                updated_monster.immunities += immunities
-            else:
-                for immunity in immunities:
-                    if immunity in updated_monster.immunities:
-                        updated_monster.immunities.remove(immunity)
+                elif immunity.add_effect:
+                    new_immunity = CreatureImmunities(
+                        creature_id=monster_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_immunity)
+                else:
+                    old_immunity = (
+                        db.query(CreatureImmunities)
+                        .filter(
+                            and_(
+                                CreatureImmunities.creature_id == monster_id,
+                                CreatureImmunities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_immunity)
         if monster.resistances:
-            resistances = [
-                db.query(Effect).filter(Effect.id == resistance).first()
-                for resistance in monster.resistances
-            ]
-            for resistance in resistances:
-                if resistance == None:
+            for resistance in monster.resistances:
+                effect = (
+                    db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if monster.add_resistances:
-                updated_monster.resistances += resistances
-            else:
-                for resistance in resistances:
-                    if resistance in updated_monster.resistances:
-                        updated_monster.resistances.remove(resistance)
+                elif resistance.add_effect:
+                    new_resistance = CreatureResistances(
+                        creature_id=monster_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_resistance)
+                else:
+                    old_resistance = (
+                        db.query(CreatureResistances)
+                        .filter(
+                            and_(
+                                CreatureResistances.creature_id == monster_id,
+                                CreatureResistances.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_resistance)
         if monster.vulnerabilities:
-            vulnerabilities = [
-                db.query(Effect).filter(Effect.id == vulnerability).first()
-                for vulnerability in monster.vulnerabilities
-            ]
-            for vulnerability in vulnerabilities:
-                if vulnerability == None:
+            for vulnerability in monster.vulnerabilities:
+                effect = (
+                    db.query(Effect)
+                    .filter(Effect.id == vulnerability.effect_id)
+                    .first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if monster.add_vulnerabilities:
-                updated_monster.vulnerabilities += vulnerabilities
-            else:
-                for vulnerability in vulnerabilities:
-                    if vulnerability in updated_monster.vulnerabilities:
-                        updated_monster.vulnerabilities.remove(vulnerability)
+                elif vulnerability.add_effect:
+                    new_vulnerability = CreatureVulnerabilities(
+                        creature_id=monster_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_vulnerability)
+                else:
+                    old_vulnerability = (
+                        db.query(CreatureVulnerabilities)
+                        .filter(
+                            and_(
+                                CreatureVulnerabilities.creature_id == monster_id,
+                                CreatureVulnerabilities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_vulnerability)
         db.commit()
         return {
             "message": f"Monster '{updated_monster.name}' has been updated.",

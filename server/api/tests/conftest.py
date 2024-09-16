@@ -3,6 +3,12 @@ import pytest
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from server.database.models.creatures import (
+    CreatureImmunities,
+    CreatureResistances,
+    CreatureVulnerabilities,
+)
+
 from ..main import app
 from .. import get_db
 
@@ -242,13 +248,25 @@ def create_monster(
     attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
-    attributes["immunities"] = [create_effect]
-    attributes["resistances"] = [create_effect]
-    attributes["vulnerabilities"] = [create_effect]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
     new_monster = Monster(name=monster, **attributes)
     db_session.add(new_monster)
+    db_session.commit()
+    immunity = CreatureImmunities(
+        creature_id=new_monster.id, effect_id=create_effect.id, condition="When in rage"
+    )
+    resistance = CreatureResistances(
+        creature_id=new_monster.id,
+        effect_id=create_effect.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_monster.id,
+        effect_id=create_effect.id,
+        condition="When wearing armour",
+    )
+    db_session.add_all([immunity, resistance, vulnerability])
     db_session.commit()
     return new_monster

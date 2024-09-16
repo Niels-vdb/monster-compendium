@@ -108,9 +108,9 @@ def test_post_monster(
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
+            "resistances": [{"effect_id": 1, "condition": "When in rage"}],
+            "immunities": [{"effect_id": 1, "condition": "When in rage"}],
+            "vulnerabilities": [{"effect_id": 1, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 200
@@ -139,34 +139,13 @@ def test_post_monster(
 
 def test_post_monster_fake_class(
     create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
             "classes": [2],
-            "subclasses": [1],
-            "race": 1,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -174,35 +153,14 @@ def test_post_monster_fake_class(
 
 
 def test_post_monster_fake_subclass(
-    create_class,
     create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
             "subclasses": [2],
-            "race": 1,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -210,35 +168,14 @@ def test_post_monster_fake_subclass(
 
 
 def test_post_monster_fake_race(
-    create_class,
-    create_subclass,
     create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
-            "subclasses": [1],
             "race": 2,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -246,35 +183,15 @@ def test_post_monster_fake_race(
 
 
 def test_post_monster_fake_subrace(
-    create_class,
-    create_subclass,
-    create_race,
     create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
-            "subclasses": [1],
             "race": 1,
             "subrace": 2,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -282,31 +199,14 @@ def test_post_monster_fake_subrace(
 
 
 def test_post_monster_fake_size(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
     create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
             "size_id": 2,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -314,31 +214,14 @@ def test_post_monster_fake_size(
 
 
 def test_post_monster_fake_type(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
     create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
             "type_id": 2,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -346,31 +229,14 @@ def test_post_monster_fake_type(
 
 
 def test_post_monster_fake_party(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
     create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
             "parties": [2],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -378,13 +244,6 @@ def test_post_monster_fake_party(
 
 
 def test_post_monster_fake_resistance(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -392,17 +251,7 @@ def test_post_monster_fake_resistance(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [2],
-            "immunities": [1],
-            "vulnerabilities": [1],
+            "resistances": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -410,13 +259,6 @@ def test_post_monster_fake_resistance(
 
 
 def test_post_monster_fake_immunity(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -424,17 +266,7 @@ def test_post_monster_fake_immunity(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [2],
-            "vulnerabilities": [1],
+            "immunities": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -442,13 +274,6 @@ def test_post_monster_fake_immunity(
 
 
 def test_post_monster_fake_vulnerabilities(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -456,17 +281,7 @@ def test_post_monster_fake_vulnerabilities(
         "/api/monsters",
         json={
             "name": "Giff",
-            "description": " A large hippo like creature",
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [2],
+            "vulnerabilities": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -529,12 +344,27 @@ def test_monster_add_put(
             "add_subclass": True,
             "parties": [2],
             "add_parties": True,
-            "resistances": [2],
-            "add_resistances": True,
-            "vulnerabilities": [2],
-            "add_vulnerabilities": True,
-            "immunities": [2],
-            "add_immunities": True,
+            "resistances": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
+            "immunities": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
+            "vulnerabilities": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
         },
     )
     monster = db_session.query(Monster).first()
@@ -622,12 +452,24 @@ def test_monster_remove_put(
             "add_subclass": False,
             "parties": [1],
             "add_parties": False,
-            "resistances": [1],
-            "add_resistances": False,
-            "vulnerabilities": [1],
-            "add_vulnerabilities": False,
-            "immunities": [1],
-            "add_immunities": False,
+            "resistances": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
+            "immunities": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
+            "vulnerabilities": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
         },
     )
     monster = db_session.query(Monster).first()
@@ -728,7 +570,14 @@ def test_monster_fake_part_put(create_monster, db_session):
 def test_monster_fake_resistance_put(create_monster, db_session):
     response = client.put(
         f"/api/monsters/{create_monster.id}",
-        json={"resistances": [3], "add_resistances": False},
+        json={
+            "resistances": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
@@ -737,7 +586,14 @@ def test_monster_fake_resistance_put(create_monster, db_session):
 def test_monster_fake_vulnerability_put(create_monster, db_session):
     response = client.put(
         f"/api/monsters/{create_monster.id}",
-        json={"vulnerabilities": [3], "add_vulnerabilities": False},
+        json={
+            "vulnerabilities": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
@@ -746,7 +602,14 @@ def test_monster_fake_vulnerability_put(create_monster, db_session):
 def test_monster_fake_immunity_put(create_monster, db_session):
     response = client.put(
         f"/api/monsters/{create_monster.id}",
-        json={"immunities": [3], "add_immunities": False},
+        json={
+            "immunities": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
