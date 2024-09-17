@@ -2,12 +2,19 @@ from typing import Annotated, Any
 from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.creatures import CreaturePostBase, CreaturePutBase
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
+from server.database.models.creatures import (
+    CreatureImmunities,
+    CreatureResistances,
+    CreatureVulnerabilities,
+)
 from server.database.models.effects import Effect
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.races import Race, Subrace
@@ -20,61 +27,8 @@ router = APIRouter(
 )
 
 
-class PCBase(BaseModel):
-    name: Annotated[str, Field(min_length=1)]
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    image: bytes = None
-
+class PCPostBase(CreaturePostBase):
     user_id: int
-    race: int = None
-    subrace: int = None
-    size_id: int = None
-    type_id: int = None
-
-    parties: list[int] = None
-    classes: list[int] = None
-    subclasses: list[int] = None
-    immunities: list[int] = None
-    resistances: list[int] = None
-    vulnerabilities: list[int] = None
-
-
-class PCPutBase(BaseModel):
-    name: str = None
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    image: bytes = None
-
-    race: int = None
-    subrace: int = None
-    size_id: int = None
-    type_id: int = None
-
-    classes: list[int] = None
-    add_class: bool = None
-    subclasses: list[int] = None
-    add_subclass: bool = None
-    parties: list[int] = None
-    add_parties: bool = None
-    immunities: list[int] = None
-    add_immunities: bool = None
-    resistances: list[int] = None
-    add_resistances: bool = None
-    vulnerabilities: list[int] = None
-    add_vulnerabilities: bool = None
 
 
 @router.get("/")
@@ -117,7 +71,7 @@ def get_pc(pc_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_pc(pc: PCBase, db: Session = Depends(get_db)):
+def post_pc(pc: PCPostBase, db: Session = Depends(get_db)):
     attributes: dict[str, Any] = {}
 
     if pc.description:
@@ -194,41 +148,60 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=404, detail="Subclass with this id does not exist."
                 )
-    if pc.immunities:
-        attributes["immunities"] = [
-            db.query(Effect).filter(Effect.id == immunity).first()
-            for immunity in pc.immunities
-        ]
-        for value in attributes["immunities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if pc.resistances:
-        attributes["resistances"] = [
-            db.query(Effect).filter(Effect.id == resistance).first()
-            for resistance in pc.resistances
-        ]
-        for value in attributes["resistances"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if pc.vulnerabilities:
-        attributes["vulnerabilities"] = [
-            db.query(Effect).filter(Effect.id == vulnerability).first()
-            for vulnerability in pc.vulnerabilities
-        ]
-        for value in attributes["vulnerabilities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
     try:
         new_pc = PlayerCharacter(name=pc.name, user_id=pc.user_id, **attributes)
         db.add(new_pc)
         db.commit()
         db.refresh(new_pc)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
+        )
+
+    if pc.immunities:
+        for immunity in pc.immunities:
+            effect = db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            pc_immunity = CreatureImmunities(
+                creature_id=new_pc.id,
+                effect_id=effect.id,
+                condition=immunity.condition,
+            )
+            db.add(pc_immunity)
+    if pc.resistances:
+        for resistance in pc.resistances:
+            effect = db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            pc_resistance = CreatureResistances(
+                creature_id=new_pc.id,
+                effect_id=effect.id,
+                condition=resistance.condition,
+            )
+            db.add(pc_resistance)
+    if pc.vulnerabilities:
+        for vulnerability in pc.vulnerabilities:
+            effect = (
+                db.query(Effect).filter(Effect.id == vulnerability.effect_id).first()
+            )
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            pc_vulnerability = CreatureVulnerabilities(
+                creature_id=new_pc.id,
+                effect_id=effect.id,
+                condition=vulnerability.condition,
+            )
+            db.add(pc_vulnerability)
+
+    try:
+        db.commit()
         return {
             "message": f"New player character '{new_pc.name}' has been added to the database.",
             "player_character": new_pc,
@@ -240,7 +213,7 @@ def post_pc(pc: PCBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{pc_id}")
-def put_pc(pc_id: str, pc: PCPutBase, db: Session = Depends(get_db)):
+def put_pc(pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)):
     try:
         updated_pc = (
             db.query(PlayerCharacter).filter(PlayerCharacter.id == pc_id).first()
@@ -341,53 +314,91 @@ def put_pc(pc_id: str, pc: PCPutBase, db: Session = Depends(get_db)):
                     if party in updated_pc.parties:
                         updated_pc.parties.remove(party)
         if pc.immunities:
-            immunities = [
-                db.query(Effect).filter(Effect.id == immunity).first()
-                for immunity in pc.immunities
-            ]
-            for immunity in immunities:
-                if immunity == None:
+            for immunity in pc.immunities:
+                effect = (
+                    db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if pc.add_immunities:
-                updated_pc.immunities += immunities
-            else:
-                for immunity in immunities:
-                    if immunity in updated_pc.immunities:
-                        updated_pc.immunities.remove(immunity)
+                elif immunity.add_effect:
+                    new_immunity = CreatureImmunities(
+                        creature_id=pc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_immunity)
+                else:
+                    old_immunity = (
+                        db.query(CreatureImmunities)
+                        .filter(
+                            and_(
+                                CreatureImmunities.creature_id == pc_id,
+                                CreatureImmunities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_immunity)
         if pc.resistances:
-            resistances = [
-                db.query(Effect).filter(Effect.id == resistance).first()
-                for resistance in pc.resistances
-            ]
-            for resistance in resistances:
-                if resistance == None:
+            for resistance in pc.resistances:
+                effect = (
+                    db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if pc.add_resistances:
-                updated_pc.resistances += resistances
-            else:
-                for resistance in resistances:
-                    if resistance in updated_pc.resistances:
-                        updated_pc.resistances.remove(resistance)
+                elif resistance.add_effect:
+                    new_resistance = CreatureResistances(
+                        creature_id=pc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_resistance)
+                else:
+                    old_resistance = (
+                        db.query(CreatureResistances)
+                        .filter(
+                            and_(
+                                CreatureResistances.creature_id == pc_id,
+                                CreatureResistances.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_resistance)
         if pc.vulnerabilities:
-            vulnerabilities = [
-                db.query(Effect).filter(Effect.id == vulnerability).first()
-                for vulnerability in pc.vulnerabilities
-            ]
-            for vulnerability in vulnerabilities:
-                if vulnerability == None:
+            for vulnerability in pc.vulnerabilities:
+                effect = (
+                    db.query(Effect)
+                    .filter(Effect.id == vulnerability.effect_id)
+                    .first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if pc.add_vulnerabilities:
-                updated_pc.vulnerabilities += vulnerabilities
-            else:
-                for vulnerability in vulnerabilities:
-                    if vulnerability in updated_pc.vulnerabilities:
-                        updated_pc.vulnerabilities.remove(vulnerability)
+                elif vulnerability.add_effect:
+                    new_vulnerability = CreatureVulnerabilities(
+                        creature_id=pc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_vulnerability)
+                else:
+                    old_vulnerability = (
+                        db.query(CreatureVulnerabilities)
+                        .filter(
+                            and_(
+                                CreatureVulnerabilities.creature_id == pc_id,
+                                CreatureVulnerabilities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_vulnerability)
         db.commit()
         return {
             "message": f"Player character '{updated_pc.name}' has been updated.",

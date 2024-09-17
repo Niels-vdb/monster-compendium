@@ -2,12 +2,19 @@ from typing import Annotated, Any
 from pydantic import BaseModel, Field
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.creatures import CreaturePostBase, CreaturePutBase
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
+from server.database.models.creatures import (
+    CreatureImmunities,
+    CreatureResistances,
+    CreatureVulnerabilities,
+)
 from server.database.models.effects import Effect
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race, Subrace
@@ -18,62 +25,6 @@ router = APIRouter(
     tags=["Non Player Characters"],
     responses={404: {"description": "Not found."}},
 )
-
-
-class NPCPostBase(BaseModel):
-    name: Annotated[str, Field(min_length=1)]
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    image: bytes = None
-
-    race: int = None
-    subrace: int = None
-    size_id: int = None
-    type_id: int = None
-
-    parties: list[int] = None
-    classes: list[int] = None
-    subclasses: list[int] = None
-    immunities: list[int] = None
-    resistances: list[int] = None
-    vulnerabilities: list[int] = None
-
-
-class NPCPutBase(BaseModel):
-    name: str = None
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    image: bytes = None
-
-    race: int = None
-    subrace: int = None
-    size_id: int = None
-    type_id: int = None
-
-    classes: list[int] = None
-    add_class: bool = None
-    subclasses: list[int] = None
-    add_subclass: bool = None
-    parties: list[int] = None
-    add_parties: bool = None
-    immunities: list[int] = None
-    add_immunities: bool = None
-    resistances: list[int] = None
-    add_resistances: bool = None
-    vulnerabilities: list[int] = None
-    add_vulnerabilities: bool = None
 
 
 @router.get("/")
@@ -116,7 +67,7 @@ def get_npc(npc_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/")
-def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
+def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)):
     attributes: dict[str, Any] = {}
 
     if npc.description:
@@ -193,44 +144,62 @@ def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=404, detail="Subclass with this id does not exist."
                 )
-    if npc.immunities:
-        attributes["immunities"] = [
-            db.query(Effect).filter(Effect.id == immunity).first()
-            for immunity in npc.immunities
-        ]
-        for value in attributes["immunities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if npc.resistances:
-        attributes["resistances"] = [
-            db.query(Effect).filter(Effect.id == resistance).first()
-            for resistance in npc.resistances
-        ]
-        for value in attributes["resistances"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
-    if npc.vulnerabilities:
-        attributes["vulnerabilities"] = [
-            db.query(Effect).filter(Effect.id == vulnerability).first()
-            for vulnerability in npc.vulnerabilities
-        ]
-        for value in attributes["vulnerabilities"]:
-            if value == None:
-                raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
-                )
     try:
         new_npc = NonPlayerCharacter(name=npc.name, **attributes)
         db.add(new_npc)
         db.commit()
         db.refresh(new_npc)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
+        )
+
+    if npc.immunities:
+        for immunity in npc.immunities:
+            effect = db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            npc_immunity = CreatureImmunities(
+                creature_id=new_npc.id,
+                effect_id=effect.id,
+                condition=immunity.condition,
+            )
+            db.add(npc_immunity)
+    if npc.resistances:
+        for resistance in npc.resistances:
+            effect = db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            npc_resistance = CreatureResistances(
+                creature_id=new_npc.id,
+                effect_id=effect.id,
+                condition=resistance.condition,
+            )
+            db.add(npc_resistance)
+    if npc.vulnerabilities:
+        for vulnerability in npc.vulnerabilities:
+            effect = (
+                db.query(Effect).filter(Effect.id == vulnerability.effect_id).first()
+            )
+            if not effect:
+                raise HTTPException(
+                    status_code=404, detail="Effect with this id does not exist."
+                )
+            npc_vulnerability = CreatureVulnerabilities(
+                creature_id=new_npc.id,
+                effect_id=effect.id,
+                condition=vulnerability.condition,
+            )
+            db.add(npc_vulnerability)
+    try:
+        db.commit()
         return {
             "message": f"New npc '{new_npc.name}' has been added to the database.",
-            "non_player_character": new_npc,
+            "npc": new_npc,
         }
     except Exception as e:
         raise HTTPException(
@@ -239,7 +208,7 @@ def post_npc(npc: NPCPostBase, db: Session = Depends(get_db)):
 
 
 @router.put("/{npc_id}")
-def put_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
+def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
     try:
         updated_npc = (
             db.query(NonPlayerCharacter).filter(NonPlayerCharacter.id == npc_id).first()
@@ -340,53 +309,91 @@ def put_npc(npc_id: str, npc: NPCPutBase, db: Session = Depends(get_db)):
                     if party in updated_npc.parties:
                         updated_npc.parties.remove(party)
         if npc.immunities:
-            immunities = [
-                db.query(Effect).filter(Effect.id == immunity).first()
-                for immunity in npc.immunities
-            ]
-            for immunity in immunities:
-                if immunity == None:
+            for immunity in npc.immunities:
+                effect = (
+                    db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if npc.add_immunities:
-                updated_npc.immunities += immunities
-            else:
-                for immunity in immunities:
-                    if immunity in updated_npc.immunities:
-                        updated_npc.immunities.remove(immunity)
+                elif immunity.add_effect:
+                    new_immunity = CreatureImmunities(
+                        creature_id=npc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_immunity)
+                else:
+                    old_immunity = (
+                        db.query(CreatureImmunities)
+                        .filter(
+                            and_(
+                                CreatureImmunities.creature_id == npc_id,
+                                CreatureImmunities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_immunity)
         if npc.resistances:
-            resistances = [
-                db.query(Effect).filter(Effect.id == resistance).first()
-                for resistance in npc.resistances
-            ]
-            for resistance in resistances:
-                if resistance == None:
+            for resistance in npc.resistances:
+                effect = (
+                    db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if npc.add_resistances:
-                updated_npc.resistances += resistances
-            else:
-                for resistance in resistances:
-                    if resistance in updated_npc.resistances:
-                        updated_npc.resistances.remove(resistance)
+                elif resistance.add_effect:
+                    new_resistance = CreatureResistances(
+                        creature_id=npc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_resistance)
+                else:
+                    old_resistance = (
+                        db.query(CreatureResistances)
+                        .filter(
+                            and_(
+                                CreatureResistances.creature_id == npc_id,
+                                CreatureResistances.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_resistance)
         if npc.vulnerabilities:
-            vulnerabilities = [
-                db.query(Effect).filter(Effect.id == vulnerability).first()
-                for vulnerability in npc.vulnerabilities
-            ]
-            for vulnerability in vulnerabilities:
-                if vulnerability == None:
+            for vulnerability in npc.vulnerabilities:
+                effect = (
+                    db.query(Effect)
+                    .filter(Effect.id == vulnerability.effect_id)
+                    .first()
+                )
+                if not effect:
                     raise HTTPException(
                         status_code=404, detail="Effect with this id does not exist."
                     )
-            if npc.add_vulnerabilities:
-                updated_npc.vulnerabilities += vulnerabilities
-            else:
-                for vulnerability in vulnerabilities:
-                    if vulnerability in updated_npc.vulnerabilities:
-                        updated_npc.vulnerabilities.remove(vulnerability)
+                elif vulnerability.add_effect:
+                    new_vulnerability = CreatureVulnerabilities(
+                        creature_id=npc_id,
+                        effect_id=effect.id,
+                        condition=immunity.condition,
+                    )
+                    db.add(new_vulnerability)
+                else:
+                    old_vulnerability = (
+                        db.query(CreatureVulnerabilities)
+                        .filter(
+                            and_(
+                                CreatureVulnerabilities.creature_id == npc_id,
+                                CreatureVulnerabilities.effect_id == effect.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_vulnerability)
         db.commit()
         return {
             "message": f"NPC '{updated_npc.name}' has been updated.",

@@ -174,15 +174,29 @@ def create_npc(
     attributes["flying_speed"] = 5
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
-    attributes["immunities"] = [create_effect]
-    attributes["resistances"] = [create_effect]
-    attributes["vulnerabilities"] = [create_effect]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
     new_npc = NonPlayerCharacter(name=npc, **attributes)
     db_session.add(new_npc)
     db_session.commit()
+
+    immunity = CreatureImmunities(
+        creature_id=new_npc.id, effect_id=create_effect.id, condition="When in rage"
+    )
+    resistance = CreatureResistances(
+        creature_id=new_npc.id,
+        effect_id=create_effect.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_npc.id,
+        effect_id=create_effect.id,
+        condition="When wearing armour",
+    )
+    db_session.add_all([immunity, resistance, vulnerability])
+    db_session.commit()
+
     return new_npc
 
 
@@ -213,15 +227,29 @@ def create_pc(
     attributes["subclasses"] = [create_subclass]
     attributes["race"] = create_race.id
     attributes["subrace"] = create_subrace.id
-    attributes["immunities"] = [create_effect]
-    attributes["resistances"] = [create_effect]
-    attributes["vulnerabilities"] = [create_effect]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
     new_pc = PlayerCharacter(name=pc, **attributes)
     db_session.add(new_pc)
     db_session.commit()
+
+    immunity = CreatureImmunities(
+        creature_id=new_pc.id, effect_id=create_effect.id, condition="When in rage"
+    )
+    resistance = CreatureResistances(
+        creature_id=new_pc.id,
+        effect_id=create_effect.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_pc.id,
+        effect_id=create_effect.id,
+        condition="When wearing armour",
+    )
+    db_session.add_all([immunity, resistance, vulnerability])
+    db_session.commit()
+
     return new_pc
 
 

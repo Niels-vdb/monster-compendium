@@ -109,65 +109,44 @@ def test_post_npc(
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
+            "resistances": [{"effect_id": 1, "condition": "When in rage"}],
+            "immunities": [{"effect_id": 1, "condition": "When in rage"}],
+            "vulnerabilities": [{"effect_id": 1, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 200
     assert response.json() == {
         "message": "New npc 'Volothamp Geddarm' has been added to the database.",
-        "non_player_character": {
+        "npc": {
+            "race": 1,
             "name": "Volothamp Geddarm",
-            "type_id": 1,
-            "description": "Volo for short",
+            "id": 1,
+            "subrace": 1,
             "alive": True,
-            "size_id": 1,
+            "description": "Volo for short",
             "active": True,
-            "creature": "non_player_characters",
+            "type_id": 1,
+            "size_id": 1,
             "armour_class": 22,
+            "creature": "non_player_characters",
             "walking_speed": 35,
             "swimming_speed": 30,
             "flying_speed": 5,
-            "id": 1,
-            "image": None,
             "information": "A widely traveled human wizard and sage of Faerûn.",
-            "race": 1,
-            "subrace": 1,
+            "image": None,
         },
     }
 
 
 def test_post_npc_fake_class(
     create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
             "classes": [2],
-            "subclasses": [1],
-            "race": 1,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -175,35 +154,14 @@ def test_post_npc_fake_class(
 
 
 def test_post_npc_fake_subclass(
-    create_class,
     create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
             "subclasses": [2],
-            "race": 1,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -211,35 +169,14 @@ def test_post_npc_fake_subclass(
 
 
 def test_post_npc_fake_race(
-    create_class,
-    create_subclass,
     create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
-            "subclasses": [1],
             "race": 2,
-            "subrace": 1,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -247,35 +184,14 @@ def test_post_npc_fake_race(
 
 
 def test_post_npc_fake_subrace(
-    create_class,
-    create_subclass,
-    create_race,
     create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "classes": [1],
-            "subclasses": [1],
-            "race": 1,
             "subrace": 2,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -283,31 +199,14 @@ def test_post_npc_fake_subrace(
 
 
 def test_post_npc_fake_size(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
     create_size,
-    create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
             "size_id": 2,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -315,31 +214,14 @@ def test_post_npc_fake_size(
 
 
 def test_post_npc_fake_type(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
     create_type,
-    create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
             "type_id": 2,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -347,31 +229,14 @@ def test_post_npc_fake_type(
 
 
 def test_post_npc_fake_party(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
     create_party,
-    create_effect,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
             "parties": [2],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [1],
         },
     )
     assert response.status_code == 404
@@ -379,13 +244,6 @@ def test_post_npc_fake_party(
 
 
 def test_post_npc_fake_resistance(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -393,17 +251,7 @@ def test_post_npc_fake_resistance(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [2],
-            "immunities": [1],
-            "vulnerabilities": [1],
+            "resistances": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -411,13 +259,6 @@ def test_post_npc_fake_resistance(
 
 
 def test_post_npc_fake_immunity(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -425,17 +266,7 @@ def test_post_npc_fake_immunity(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [2],
-            "vulnerabilities": [1],
+            "immunities": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -443,13 +274,6 @@ def test_post_npc_fake_immunity(
 
 
 def test_post_npc_fake_vulnerabilities(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
     create_effect,
     db_session,
 ):
@@ -457,17 +281,7 @@ def test_post_npc_fake_vulnerabilities(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "description": " Volo for short",
-            "information": "A widely traveled human wizard and sage of Faerûn.",
-            "alive": True,
-            "active": True,
-            "armour_class": 22,
-            "size_id": 1,
-            "type_id": 1,
-            "parties": [1],
-            "resistances": [1],
-            "immunities": [1],
-            "vulnerabilities": [2],
+            "vulnerabilities": [{"effect_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
@@ -530,12 +344,27 @@ def test_npc_add_put(
             "add_subclass": True,
             "parties": [2],
             "add_parties": True,
-            "resistances": [2],
-            "add_resistances": True,
-            "vulnerabilities": [2],
-            "add_vulnerabilities": True,
-            "immunities": [2],
-            "add_immunities": True,
+            "resistances": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
+            "immunities": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
+            "vulnerabilities": [
+                {
+                    "effect_id": 2,
+                    "condition": "When in rage",
+                    "add_effect": True,
+                }
+            ],
         },
     )
     npc = db_session.query(NonPlayerCharacter).first()
@@ -622,12 +451,24 @@ def test_npc_remove_put(
             "add_subclass": False,
             "parties": [1],
             "add_parties": False,
-            "resistances": [1],
-            "add_resistances": False,
-            "vulnerabilities": [1],
-            "add_vulnerabilities": False,
-            "immunities": [1],
-            "add_immunities": False,
+            "resistances": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
+            "immunities": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
+            "vulnerabilities": [
+                {
+                    "effect_id": 1,
+                    "add_effect": False,
+                }
+            ],
         },
     )
     npc = db_session.query(NonPlayerCharacter).first()
@@ -737,7 +578,14 @@ def test_npc_fake_part_put(create_npc, db_session):
 def test_npc_fake_resistance_put(create_npc, db_session):
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
-        json={"resistances": [3], "add_resistances": False},
+        json={
+            "resistances": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
@@ -746,44 +594,30 @@ def test_npc_fake_resistance_put(create_npc, db_session):
 def test_npc_fake_vulnerability_put(create_npc, db_session):
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
-        json={"vulnerabilities": [3], "add_vulnerabilities": False},
+        json={
+            "vulnerabilities": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-# def test_npc_remove_immunity_put(create_npc, db_session):
-#     response = client.put(
-#         f"/api/non_player_characters/{create_npc.id}",
-#         json={"immunities": [1], "add_immunities": False},
-#     )
-#     npc = db_session.query(NonPlayerCharacter).first()
-#     assert response.status_code == 200
-#     assert len(npc.immunities) == 0
-#     assert response.json() == {
-#         "message": "NPC 'Fersi (Oracle)' has been updated.",
-#         "non_player_character": {
-#             "name": "Fersi (Oracle)",
-#             "id": 1,
-#             "size_id": 1,
-#             "description": "A demigod female.",
-#             "alive": True,
-#             "creature": "non_player_characters",
-#             "active": True,
-#             "armour_class": 16,
-#             "image": None,
-#             "race": None,
-#             "information": "Some say she knows everything, but shares very little.",
-#             "subrace": None,
-#             "type_id": 1,
-#         },
-#     }
-
-
 def test_npc_fake_immunity_put(create_npc, db_session):
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
-        json={"immunities": [3], "add_immunities": False},
+        json={
+            "immunities": [
+                {
+                    "effect_id": 3,
+                    "add_effect": False,
+                }
+            ],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Effect with this id does not exist."}
