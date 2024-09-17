@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
 from server.database.models.effects import Effect
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.users import Party
 
 from .conftest import app
@@ -13,11 +13,11 @@ from .conftest import app
 client = TestClient(app)
 
 
-def test_get_monsters(create_monster, db_session):
-    response = client.get("/api/monsters")
+def test_get_enemies(create_enemy, db_session):
+    response = client.get("/api/enemies")
     assert response.status_code == 200
     assert response.json() == {
-        "monsters": [
+        "enemies": [
             {
                 "name": "Giff",
                 "race": None,
@@ -30,7 +30,7 @@ def test_get_monsters(create_monster, db_session):
                 "armour_class": 16,
                 "size_id": 1,
                 "walking_speed": 30,
-                "creature": "monsters",
+                "creature": "enemies",
                 "swimming_speed": 20,
                 "information": "Some information about this big hippo, like his knowledge about firearms.",
                 "flying_speed": 0,
@@ -40,14 +40,14 @@ def test_get_monsters(create_monster, db_session):
     }
 
 
-def test_get_no_monsters(db_session):
-    response = client.get("/api/monsters")
+def test_get_no_enemies(db_session):
+    response = client.get("/api/enemies")
     assert response.status_code == 404
-    assert response.json() == {"detail": "No monsters found."}
+    assert response.json() == {"detail": "No enemies found."}
 
 
-def test_get_monster(create_monster, db_session):
-    response = client.get("/api/monsters/1")
+def test_get_enemy(create_enemy, db_session):
+    response = client.get("/api/enemies/1")
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
@@ -74,13 +74,13 @@ def test_get_monster(create_monster, db_session):
     }
 
 
-def test_get_no_monster(create_monster, db_session):
-    response = client.get("/api/monsters/2")
+def test_get_no_enemy(create_enemy, db_session):
+    response = client.get("/api/enemies/2")
     assert response.status_code == 404
-    assert response.json() == {"detail": "Monster not found."}
+    assert response.json() == {"detail": "Enemy not found."}
 
 
-def test_post_monster(
+def test_post_enemy(
     create_class,
     create_subclass,
     create_race,
@@ -92,7 +92,7 @@ def test_post_monster(
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "description": " A large hippo like creature",
@@ -115,8 +115,8 @@ def test_post_monster(
     )
     assert response.status_code == 200
     assert response.json() == {
-        "message": "New monster 'Giff' has been added to the database.",
-        "monster": {
+        "message": "New enemy 'Giff' has been added to the database.",
+        "enemy": {
             "name": "Giff",
             "race": 1,
             "description": " A large hippo like creature",
@@ -128,7 +128,7 @@ def test_post_monster(
             "armour_class": 22,
             "size_id": 1,
             "walking_speed": 35,
-            "creature": "monsters",
+            "creature": "enemies",
             "swimming_speed": None,
             "information": "Some information about this big hippo, like his knowledge about firearms.",
             "flying_speed": None,
@@ -137,12 +137,12 @@ def test_post_monster(
     }
 
 
-def test_post_monster_fake_class(
+def test_post_enemy_fake_class(
     create_class,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "classes": [2],
@@ -152,12 +152,12 @@ def test_post_monster_fake_class(
     assert response.json() == {"detail": "Class with this id does not exist."}
 
 
-def test_post_monster_fake_subclass(
+def test_post_enemy_fake_subclass(
     create_subclass,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "subclasses": [2],
@@ -167,12 +167,12 @@ def test_post_monster_fake_subclass(
     assert response.json() == {"detail": "Subclass with this id does not exist."}
 
 
-def test_post_monster_fake_race(
+def test_post_enemy_fake_race(
     create_race,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "race": 2,
@@ -182,12 +182,12 @@ def test_post_monster_fake_race(
     assert response.json() == {"detail": "Race with this id does not exist."}
 
 
-def test_post_monster_fake_subrace(
+def test_post_enemy_fake_subrace(
     create_subrace,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "race": 1,
@@ -198,12 +198,12 @@ def test_post_monster_fake_subrace(
     assert response.json() == {"detail": "Subrace with this id does not exist."}
 
 
-def test_post_monster_fake_size(
+def test_post_enemy_fake_size(
     create_size,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "size_id": 2,
@@ -213,12 +213,12 @@ def test_post_monster_fake_size(
     assert response.json() == {"detail": "Size with this id does not exist."}
 
 
-def test_post_monster_fake_type(
+def test_post_enemy_fake_type(
     create_type,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "type_id": 2,
@@ -228,12 +228,12 @@ def test_post_monster_fake_type(
     assert response.json() == {"detail": "Type with this id does not exist."}
 
 
-def test_post_monster_fake_party(
+def test_post_enemy_fake_party(
     create_party,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "parties": [2],
@@ -243,12 +243,12 @@ def test_post_monster_fake_party(
     assert response.json() == {"detail": "Party with this id does not exist."}
 
 
-def test_post_monster_fake_resistance(
+def test_post_enemy_fake_resistance(
     create_effect,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "resistances": [{"effect_id": 2, "condition": "When in rage"}],
@@ -258,12 +258,12 @@ def test_post_monster_fake_resistance(
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_post_monster_fake_immunity(
+def test_post_enemy_fake_immunity(
     create_effect,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "immunities": [{"effect_id": 2, "condition": "When in rage"}],
@@ -273,12 +273,12 @@ def test_post_monster_fake_immunity(
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_post_monster_fake_vulnerabilities(
+def test_post_enemy_fake_vulnerabilities(
     create_effect,
     db_session,
 ):
     response = client.post(
-        "/api/monsters",
+        "/api/enemies",
         json={
             "name": "Giff",
             "vulnerabilities": [{"effect_id": 2, "condition": "When in rage"}],
@@ -288,8 +288,8 @@ def test_post_monster_fake_vulnerabilities(
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_monster_add_put(
-    create_monster,
+def test_enemy_add_put(
+    create_enemy,
     create_race,
     create_subrace,
     create_class,
@@ -323,7 +323,7 @@ def test_monster_add_put(
     size_id = size.id
     type_id = new_type.id
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={
             "name": "Froghemoth",
             "information": "Some new information about Froghemoth.",
@@ -367,30 +367,30 @@ def test_monster_add_put(
             ],
         },
     )
-    monster = db_session.query(Monster).first()
+    enemy = db_session.query(Enemy).first()
     assert response.status_code == 200
-    assert monster.name == "Froghemoth"
-    assert monster.information == "Some new information about Froghemoth."
-    assert monster.description == "Something else about the Froghemoth."
-    assert monster.alive == False
-    assert monster.active == False
-    assert monster.armour_class == 20
-    assert monster.walking_speed == 40
-    assert monster.swimming_speed == 40
-    assert monster.flying_speed == 5
-    assert monster.race == race_id
-    assert monster.subrace == subrace_id
-    assert monster.size_id == size_id
-    assert monster.type_id == type_id
-    assert len(monster.classes) == 2
-    assert len(monster.subclasses) == 2
-    assert len(monster.parties) == 2
-    assert len(monster.immunities) == 2
-    assert len(monster.resistances) == 2
-    assert len(monster.vulnerabilities) == 2
+    assert enemy.name == "Froghemoth"
+    assert enemy.information == "Some new information about Froghemoth."
+    assert enemy.description == "Something else about the Froghemoth."
+    assert enemy.alive == False
+    assert enemy.active == False
+    assert enemy.armour_class == 20
+    assert enemy.walking_speed == 40
+    assert enemy.swimming_speed == 40
+    assert enemy.flying_speed == 5
+    assert enemy.race == race_id
+    assert enemy.subrace == subrace_id
+    assert enemy.size_id == size_id
+    assert enemy.type_id == type_id
+    assert len(enemy.classes) == 2
+    assert len(enemy.subclasses) == 2
+    assert len(enemy.parties) == 2
+    assert len(enemy.immunities) == 2
+    assert len(enemy.resistances) == 2
+    assert len(enemy.vulnerabilities) == 2
     assert response.json() == {
-        "message": "Monster 'Froghemoth' has been updated.",
-        "monster": {
+        "message": "Enemy 'Froghemoth' has been updated.",
+        "enemy": {
             "name": "Froghemoth",
             "race": 1,
             "subrace": 1,
@@ -401,7 +401,7 @@ def test_monster_add_put(
             "id": 1,
             "size_id": 2,
             "armour_class": 20,
-            "creature": "monsters",
+            "creature": "enemies",
             "walking_speed": 40,
             "swimming_speed": 40,
             "flying_speed": 5,
@@ -411,8 +411,8 @@ def test_monster_add_put(
     }
 
 
-def test_monster_remove_put(
-    create_monster,
+def test_enemy_remove_put(
+    create_enemy,
     create_race,
     create_subrace,
     db_session,
@@ -431,7 +431,7 @@ def test_monster_remove_put(
     size_id = size.id
     type_id = new_type.id
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={
             "name": "Froghemoth",
             "information": "Some new information about Froghemoth.",
@@ -472,37 +472,37 @@ def test_monster_remove_put(
             ],
         },
     )
-    monster = db_session.query(Monster).first()
+    enemy = db_session.query(Enemy).first()
     assert response.status_code == 200
-    assert monster.name == "Froghemoth"
-    assert monster.information == "Some new information about Froghemoth."
-    assert monster.description == "Something else about the Froghemoth."
-    assert monster.alive == False
-    assert monster.active == False
-    assert monster.armour_class == 20
-    assert monster.walking_speed == 35
-    assert monster.swimming_speed == 30
-    assert monster.flying_speed == 5
-    assert monster.race == race_id
-    assert monster.subrace == subrace_id
-    assert monster.size_id == size_id
-    assert monster.type_id == type_id
-    assert len(monster.classes) == 0
-    assert len(monster.subclasses) == 0
-    assert len(monster.parties) == 0
-    assert len(monster.immunities) == 0
-    assert len(monster.resistances) == 0
-    assert len(monster.vulnerabilities) == 0
+    assert enemy.name == "Froghemoth"
+    assert enemy.information == "Some new information about Froghemoth."
+    assert enemy.description == "Something else about the Froghemoth."
+    assert enemy.alive == False
+    assert enemy.active == False
+    assert enemy.armour_class == 20
+    assert enemy.walking_speed == 35
+    assert enemy.swimming_speed == 30
+    assert enemy.flying_speed == 5
+    assert enemy.race == race_id
+    assert enemy.subrace == subrace_id
+    assert enemy.size_id == size_id
+    assert enemy.type_id == type_id
+    assert len(enemy.classes) == 0
+    assert len(enemy.subclasses) == 0
+    assert len(enemy.parties) == 0
+    assert len(enemy.immunities) == 0
+    assert len(enemy.resistances) == 0
+    assert len(enemy.vulnerabilities) == 0
     assert response.json() == {
-        "message": "Monster 'Froghemoth' has been updated.",
-        "monster": {
+        "message": "Enemy 'Froghemoth' has been updated.",
+        "enemy": {
             "type_id": 2,
             "name": "Froghemoth",
             "size_id": 2,
             "description": "Something else about the Froghemoth.",
             "id": 1,
             "alive": False,
-            "creature": "monsters",
+            "creature": "enemies",
             "active": False,
             "armour_class": 20,
             "walking_speed": 35,
@@ -516,60 +516,60 @@ def test_monster_remove_put(
     }
 
 
-def test_monster_fake_race_put(create_monster, db_session):
-    response = client.put(f"/api/monsters/{create_monster.id}", json={"race": 3})
+def test_enemy_fake_race_put(create_enemy, db_session):
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"race": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "Race with this id does not exist."}
 
 
-def test_monster_fake_subrace_put(create_monster, db_session):
-    response = client.put(f"/api/monsters/{create_monster.id}", json={"subrace": 3})
+def test_enemy_fake_subrace_put(create_enemy, db_session):
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"subrace": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "Subrace with this id does not exist."}
 
 
-def test_monster_fake_size_put(create_monster, db_session):
-    response = client.put(f"/api/monsters/{create_monster.id}", json={"size_id": 3})
+def test_enemy_fake_size_put(create_enemy, db_session):
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"size_id": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "Size with this id does not exist."}
 
 
-def test_monster_fake_type_put(create_monster, db_session):
-    response = client.put(f"/api/monsters/{create_monster.id}", json={"type_id": 3})
+def test_enemy_fake_type_put(create_enemy, db_session):
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"type_id": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "Type with this id does not exist."}
 
 
-def test_monster_fake_class_put(create_monster, db_session):
+def test_enemy_fake_class_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={"classes": [3], "add_classes": False},
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Class with this id does not exist."}
 
 
-def test_monster_fake_subclass_put(create_monster, db_session):
+def test_enemy_fake_subclass_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={"subclasses": [3], "add_subclasses": False},
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass with this id does not exist."}
 
 
-def test_monster_fake_part_put(create_monster, db_session):
+def test_enemy_fake_part_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={"parties": [3], "add_parties": False},
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Party with this id does not exist."}
 
 
-def test_monster_fake_resistance_put(create_monster, db_session):
+def test_enemy_fake_resistance_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={
             "resistances": [
                 {
@@ -583,9 +583,9 @@ def test_monster_fake_resistance_put(create_monster, db_session):
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_monster_fake_vulnerability_put(create_monster, db_session):
+def test_enemy_fake_vulnerability_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={
             "vulnerabilities": [
                 {
@@ -599,9 +599,9 @@ def test_monster_fake_vulnerability_put(create_monster, db_session):
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_monster_fake_immunity_put(create_monster, db_session):
+def test_enemy_fake_immunity_put(create_enemy, db_session):
     response = client.put(
-        f"/api/monsters/{create_monster.id}",
+        f"/api/enemies/{create_enemy.id}",
         json={
             "immunities": [
                 {
@@ -615,17 +615,17 @@ def test_monster_fake_immunity_put(create_monster, db_session):
     assert response.json() == {"detail": "Effect with this id does not exist."}
 
 
-def test_monster_delete(create_monster, db_session):
-    response = client.delete(f"/api/monsters/{create_monster.id}")
-    monster = db_session.query(Monster).filter(Monster.id == create_monster.id).first()
+def test_enemy_delete(create_enemy, db_session):
+    response = client.delete(f"/api/enemies/{create_enemy.id}")
+    enemy = db_session.query(Enemy).filter(Enemy.id == create_enemy.id).first()
     assert response.status_code == 200
-    assert response.json() == {"message": "Monster has been deleted."}
-    assert monster == None
+    assert response.json() == {"message": "Enemy has been deleted."}
+    assert enemy == None
 
 
-def test_monster_fake_delete(create_monster, db_session):
-    response = client.delete(f"/api/monsters/2")
+def test_enemy_fake_delete(create_enemy, db_session):
+    response = client.delete(f"/api/enemies/2")
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The monster you are trying to delete does not exist."
+        "detail": "The enemy you are trying to delete does not exist."
     }

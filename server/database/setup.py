@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from server.database.create import session
 from server.database.models.creatures import CreatureClasses
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race, Subrace
@@ -731,11 +731,11 @@ def create_npcs() -> None:
     session.commit()
 
 
-def create_monsters() -> None:
+def create_enemies() -> None:
     """
-    Creates two monster characters with attributes and adds them to the monsters table.
+    Creates two monster characters with attributes and adds them to the enemies table.
     """
-    monsters: Dict[str, dict[str, str]] = {
+    enemies: Dict[str, dict[str, str]] = {
         "Giff": {
             "alive": True,
             "active": True,
@@ -763,10 +763,10 @@ def create_monsters() -> None:
         },
     }
 
-    for monster, attributes in monsters.items():
-        if not session.query(Monster).filter(Monster.name == monster).first():
+    for enemy, attributes in enemies.items():
+        if not session.query(Enemy).filter(Enemy.name == enemy).first():
             print(
-                f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
+                f"Adding '{enemy}' to monsters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
                 session.query(Size).filter(Size.name == attributes["size"]).first().id
@@ -817,8 +817,8 @@ def create_monsters() -> None:
                     for attribute in attributes["parties"]
                 ]
 
-            new_monster = Monster(name=monster, **attributes)
-            session.add(new_monster)
+            new_enemy = Enemy(name=enemy, **attributes)
+            session.add(new_enemy)
             session.flush()
 
             # Adds classes and subclasses to CreatureClasses cross-reference table
@@ -830,14 +830,14 @@ def create_monsters() -> None:
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
-                                creature_id=new_monster.id,
+                                creature_id=new_enemy.id,
                                 class_id=cls.id,
                                 subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_monster.id, class_id=cls.id
+                            creature_id=new_enemy.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
     session.commit()
@@ -859,7 +859,7 @@ def main() -> None:
     initialize_types()
     create_pcs()
     create_npcs()
-    create_monsters()
+    create_enemies()
 
 
 if __name__ == "__main__":

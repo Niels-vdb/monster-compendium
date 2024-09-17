@@ -1,6 +1,6 @@
 from .base import Base
 from .creatures import Creature, CreatureParties
-from .monsters import Monster
+from .enemies import Enemy
 from .player_characters import PlayerCharacter
 from .non_player_characters import NonPlayerCharacter
 from .races import Race, Subrace, RaceResistances, SubraceResistances

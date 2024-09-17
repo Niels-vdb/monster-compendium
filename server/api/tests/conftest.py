@@ -13,7 +13,7 @@ from ..main import app
 from .. import get_db
 
 from server.database.models.base import Base
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race, Subrace
@@ -226,7 +226,7 @@ def create_pc(
 
 
 @pytest.fixture
-def create_monster(
+def create_enemy(
     create_party,
     create_class,
     create_subclass,
@@ -251,7 +251,7 @@ def create_monster(
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
-    new_monster = Monster(name=monster, **attributes)
+    new_monster = Enemy(name=monster, **attributes)
     db_session.add(new_monster)
     db_session.commit()
     immunity = CreatureImmunities(

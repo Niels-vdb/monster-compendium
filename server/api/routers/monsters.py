@@ -16,13 +16,13 @@ from server.database.models.creatures import (
     CreatureVulnerabilities,
 )
 from server.database.models.effects import Effect
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.races import Race, Subrace
 from server.database.models.users import Party
 
 router = APIRouter(
-    prefix="/api/monsters",
-    tags=["Monsters"],
+    prefix="/api/enemies",
+    tags=["Enemies"],
     responses={404: {"description": "Not found."}},
 )
 
@@ -38,7 +38,7 @@ class PutEffect(BaseModel):
     add_effect: bool
 
 
-class MonsterPostBase(BaseModel):
+class EnemyPostBase(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     description: str = None
     information: str = None
@@ -63,7 +63,7 @@ class MonsterPostBase(BaseModel):
     vulnerabilities: list[PostEffect] = None
 
 
-class MonsterPutBase(BaseModel):
+class EnemyPutBase(BaseModel):
     name: str = None
     description: str = None
     information: str = None
@@ -92,116 +92,115 @@ class MonsterPutBase(BaseModel):
 
 
 @router.get("/")
-def get_monsters(db: Session = Depends(get_db)):
-    monsters = db.query(Monster).all()
-    if not monsters:
-        raise HTTPException(status_code=404, detail="No monsters found.")
-    return {"monsters": monsters}
+def get_enemies(db: Session = Depends(get_db)):
+    enemies = db.query(Enemy).all()
+    if not enemies:
+        raise HTTPException(status_code=404, detail="No enemies found.")
+    return {"enemies": enemies}
 
 
-@router.get("/{monster_id}")
-def get_monster(monster_id: int, db: Session = Depends(get_db)):
-    monster = db.query(Monster).filter(Monster.id == monster_id).first()
-    if not monster:
-        raise HTTPException(status_code=404, detail="Monster not found.")
+@router.get("/{enemy_id}")
+def get_enemy(enemy_id: int, db: Session = Depends(get_db)):
+    enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
+    if not enemy:
+        raise HTTPException(status_code=404, detail="Enemy not found.")
     return {
-        "id": monster.id,
-        "name": monster.name,
-        "description": monster.description,
-        "information": monster.information,
-        "alive": monster.alive,
-        "active": monster.active,
-        "armour_class": monster.armour_class,
-        "walking_speed": monster.walking_speed,
-        "swimming_speed": monster.swimming_speed,
-        "flying_speed": monster.flying_speed,
-        "image": monster.image,
-        "race": monster.race,
-        "subrace": monster.subrace,
-        "size": monster.size,
-        "creature_type": monster.creature_type,
-        "parties": monster.parties,
-        "classes": monster.classes,
-        "subclasses": monster.subclasses,
-        "resistances": monster.resistances,
-        "immunities": monster.immunities,
-        "vulnerabilities": monster.vulnerabilities,
+        "id": enemy.id,
+        "name": enemy.name,
+        "description": enemy.description,
+        "information": enemy.information,
+        "alive": enemy.alive,
+        "active": enemy.active,
+        "armour_class": enemy.armour_class,
+        "walking_speed": enemy.walking_speed,
+        "swimming_speed": enemy.swimming_speed,
+        "flying_speed": enemy.flying_speed,
+        "image": enemy.image,
+        "race": enemy.race,
+        "subrace": enemy.subrace,
+        "size": enemy.size,
+        "creature_type": enemy.creature_type,
+        "parties": enemy.parties,
+        "classes": enemy.classes,
+        "subclasses": enemy.subclasses,
+        "resistances": enemy.resistances,
+        "immunities": enemy.immunities,
+        "vulnerabilities": enemy.vulnerabilities,
     }
 
 
 @router.post("/")
-def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
+def post_enemy(enemy: EnemyPostBase, db: Session = Depends(get_db)):
     attributes: dict[str, Any] = {}
 
-    if monster.description:
-        attributes["description"] = monster.description
-    if monster.information:
-        attributes["information"] = monster.information
-    if monster.alive:
-        attributes["alive"] = monster.alive
-    if monster.active:
-        attributes["active"] = monster.active
-    if monster.armour_class:
-        attributes["armour_class"] = monster.armour_class
-    if monster.walking_speed:
-        attributes["walking_speed"] = monster.walking_speed
-    if monster.swimming_speed:
-        attributes["swimming_speed"] = monster.swimming_speed
-    if monster.flying_speed:
-        attributes["flying_speed"] = monster.flying_speed
-    if monster.image:
-        attributes["image"] = monster.image
-    if monster.race:
-        race = db.query(Race).filter(Race.id == monster.race).first()
+    if enemy.description:
+        attributes["description"] = enemy.description
+    if enemy.information:
+        attributes["information"] = enemy.information
+    if enemy.alive:
+        attributes["alive"] = enemy.alive
+    if enemy.active:
+        attributes["active"] = enemy.active
+    if enemy.armour_class:
+        attributes["armour_class"] = enemy.armour_class
+    if enemy.walking_speed:
+        attributes["walking_speed"] = enemy.walking_speed
+    if enemy.swimming_speed:
+        attributes["swimming_speed"] = enemy.swimming_speed
+    if enemy.flying_speed:
+        attributes["flying_speed"] = enemy.flying_speed
+    if enemy.image:
+        attributes["image"] = enemy.image
+    if enemy.race:
+        race = db.query(Race).filter(Race.id == enemy.race).first()
         if not race:
             raise HTTPException(
                 status_code=404, detail="Race with this id does not exist."
             )
         attributes["race"] = race.id
-    if monster.subrace:
-        subrace = db.query(Subrace).filter(Subrace.id == monster.subrace).first()
+    if enemy.subrace:
+        subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace).first()
         if not subrace:
             raise HTTPException(
                 status_code=404, detail="Subrace with this id does not exist."
             )
         attributes["subrace"] = subrace.id
-    if monster.size_id:
-        size = db.query(Size).filter(Size.id == monster.size_id).first()
+    if enemy.size_id:
+        size = db.query(Size).filter(Size.id == enemy.size_id).first()
         if not size:
             raise HTTPException(
                 status_code=404, detail="Size with this id does not exist."
             )
         attributes["size_id"] = size.id
-    if monster.type_id:
-        creature_type = db.query(Type).filter(Type.id == monster.type_id).first()
+    if enemy.type_id:
+        creature_type = db.query(Type).filter(Type.id == enemy.type_id).first()
         if not creature_type:
             raise HTTPException(
                 status_code=404, detail="Type with this id does not exist."
             )
         attributes["type_id"] = creature_type.id
-    if monster.parties:
+    if enemy.parties:
         attributes["parties"] = [
-            db.query(Party).filter(Party.id == party).first()
-            for party in monster.parties
+            db.query(Party).filter(Party.id == party).first() for party in enemy.parties
         ]
         for value in attributes["parties"]:
             if value == None:
                 raise HTTPException(
                     status_code=404, detail="Party with this id does not exist."
                 )
-    if monster.classes:
+    if enemy.classes:
         attributes["classes"] = [
-            db.query(Class).filter(Class.id == cls).first() for cls in monster.classes
+            db.query(Class).filter(Class.id == cls).first() for cls in enemy.classes
         ]
         for value in attributes["classes"]:
             if value == None:
                 raise HTTPException(
                     status_code=404, detail="Class with this id does not exist."
                 )
-    if monster.subclasses:
+    if enemy.subclasses:
         attributes["subclasses"] = [
             db.query(Subclass).filter(Subclass.id == subclass).first()
-            for subclass in monster.subclasses
+            for subclass in enemy.subclasses
         ]
         for value in attributes["subclasses"]:
             if value == None:
@@ -209,43 +208,43 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
                     status_code=404, detail="Subclass with this id does not exist."
                 )
     try:
-        new_monster = Monster(name=monster.name, **attributes)
-        db.add(new_monster)
+        new_enemy = Enemy(name=enemy.name, **attributes)
+        db.add(new_enemy)
         db.commit()
-        db.refresh(new_monster)
+        db.refresh(new_enemy)
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
         )
 
-    if monster.immunities:
-        for immunity in monster.immunities:
+    if enemy.immunities:
+        for immunity in enemy.immunities:
             effect = db.query(Effect).filter(Effect.id == immunity.effect_id).first()
             if not effect:
                 raise HTTPException(
                     status_code=404, detail="Effect with this id does not exist."
                 )
-            monster_immunity = CreatureImmunities(
-                creature_id=new_monster.id,
+            enemy_immunity = CreatureImmunities(
+                creature_id=new_enemy.id,
                 effect_id=effect.id,
                 condition=immunity.condition,
             )
-            db.add(monster_immunity)
-    if monster.resistances:
-        for resistance in monster.resistances:
+            db.add(enemy_immunity)
+    if enemy.resistances:
+        for resistance in enemy.resistances:
             effect = db.query(Effect).filter(Effect.id == resistance.effect_id).first()
             if not effect:
                 raise HTTPException(
                     status_code=404, detail="Effect with this id does not exist."
                 )
-            monster_resistance = CreatureResistances(
-                creature_id=new_monster.id,
+            enemy_resistance = CreatureResistances(
+                creature_id=new_enemy.id,
                 effect_id=effect.id,
                 condition=resistance.condition,
             )
-            db.add(monster_resistance)
-    if monster.vulnerabilities:
-        for vulnerability in monster.vulnerabilities:
+            db.add(enemy_resistance)
+    if enemy.vulnerabilities:
+        for vulnerability in enemy.vulnerabilities:
             effect = (
                 db.query(Effect).filter(Effect.id == vulnerability.effect_id).first()
             )
@@ -253,17 +252,17 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
                 raise HTTPException(
                     status_code=404, detail="Effect with this id does not exist."
                 )
-            monster_vulnerability = CreatureVulnerabilities(
-                creature_id=new_monster.id,
+            enemy_vulnerability = CreatureVulnerabilities(
+                creature_id=new_enemy.id,
                 effect_id=effect.id,
                 condition=vulnerability.condition,
             )
-            db.add(monster_vulnerability)
+            db.add(enemy_vulnerability)
     try:
         db.commit()
         return {
-            "message": f"New monster '{new_monster.name}' has been added to the database.",
-            "monster": new_monster,
+            "message": f"New enemy '{new_enemy.name}' has been added to the database.",
+            "enemy": new_enemy,
         }
     except Exception as e:
         raise HTTPException(
@@ -271,110 +270,107 @@ def post_monster(monster: MonsterPostBase, db: Session = Depends(get_db)):
         )
 
 
-@router.put("/{monster_id}")
-def put_monster(
-    monster_id: str, monster: MonsterPutBase, db: Session = Depends(get_db)
-):
+@router.put("/{enemy_id}")
+def put_enemy(enemy_id: str, enemy: EnemyPutBase, db: Session = Depends(get_db)):
     try:
-        updated_monster = db.query(Monster).filter(Monster.id == monster_id).first()
-        if monster.name:
-            updated_monster.name = monster.name
-        if monster.description:
-            updated_monster.description = monster.description
-        if monster.information:
-            updated_monster.information = monster.information
-        if monster.alive != None:
-            updated_monster.alive = monster.alive
-        if monster.active != None:
-            updated_monster.active = monster.active
-        if monster.armour_class:
-            updated_monster.armour_class = monster.armour_class
-        if monster.walking_speed:
-            updated_monster.walking_speed = monster.walking_speed
-        if monster.swimming_speed:
-            updated_monster.swimming_speed = monster.swimming_speed
-        if monster.flying_speed:
-            updated_monster.flying_speed = monster.flying_speed
-        if monster.image:
-            updated_monster.image = monster.image
-        if monster.race:
-            race = db.query(Race).filter(Race.id == monster.race).first()
+        updated_enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
+        if enemy.name:
+            updated_enemy.name = enemy.name
+        if enemy.description:
+            updated_enemy.description = enemy.description
+        if enemy.information:
+            updated_enemy.information = enemy.information
+        if enemy.alive != None:
+            updated_enemy.alive = enemy.alive
+        if enemy.active != None:
+            updated_enemy.active = enemy.active
+        if enemy.armour_class:
+            updated_enemy.armour_class = enemy.armour_class
+        if enemy.walking_speed:
+            updated_enemy.walking_speed = enemy.walking_speed
+        if enemy.swimming_speed:
+            updated_enemy.swimming_speed = enemy.swimming_speed
+        if enemy.flying_speed:
+            updated_enemy.flying_speed = enemy.flying_speed
+        if enemy.image:
+            updated_enemy.image = enemy.image
+        if enemy.race:
+            race = db.query(Race).filter(Race.id == enemy.race).first()
             if not race:
                 raise HTTPException(
                     status_code=404, detail="Race with this id does not exist."
                 )
-            updated_monster.race = race.id
-        if monster.subrace:
-            subrace = db.query(Subrace).filter(Subrace.id == monster.subrace).first()
+            updated_enemy.race = race.id
+        if enemy.subrace:
+            subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace).first()
             if not subrace:
                 raise HTTPException(
                     status_code=404, detail="Subrace with this id does not exist."
                 )
-            updated_monster.subrace = subrace.id
-        if monster.size_id:
-            size = db.query(Size).filter(Size.id == monster.size_id).first()
+            updated_enemy.subrace = subrace.id
+        if enemy.size_id:
+            size = db.query(Size).filter(Size.id == enemy.size_id).first()
             if not size:
                 raise HTTPException(
                     status_code=404, detail="Size with this id does not exist."
                 )
-            updated_monster.size_id = size.id
-        if monster.type_id:
-            creature_type = db.query(Type).filter(Type.id == monster.type_id).first()
+            updated_enemy.size_id = size.id
+        if enemy.type_id:
+            creature_type = db.query(Type).filter(Type.id == enemy.type_id).first()
             if not creature_type:
                 raise HTTPException(
                     status_code=404, detail="Type with this id does not exist."
                 )
-            updated_monster.type_id = creature_type.id
-        if monster.classes:
+            updated_enemy.type_id = creature_type.id
+        if enemy.classes:
             classes = [
-                db.query(Class).filter(Class.id == cls).first()
-                for cls in monster.classes
+                db.query(Class).filter(Class.id == cls).first() for cls in enemy.classes
             ]
             for cls in classes:
                 if cls == None:
                     raise HTTPException(
                         status_code=404, detail="Class with this id does not exist."
                     )
-            if monster.add_class:
-                updated_monster.classes += classes
+            if enemy.add_class:
+                updated_enemy.classes += classes
             else:
                 for cls in classes:
-                    if cls in updated_monster.classes:
-                        updated_monster.classes.remove(cls)
-        if monster.subclasses:
+                    if cls in updated_enemy.classes:
+                        updated_enemy.classes.remove(cls)
+        if enemy.subclasses:
             subclasses = [
                 db.query(Subclass).filter(Subclass.id == subclass).first()
-                for subclass in monster.subclasses
+                for subclass in enemy.subclasses
             ]
             for subclass in subclasses:
                 if subclass == None:
                     raise HTTPException(
                         status_code=404, detail="Subclass with this id does not exist."
                     )
-            if monster.add_subclass:
-                updated_monster.subclasses += subclasses
+            if enemy.add_subclass:
+                updated_enemy.subclasses += subclasses
             else:
                 for subclass in subclasses:
-                    if subclass in updated_monster.subclasses:
-                        updated_monster.subclasses.remove(subclass)
-        if monster.parties:
+                    if subclass in updated_enemy.subclasses:
+                        updated_enemy.subclasses.remove(subclass)
+        if enemy.parties:
             parties = [
                 db.query(Party).filter(Party.id == party).first()
-                for party in monster.parties
+                for party in enemy.parties
             ]
             for party in parties:
                 if party == None:
                     raise HTTPException(
                         status_code=404, detail="Party with this id does not exist."
                     )
-            if monster.add_parties:
-                updated_monster.parties += parties
+            if enemy.add_parties:
+                updated_enemy.parties += parties
             else:
                 for party in parties:
-                    if party in updated_monster.parties:
-                        updated_monster.parties.remove(party)
-        if monster.immunities:
-            for immunity in monster.immunities:
+                    if party in updated_enemy.parties:
+                        updated_enemy.parties.remove(party)
+        if enemy.immunities:
+            for immunity in enemy.immunities:
                 effect = (
                     db.query(Effect).filter(Effect.id == immunity.effect_id).first()
                 )
@@ -384,7 +380,7 @@ def put_monster(
                     )
                 elif immunity.add_effect:
                     new_immunity = CreatureImmunities(
-                        creature_id=monster_id,
+                        creature_id=enemy_id,
                         effect_id=effect.id,
                         condition=immunity.condition,
                     )
@@ -394,15 +390,15 @@ def put_monster(
                         db.query(CreatureImmunities)
                         .filter(
                             and_(
-                                CreatureImmunities.creature_id == monster_id,
+                                CreatureImmunities.creature_id == enemy_id,
                                 CreatureImmunities.effect_id == effect.id,
                             )
                         )
                         .first()
                     )
                     db.delete(old_immunity)
-        if monster.resistances:
-            for resistance in monster.resistances:
+        if enemy.resistances:
+            for resistance in enemy.resistances:
                 effect = (
                     db.query(Effect).filter(Effect.id == resistance.effect_id).first()
                 )
@@ -412,7 +408,7 @@ def put_monster(
                     )
                 elif resistance.add_effect:
                     new_resistance = CreatureResistances(
-                        creature_id=monster_id,
+                        creature_id=enemy_id,
                         effect_id=effect.id,
                         condition=immunity.condition,
                     )
@@ -422,15 +418,15 @@ def put_monster(
                         db.query(CreatureResistances)
                         .filter(
                             and_(
-                                CreatureResistances.creature_id == monster_id,
+                                CreatureResistances.creature_id == enemy_id,
                                 CreatureResistances.effect_id == effect.id,
                             )
                         )
                         .first()
                     )
                     db.delete(old_resistance)
-        if monster.vulnerabilities:
-            for vulnerability in monster.vulnerabilities:
+        if enemy.vulnerabilities:
+            for vulnerability in enemy.vulnerabilities:
                 effect = (
                     db.query(Effect)
                     .filter(Effect.id == vulnerability.effect_id)
@@ -442,7 +438,7 @@ def put_monster(
                     )
                 elif vulnerability.add_effect:
                     new_vulnerability = CreatureVulnerabilities(
-                        creature_id=monster_id,
+                        creature_id=enemy_id,
                         effect_id=effect.id,
                         condition=immunity.condition,
                     )
@@ -452,7 +448,7 @@ def put_monster(
                         db.query(CreatureVulnerabilities)
                         .filter(
                             and_(
-                                CreatureVulnerabilities.creature_id == monster_id,
+                                CreatureVulnerabilities.creature_id == enemy_id,
                                 CreatureVulnerabilities.effect_id == effect.id,
                             )
                         )
@@ -461,8 +457,8 @@ def put_monster(
                     db.delete(old_vulnerability)
         db.commit()
         return {
-            "message": f"Monster '{updated_monster.name}' has been updated.",
-            "monster": updated_monster,
+            "message": f"Enemy '{updated_enemy.name}' has been updated.",
+            "enemy": updated_enemy,
         }
     except IntegrityError as e:
         raise HTTPException(
@@ -470,14 +466,14 @@ def put_monster(
         )
 
 
-@router.delete("/{monster_id}")
-def delete_monster(monster_id: int, db: Session = Depends(get_db)):
-    monster = db.query(Monster).filter(Monster.id == monster_id).first()
-    if not monster:
+@router.delete("/{enemy_id}")
+def delete_enemy(enemy_id: int, db: Session = Depends(get_db)):
+    enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
+    if not enemy:
         raise HTTPException(
             status_code=404,
-            detail="The monster you are trying to delete does not exist.",
+            detail="The enemy you are trying to delete does not exist.",
         )
-    db.delete(monster)
+    db.delete(enemy)
     db.commit()
-    return {"message": f"Monster has been deleted."}
+    return {"message": f"Enemy has been deleted."}
