@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from .routers import (
     classes,
     effects,
-    monsters,
+    enemies,
     non_player_characters,
     parties,
     player_characters,
@@ -26,8 +26,8 @@ tags_metadata = [
         "description": "All operations with effects can be done here.",
     },
     {
-        "name": "Monsters",
-        "description": "All operations with monsters can be done here.",
+        "name": "Enemies",
+        "description": "All operations with enemies can be done here.",
     },
     {
         "name": "Non Player Characters",
@@ -67,7 +67,7 @@ app = FastAPI(openapi_tags=tags_metadata, title="DnD Creature Compendium")
 
 app.include_router(classes.router)
 app.include_router(effects.router)
-app.include_router(monsters.router)
+app.include_router(enemies.router)
 app.include_router(non_player_characters.router)
 app.include_router(player_characters.router)
 app.include_router(parties.router)
