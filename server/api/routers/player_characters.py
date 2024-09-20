@@ -58,6 +58,7 @@ def get_pc(pc_id: int, db: Session = Depends(get_db)):
         "walking_speed": pc.walking_speed,
         "swimming_speed": pc.swimming_speed,
         "flying_speed": pc.flying_speed,
+        "climbing_speed": pc.climbing_speed,
         "image": pc.image,
         "race": pc.race,
         "subrace": pc.subrace,
@@ -95,6 +96,8 @@ def post_pc(pc: PCPostBase, db: Session = Depends(get_db)):
         attributes["swimming_speed"] = pc.swimming_speed
     if pc.flying_speed:
         attributes["flying_speed"] = pc.flying_speed
+    if pc.climbing_speed:
+        attributes["climbing_speed"] = pc.climbing_speed
     if pc.image:
         attributes["image"] = pc.image
     if pc.race:
@@ -278,6 +281,8 @@ def put_pc(pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)):
             updated_pc.swimming_speed = pc.swimming_speed
         if pc.flying_speed:
             updated_pc.flying_speed = pc.flying_speed
+        if pc.climbing_speed:
+            updated_pc.climbing_speed = pc.climbing_speed
         if pc.image:
             updated_pc.image = pc.image
         if pc.race:

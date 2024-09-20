@@ -53,7 +53,8 @@ def get_npc(npc_id: int, db: Session = Depends(get_db)):
         "armour_class": npc.armour_class,
         "walking_speed": npc.walking_speed,
         "swimming_speed": npc.swimming_speed,
-        "swimming_speed": npc.swimming_speed,
+        "flying_speed": npc.flying_speed,
+        "climbing_speed": npc.climbing_speed,
         "image": npc.image,
         "race": npc.race,
         "subrace": npc.subrace,
@@ -91,6 +92,8 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)):
         attributes["swimming_speed"] = npc.swimming_speed
     if npc.flying_speed:
         attributes["flying_speed"] = npc.flying_speed
+    if npc.climbing_speed:
+        attributes["climbing_speed"] = npc.climbing_speed
     if npc.image:
         attributes["image"] = npc.image
     if npc.race:
@@ -273,6 +276,8 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
             updated_npc.flying_speed = npc.flying_speed
         if npc.swimming_speed:
             updated_npc.swimming_speed = npc.swimming_speed
+        if npc.climbing_speed:
+            updated_npc.climbing_speed = npc.climbing_speed
         if npc.image:
             updated_npc.image = npc.image
         if npc.race:

@@ -15,6 +15,7 @@ class CreaturePostBase(BaseModel):
     walking_speed: int = None
     swimming_speed: int = None
     flying_speed: int = None
+    climbing_speed: int = None
     image: bytes = None
 
     race: int = None
@@ -42,6 +43,7 @@ class CreaturePutBase(BaseModel):
     walking_speed: int = None
     swimming_speed: int = None
     flying_speed: int = None
+    climbing_speed: int = None
     image: bytes = None
 
     race: int = None

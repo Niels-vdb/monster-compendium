@@ -21,21 +21,22 @@ def test_get_enemies(create_enemy, db_session):
         "enemies": [
             {
                 "name": "Giff",
-                "race": None,
+                "image": None,
                 "description": "A large hippo like creature",
                 "alive": True,
-                "subrace": None,
+                "race": None,
                 "active": True,
-                "type_id": 1,
-                "id": 1,
+                "subrace": None,
                 "armour_class": 16,
-                "size_id": 1,
+                "type_id": 1,
                 "walking_speed": 30,
-                "creature": "enemies",
+                "size_id": 1,
                 "swimming_speed": 20,
+                "creature": "enemies",
                 "information": "Some information about this big hippo, like his knowledge about firearms.",
                 "flying_speed": 0,
-                "image": None,
+                "id": 1,
+                "climbing_speed": None,
             }
         ]
     }
@@ -61,14 +62,15 @@ def test_get_enemy(create_enemy, db_session):
         "walking_speed": 30,
         "swimming_speed": 20,
         "flying_speed": 0,
+        "climbing_speed": None,
         "image": None,
         "race": None,
         "subrace": None,
         "size": {"id": 1, "name": "Tiny"},
-        "creature_type": {"name": "Aberration", "id": 1},
+        "creature_type": {"id": 1, "name": "Aberration"},
         "parties": [{"name": "Murder Hobo Party", "id": 1}],
-        "classes": [{"id": 1, "name": "Artificer"}],
-        "subclasses": [{"name": "Alchemist", "class_id": 1, "id": 1}],
+        "classes": [{"name": "Artificer", "id": 1}],
+        "subclasses": [{"id": 1, "name": "Alchemist", "class_id": 1}],
         "resistances": [{"id": 1, "name": "Fire"}],
         "immunities": [{"id": 1, "name": "Fire"}],
         "vulnerabilities": [{"id": 1, "name": "Fire"}],
@@ -105,6 +107,9 @@ def test_post_enemy(
             "active": True,
             "armour_class": 22,
             "walking_speed": 35,
+            "swimming_speed": 35,
+            "flying_speed": 35,
+            "climbing_speed": 35,
             "classes": [1],
             "subclasses": [1],
             "race": 1,
@@ -124,21 +129,22 @@ def test_post_enemy(
         "message": "New enemy 'Giff' has been added to the database.",
         "enemy": {
             "name": "Giff",
-            "race": 1,
-            "description": " A large hippo like creature",
+            "image": None,
             "alive": True,
+            "description": " A large hippo like creature",
+            "race": 1,
             "subrace": 1,
             "active": True,
             "type_id": 1,
-            "id": 1,
             "armour_class": 22,
-            "size_id": 1,
             "walking_speed": 35,
+            "size_id": 1,
             "creature": "enemies",
-            "swimming_speed": None,
+            "swimming_speed": 35,
             "information": "Some information about this big hippo, like his knowledge about firearms.",
-            "flying_speed": None,
-            "image": None,
+            "flying_speed": 35,
+            "climbing_speed": 35,
+            "id": 1,
         },
     }
 
@@ -376,6 +382,7 @@ def test_enemy_add_put(
             "armour_class": 20,
             "walking_speed": 40,
             "swimming_speed": 40,
+            "climbing_speed": 40,
             "flying_speed": 5,
             "race": race_id,
             "subrace": subrace_id,
@@ -434,6 +441,7 @@ def test_enemy_add_put(
     assert enemy.armour_class == 20
     assert enemy.walking_speed == 40
     assert enemy.swimming_speed == 40
+    assert enemy.climbing_speed == 40
     assert enemy.flying_speed == 5
     assert enemy.race == race_id
     assert enemy.subrace == subrace_id
@@ -450,22 +458,23 @@ def test_enemy_add_put(
     assert response.json() == {
         "message": "Enemy 'Froghemoth' has been updated.",
         "enemy": {
+            "image": None,
             "name": "Froghemoth",
-            "race": 1,
-            "subrace": 1,
             "description": "Something else about the Froghemoth.",
             "alive": False,
-            "type_id": 2,
+            "race": 1,
             "active": False,
-            "id": 1,
-            "size_id": 2,
+            "subrace": 1,
+            "type_id": 2,
             "armour_class": 20,
-            "creature": "enemies",
             "walking_speed": 40,
+            "size_id": 2,
             "swimming_speed": 40,
+            "creature": "enemies",
             "flying_speed": 5,
             "information": "Some new information about Froghemoth.",
-            "image": None,
+            "climbing_speed": 40,
+            "id": 1,
         },
     }
 
@@ -501,6 +510,7 @@ def test_enemy_remove_put(
             "walking_speed": 35,
             "swimming_speed": 30,
             "flying_speed": 5,
+            "climbing_speed": 30,
             "race": race_id,
             "subrace": subrace_id,
             "size_id": size_id,
@@ -554,6 +564,7 @@ def test_enemy_remove_put(
     assert enemy.walking_speed == 35
     assert enemy.swimming_speed == 30
     assert enemy.flying_speed == 5
+    assert enemy.climbing_speed == 30
     assert enemy.race == race_id
     assert enemy.subrace == subrace_id
     assert enemy.size_id == size_id
@@ -569,22 +580,23 @@ def test_enemy_remove_put(
     assert response.json() == {
         "message": "Enemy 'Froghemoth' has been updated.",
         "enemy": {
-            "type_id": 2,
+            "image": None,
             "name": "Froghemoth",
-            "size_id": 2,
             "description": "Something else about the Froghemoth.",
-            "id": 1,
             "alive": False,
-            "creature": "enemies",
+            "race": 1,
             "active": False,
+            "subrace": 1,
+            "type_id": 2,
             "armour_class": 20,
             "walking_speed": 35,
+            "size_id": 2,
             "swimming_speed": 30,
+            "creature": "enemies",
             "flying_speed": 5,
-            "image": None,
             "information": "Some new information about Froghemoth.",
-            "race": 1,
-            "subrace": 1,
+            "climbing_speed": 30,
+            "id": 1,
         },
     }
 

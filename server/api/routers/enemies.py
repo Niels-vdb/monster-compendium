@@ -56,6 +56,7 @@ def get_enemy(enemy_id: int, db: Session = Depends(get_db)):
         "walking_speed": enemy.walking_speed,
         "swimming_speed": enemy.swimming_speed,
         "flying_speed": enemy.flying_speed,
+        "climbing_speed": enemy.climbing_speed,
         "image": enemy.image,
         "race": enemy.race,
         "subrace": enemy.subrace,
@@ -92,6 +93,8 @@ def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)):
         attributes["swimming_speed"] = enemy.swimming_speed
     if enemy.flying_speed:
         attributes["flying_speed"] = enemy.flying_speed
+    if enemy.climbing_speed:
+        attributes["climbing_speed"] = enemy.climbing_speed
     if enemy.image:
         attributes["image"] = enemy.image
     if enemy.race:
@@ -273,6 +276,8 @@ def put_enemy(enemy_id: str, enemy: CreaturePutBase, db: Session = Depends(get_d
             updated_enemy.swimming_speed = enemy.swimming_speed
         if enemy.flying_speed:
             updated_enemy.flying_speed = enemy.flying_speed
+        if enemy.climbing_speed:
+            updated_enemy.climbing_speed = enemy.climbing_speed
         if enemy.image:
             updated_enemy.image = enemy.image
         if enemy.race:
