@@ -43,7 +43,7 @@ def get_subclass(subclass_id: int, db: Session = Depends(get_db)):
     return {
         "id": subclass.id,
         "name": subclass.name,
-        "classes": subclass.parent_class,
+        "class": subclass.parent_class,
     }
 
 

@@ -30,7 +30,7 @@ def test_get_subclass(create_subclass, db_session):
     assert response.json() == {
         "id": 1,
         "name": "Alchemist",
-        "classes": {"name": "Artificer", "id": 1},
+        "class": {"name": "Artificer", "id": 1},
     }
 
 
