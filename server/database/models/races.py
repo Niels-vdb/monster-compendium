@@ -54,8 +54,9 @@ class Race(Base):
         back_populates="race_disadvantages",
     )
 
-    # Relationships
+    # 1-n relationships
     subraces = relationship("Subrace", back_populates="race")
+    creatures = relationship("Creature", back_populates="race")
 
     def __repr__(self) -> str:
         """

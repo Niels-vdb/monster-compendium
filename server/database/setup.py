@@ -1119,7 +1119,7 @@ def create_pcs() -> None:
             "armour_class": 17,
             "classes": ["Barbarian"],
             "subclasses": ["Herculean Path"],
-            "race": "Thylean Centaur",
+            "race_id": "Thylean Centaur",
             "user": "player",
             "parties": ["Murder Hobo Party"],
         },
@@ -1132,8 +1132,8 @@ def create_pcs() -> None:
             "armour_class": 18,
             "classes": ["Fighter"],
             "subclasses": ["Hoplite Soldier"],
-            "race": "Thylean Nymph",
-            "subrace": "Naiad",
+            "race_id": "Thylean Nymph",
+            "subrace_id": "Naiad",
             "user": "admin",
             "parties": ["Murder Hobo Party"],
         },
@@ -1177,17 +1177,17 @@ def create_pcs() -> None:
                     for attribute in attributes["subclasses"]
                 ]
                 del attributes["subclasses"]
-            if "race" in attributes.keys():
-                attributes["race"] = (
+            if "race_id" in attributes.keys():
+                attributes["race_id"] = (
                     session.query(Race)
-                    .filter(Race.name == attributes["race"])
+                    .filter(Race.name == attributes["race_id"])
                     .first()
                     .id
                 )
-            if "subrace" in attributes.keys():
-                attributes["subrace"] = (
+            if "subrace_id" in attributes.keys():
+                attributes["subrace_id"] = (
                     session.query(Subrace)
-                    .filter(Subrace.name == attributes["subrace"])
+                    .filter(Subrace.name == attributes["subrace_id"])
                     .first()
                     .id
                 )

@@ -23,9 +23,9 @@ def test_get_npc_characters(create_npc, db_session):
                 "image": None,
                 "description": "A demigod female.",
                 "alive": True,
-                "race": None,
+                "race_id": None,
                 "active": True,
-                "subrace": None,
+                "subrace_id": None,
                 "id": 1,
                 "armour_class": 16,
                 "type_id": 1,
@@ -112,8 +112,8 @@ def test_post_npc(
             "climbing_speed": 5,
             "classes": [1],
             "subclasses": [1],
-            "race": 1,
-            "subrace": 1,
+            "race_id": 1,
+            "subrace_id": 1,
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
@@ -131,10 +131,10 @@ def test_post_npc(
             "name": "Volothamp Geddarm",
             "image": None,
             "description": "Volo for short",
-            "race": 1,
+            "race_id": 1,
             "alive": True,
             "active": True,
-            "subrace": 1,
+            "subrace_id": 1,
             "armour_class": 22,
             "id": 1,
             "type_id": 1,
@@ -187,7 +187,7 @@ def test_post_npc_fake_race(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "race": 2,
+            "race_id": 2,
         },
     )
     assert response.status_code == 404
@@ -202,7 +202,7 @@ def test_post_npc_fake_subrace(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "subrace": 2,
+            "subrace_id": 2,
         },
     )
     assert response.status_code == 404
@@ -383,8 +383,8 @@ def test_npc_add_put(
             "swimming_speed": 30,
             "flying_speed": 5,
             "climbing_speed": 5,
-            "race": race_id,
-            "subrace": subrace_id,
+            "race_id": race_id,
+            "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
             "classes": [2],
@@ -441,8 +441,8 @@ def test_npc_add_put(
     assert npc.walking_speed == 35
     assert npc.swimming_speed == 30
     assert npc.flying_speed == 5
-    assert npc.race == race_id
-    assert npc.subrace == subrace_id
+    assert npc.race_id == race_id
+    assert npc.subrace_id == subrace_id
     assert npc.size_id == size_id
     assert npc.type_id == type_id
     assert len(npc.classes) == 2
@@ -459,10 +459,10 @@ def test_npc_add_put(
             "name": "Endofyre",
             "image": None,
             "description": "Something else about the hippo.",
-            "race": 1,
+            "race_id": 1,
             "alive": False,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "armour_class": 20,
             "id": 1,
             "type_id": 2,
@@ -507,8 +507,8 @@ def test_npc_remove_put(
             "swimming_speed": 30,
             "flying_speed": 5,
             "climbing_speed": 5,
-            "race": race_id,
-            "subrace": subrace_id,
+            "race_id": race_id,
+            "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
             "classes": [1],
@@ -560,8 +560,8 @@ def test_npc_remove_put(
     assert npc.walking_speed == 35
     assert npc.swimming_speed == 30
     assert npc.flying_speed == 5
-    assert npc.race == race_id
-    assert npc.subrace == subrace_id
+    assert npc.race_id == race_id
+    assert npc.subrace_id == subrace_id
     assert npc.size_id == size_id
     assert npc.type_id == type_id
     assert len(npc.classes) == 0
@@ -578,10 +578,10 @@ def test_npc_remove_put(
             "name": "Endofyre",
             "image": None,
             "description": "A demigod female.",
-            "race": 1,
+            "race_id": 1,
             "alive": False,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "armour_class": 20,
             "id": 1,
             "type_id": 2,
@@ -598,7 +598,7 @@ def test_npc_remove_put(
 
 def test_npc_fake_race_put(create_npc, db_session):
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"race": 3}
+        f"/api/non_player_characters/{create_npc.id}", json={"race_id": 3}
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "This race does not exist."}
@@ -606,7 +606,7 @@ def test_npc_fake_race_put(create_npc, db_session):
 
 def test_npc_fake_subrace_put(create_npc, db_session):
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"subrace": 3}
+        f"/api/non_player_characters/{create_npc.id}", json={"subrace_id": 3}
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "This subrace does not exist."}

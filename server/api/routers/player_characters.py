@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -21,7 +22,7 @@ from server.database.models.damage_types import DamageType
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
-from server.database.models.users import Party
+from server.database.models.users import Party, User
 
 router = APIRouter(
     prefix="/api/player_characters",
@@ -31,15 +32,30 @@ router = APIRouter(
 
 
 class PCPostBase(CreaturePostBase):
+    """
+    Extension of the CreaturePostBase with extra user_id for
+    pc to user connection.
+    """
+
     user_id: int
+
+
+class UserPublic(BaseModel):
+    """Only allows specific data from the User table to show up."""
+
+    name: str
+    username: str
+    image: bytes | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/")
 def get_pc_characters(db: Session = Depends(get_db)):
-    pc_characters = db.query(PlayerCharacter).all()
-    if not pc_characters:
+    player_characters = db.query(PlayerCharacter).all()
+    if not player_characters:
         raise HTTPException(status_code=404, detail="No player characters found.")
-    return {"player_characters": pc_characters}
+    return {"player_characters": player_characters}
 
 
 @router.get("/{pc_id}")
@@ -64,7 +80,7 @@ def get_pc(pc_id: int, db: Session = Depends(get_db)):
         "subrace": pc.subrace,
         "size": pc.size,
         "creature_type": pc.creature_type,
-        "user": pc.user,
+        "user": UserPublic.model_validate(pc.user),
         "parties": pc.parties,
         "classes": pc.classes,
         "subclasses": pc.subclasses,
@@ -100,16 +116,16 @@ def post_pc(pc: PCPostBase, db: Session = Depends(get_db)):
         attributes["climbing_speed"] = pc.climbing_speed
     if pc.image:
         attributes["image"] = pc.image
-    if pc.race:
-        race = db.query(Race).filter(Race.id == pc.race).first()
+    if pc.race_id:
+        race = db.query(Race).filter(Race.id == pc.race_id).first()
         if not race:
             raise HTTPException(status_code=404, detail=f"This race does not exist.")
-        attributes["race"] = race.id
-    if pc.subrace:
-        subrace = db.query(Subrace).filter(Subrace.id == pc.subrace).first()
+        attributes["race_id"] = race.id
+    if pc.subrace_id:
+        subrace = db.query(Subrace).filter(Subrace.id == pc.subrace_id).first()
         if not subrace:
             raise HTTPException(status_code=404, detail=f"This subrace does not exist.")
-        attributes["subrace"] = subrace.id
+        attributes["subrace_id"] = subrace.id
     if pc.size_id:
         size = db.query(Size).filter(Size.id == pc.size_id).first()
         if not size:
@@ -285,18 +301,18 @@ def put_pc(pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)):
             updated_pc.climbing_speed = pc.climbing_speed
         if pc.image:
             updated_pc.image = pc.image
-        if pc.race:
-            race = db.query(Race).filter(Race.id == pc.race).first()
+        if pc.race_id:
+            race = db.query(Race).filter(Race.id == pc.race_id).first()
             if not race:
                 raise HTTPException(status_code=404, detail="This race does not exist.")
-            updated_pc.race = race.id
-        if pc.subrace:
-            subrace = db.query(Subrace).filter(Subrace.id == pc.subrace).first()
+            updated_pc.race_id = race.id
+        if pc.subrace_id:
+            subrace = db.query(Subrace).filter(Subrace.id == pc.subrace_id).first()
             if not subrace:
                 raise HTTPException(
                     status_code=404, detail="This subrace does not exist."
                 )
-            updated_pc.subrace = subrace.id
+            updated_pc.subrace_id = subrace.id
         if pc.size_id:
             size = db.query(Size).filter(Size.id == pc.size_id).first()
             if not size:

@@ -24,9 +24,9 @@ def test_get_enemies(create_enemy, db_session):
                 "image": None,
                 "description": "A large hippo like creature",
                 "alive": True,
-                "race": None,
+                "race_id": None,
                 "active": True,
-                "subrace": None,
+                "subrace_id": None,
                 "armour_class": 16,
                 "type_id": 1,
                 "walking_speed": 30,
@@ -112,8 +112,8 @@ def test_post_enemy(
             "climbing_speed": 35,
             "classes": [1],
             "subclasses": [1],
-            "race": 1,
-            "subrace": 1,
+            "race_id": 1,
+            "subrace_id": 1,
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
@@ -132,8 +132,8 @@ def test_post_enemy(
             "image": None,
             "alive": True,
             "description": " A large hippo like creature",
-            "race": 1,
-            "subrace": 1,
+            "race_id": 1,
+            "subrace_id": 1,
             "active": True,
             "type_id": 1,
             "armour_class": 22,
@@ -187,7 +187,7 @@ def test_post_enemy_fake_race(
         "/api/enemies",
         json={
             "name": "Giff",
-            "race": 2,
+            "race_id": 2,
         },
     )
     assert response.status_code == 404
@@ -202,8 +202,7 @@ def test_post_enemy_fake_subrace(
         "/api/enemies",
         json={
             "name": "Giff",
-            "race": 1,
-            "subrace": 2,
+            "subrace_id": 2,
         },
     )
     assert response.status_code == 404
@@ -384,8 +383,8 @@ def test_enemy_add_put(
             "swimming_speed": 40,
             "climbing_speed": 40,
             "flying_speed": 5,
-            "race": race_id,
-            "subrace": subrace_id,
+            "race_id": race_id,
+            "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
             "classes": [2],
@@ -443,8 +442,8 @@ def test_enemy_add_put(
     assert enemy.swimming_speed == 40
     assert enemy.climbing_speed == 40
     assert enemy.flying_speed == 5
-    assert enemy.race == race_id
-    assert enemy.subrace == subrace_id
+    assert enemy.race_id == race_id
+    assert enemy.subrace_id == subrace_id
     assert enemy.size_id == size_id
     assert enemy.type_id == type_id
     assert len(enemy.classes) == 2
@@ -462,9 +461,9 @@ def test_enemy_add_put(
             "name": "Froghemoth",
             "description": "Something else about the Froghemoth.",
             "alive": False,
-            "race": 1,
+            "race_id": 1,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "type_id": 2,
             "armour_class": 20,
             "walking_speed": 40,
@@ -511,8 +510,8 @@ def test_enemy_remove_put(
             "swimming_speed": 30,
             "flying_speed": 5,
             "climbing_speed": 30,
-            "race": race_id,
-            "subrace": subrace_id,
+            "race_id": race_id,
+            "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
             "classes": [1],
@@ -565,8 +564,8 @@ def test_enemy_remove_put(
     assert enemy.swimming_speed == 30
     assert enemy.flying_speed == 5
     assert enemy.climbing_speed == 30
-    assert enemy.race == race_id
-    assert enemy.subrace == subrace_id
+    assert enemy.race_id == race_id
+    assert enemy.subrace_id == subrace_id
     assert enemy.size_id == size_id
     assert enemy.type_id == type_id
     assert len(enemy.classes) == 0
@@ -584,9 +583,9 @@ def test_enemy_remove_put(
             "name": "Froghemoth",
             "description": "Something else about the Froghemoth.",
             "alive": False,
-            "race": 1,
+            "race_id": 1,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "type_id": 2,
             "armour_class": 20,
             "walking_speed": 35,
@@ -602,13 +601,13 @@ def test_enemy_remove_put(
 
 
 def test_enemy_fake_race_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"race": 3})
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"race_id": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_enemy_fake_subrace_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"subrace": 3})
+    response = client.put(f"/api/enemies/{create_enemy.id}", json={"subrace_id": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "This subrace does not exist."}
 

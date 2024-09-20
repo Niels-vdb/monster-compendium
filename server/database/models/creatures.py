@@ -44,9 +44,9 @@ class Creature(Base):
     climbing_speed = Column(Integer, nullable=True)
     image = Column(BLOB, nullable=True)
 
-    # 1-n relationships
-    race = Column(Integer, ForeignKey("races.id"), nullable=True)
-    subrace = Column(Integer, ForeignKey("subraces.id"), nullable=True)
+    # n-1 relationships
+    race_id = Column(Integer, ForeignKey("races.id"), nullable=True)
+    subrace_id = Column(Integer, ForeignKey("subraces.id"), nullable=True)
     type_id = Column(Integer, ForeignKey("types.id"), nullable=True)
     size_id = Column(Integer, ForeignKey("sizes.id"), nullable=True)
 
@@ -75,6 +75,8 @@ class Creature(Base):
     disadvantages = relationship("Attribute", secondary="creature_disadvantages")
 
     # Relationship references
+    race = relationship("Race", back_populates="creatures")
+    subrace = relationship("Subrace", back_populates="creatures")
     creature_type = relationship("Type", back_populates="creatures")
     size = relationship("Size", back_populates="creatures")
 

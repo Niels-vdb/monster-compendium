@@ -21,22 +21,22 @@ def test_get_pcs(create_pc, db_session):
             {
                 "name": "Rhoetus",
                 "image": None,
-                "user_id": 1,
                 "description": "A centaur barbarian.",
                 "alive": True,
-                "race": 1,
+                "race_id": 1,
                 "active": True,
-                "subrace": 1,
+                "subrace_id": 1,
                 "armour_class": 17,
                 "type_id": 1,
                 "walking_speed": 40,
                 "size_id": 1,
-                "id": 1,
                 "swimming_speed": 10,
                 "creature": "player_characters",
+                "id": 1,
                 "information": "Some information about Rhoetus.",
                 "flying_speed": 0,
                 "climbing_speed": None,
+                "user_id": 1,
             }
         ]
     }
@@ -64,25 +64,23 @@ def test_get_pc(create_pc, db_session):
         "flying_speed": 0,
         "climbing_speed": None,
         "image": None,
-        "race": 1,
-        "subrace": 1,
+        "race": {"name": "Dwarf", "id": 1},
+        "subrace": {"name": "Duergar", "id": 1, "race_id": 1},
         "size": {"id": 1, "name": "Tiny"},
-        "creature_type": {"id": 1, "name": "Aberration"},
+        "creature_type": {"name": "Aberration", "id": 1},
         "user": {
+            "username": "Test",
             "name": "test",
             "image": None,
-            "username": "Test",
-            "password": None,
-            "id": 1,
         },
         "parties": [{"name": "Murder Hobo Party", "id": 1}],
         "classes": [{"name": "Artificer", "id": 1}],
-        "subclasses": [{"id": 1, "name": "Alchemist", "class_id": 1}],
-        "resistances": [{"id": 1, "name": "Fire"}],
-        "immunities": [{"id": 1, "name": "Fire"}],
-        "vulnerabilities": [{"id": 1, "name": "Fire"}],
-        "advantages": [{"name": "Charmed", "id": 1}],
-        "disadvantages": [{"name": "Charmed", "id": 1}],
+        "subclasses": [{"name": "Alchemist", "class_id": 1, "id": 1}],
+        "resistances": [{"name": "Fire", "id": 1}],
+        "immunities": [{"name": "Fire", "id": 1}],
+        "vulnerabilities": [{"name": "Fire", "id": 1}],
+        "advantages": [{"id": 1, "name": "Charmed"}],
+        "disadvantages": [{"id": 1, "name": "Charmed"}],
     }
 
 
@@ -121,8 +119,8 @@ def test_post_pc(
             "climbing_speed": 5,
             "classes": [1],
             "subclasses": [1],
-            "race": 1,
-            "subrace": 1,
+            "race_id": 1,
+            "subrace_id": 1,
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
@@ -142,9 +140,9 @@ def test_post_pc(
             "image": None,
             "description": "A gemstone obsessed goblin.",
             "alive": True,
-            "race": 1,
+            "race_id": 1,
             "active": True,
-            "subrace": 1,
+            "subrace_id": 1,
             "type_id": 1,
             "armour_class": 22,
             "size_id": 1,
@@ -203,7 +201,7 @@ def test_post_pc_fake_race(
         json={
             "name": "Gobby",
             "user_id": 1,
-            "race": 2,
+            "race_id": 2,
         },
     )
     assert response.status_code == 404
@@ -212,7 +210,6 @@ def test_post_pc_fake_race(
 
 def test_post_pc_fake_subrace(
     create_user,
-    create_race,
     create_subrace,
     db_session,
 ):
@@ -221,8 +218,7 @@ def test_post_pc_fake_subrace(
         json={
             "name": "Gobby",
             "user_id": 1,
-            "race": 1,
-            "subrace": 2,
+            "subrace_id": 2,
         },
     )
     assert response.status_code == 404
@@ -418,8 +414,8 @@ def test_pc_add_put(
             "swimming_speed": 30,
             "flying_speed": 5,
             "climbing_speed": 5,
-            "race": race_id,
-            "subrace": subrace_id,
+            "race_id": race_id,
+            "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
             "classes": [2],
@@ -476,8 +472,8 @@ def test_pc_add_put(
     assert pc.walking_speed == 35
     assert pc.swimming_speed == 30
     assert pc.flying_speed == 5
-    assert pc.race == race_id
-    assert pc.subrace == subrace_id
+    assert pc.race_id == race_id
+    assert pc.subrace_id == subrace_id
     assert pc.size_id == size_id
     assert pc.type_id == type_id
     assert len(pc.classes) == 2
@@ -496,9 +492,9 @@ def test_pc_add_put(
             "image": None,
             "description": "Something else about the Electra.",
             "alive": False,
-            "race": 1,
+            "race_id": 1,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "type_id": 2,
             "armour_class": 20,
             "size_id": 2,
@@ -602,8 +598,8 @@ def test_pc_remove_put(
     assert pc.walking_speed == 35
     assert pc.swimming_speed == 30
     assert pc.flying_speed == 5
-    assert pc.race == race_id
-    assert pc.subrace == subrace_id
+    assert pc.race_id == race_id
+    assert pc.subrace_id == subrace_id
     assert pc.size_id == size_id
     assert pc.type_id == type_id
     assert len(pc.classes) == 0
@@ -622,9 +618,9 @@ def test_pc_remove_put(
             "image": None,
             "description": "Something else about the Electra.",
             "alive": False,
-            "race": 1,
+            "race_id": 1,
             "active": False,
-            "subrace": 1,
+            "subrace_id": 1,
             "type_id": 2,
             "armour_class": 20,
             "size_id": 2,
@@ -640,13 +636,15 @@ def test_pc_remove_put(
 
 
 def test_pc_fake_race_put(create_pc, db_session):
-    response = client.put(f"/api/player_characters/{create_pc.id}", json={"race": 3})
+    response = client.put(f"/api/player_characters/{create_pc.id}", json={"race_id": 3})
     assert response.status_code == 404
     assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_pc_fake_subrace_put(create_pc, db_session):
-    response = client.put(f"/api/player_characters/{create_pc.id}", json={"subrace": 3})
+    response = client.put(
+        f"/api/player_characters/{create_pc.id}", json={"subrace_id": 3}
+    )
     assert response.status_code == 404
     assert response.json() == {"detail": "This subrace does not exist."}
 

@@ -1,5 +1,4 @@
-from typing import Annotated, Any
-from pydantic import BaseModel, Field
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import and_
@@ -97,16 +96,16 @@ def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)):
         attributes["climbing_speed"] = enemy.climbing_speed
     if enemy.image:
         attributes["image"] = enemy.image
-    if enemy.race:
-        race = db.query(Race).filter(Race.id == enemy.race).first()
+    if enemy.race_id:
+        race = db.query(Race).filter(Race.id == enemy.race_id).first()
         if not race:
             raise HTTPException(status_code=404, detail="This race does not exist.")
-        attributes["race"] = race.id
-    if enemy.subrace:
-        subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace).first()
+        attributes["race_id"] = race.id
+    if enemy.subrace_id:
+        subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace_id).first()
         if not subrace:
             raise HTTPException(status_code=404, detail="This subrace does not exist.")
-        attributes["subrace"] = subrace.id
+        attributes["subrace_id"] = subrace.id
     if enemy.size_id:
         size = db.query(Size).filter(Size.id == enemy.size_id).first()
         if not size:
@@ -280,18 +279,18 @@ def put_enemy(enemy_id: str, enemy: CreaturePutBase, db: Session = Depends(get_d
             updated_enemy.climbing_speed = enemy.climbing_speed
         if enemy.image:
             updated_enemy.image = enemy.image
-        if enemy.race:
-            race = db.query(Race).filter(Race.id == enemy.race).first()
+        if enemy.race_id:
+            race = db.query(Race).filter(Race.id == enemy.race_id).first()
             if not race:
                 raise HTTPException(status_code=404, detail="This race does not exist.")
-            updated_enemy.race = race.id
-        if enemy.subrace:
-            subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace).first()
+            updated_enemy.race_id = race.id
+        if enemy.subrace_id:
+            subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace_id).first()
             if not subrace:
                 raise HTTPException(
                     status_code=404, detail="This subrace does not exist."
                 )
-            updated_enemy.subrace = subrace.id
+            updated_enemy.subrace_id = subrace.id
         if enemy.size_id:
             size = db.query(Size).filter(Size.id == enemy.size_id).first()
             if not size:

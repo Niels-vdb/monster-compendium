@@ -259,8 +259,8 @@ def create_pc(
     attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
-    attributes["race"] = create_race.id
-    attributes["subrace"] = create_subrace.id
+    attributes["race_id"] = create_race.id
+    attributes["subrace_id"] = create_subrace.id
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 

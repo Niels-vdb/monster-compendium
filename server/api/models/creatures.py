@@ -18,8 +18,8 @@ class CreaturePostBase(BaseModel):
     climbing_speed: int = None
     image: bytes = None
 
-    race: int = None
-    subrace: int = None
+    race_id: int = None
+    subrace_id: int = None
     size_id: int = None
     type_id: int = None
 
@@ -46,8 +46,8 @@ class CreaturePutBase(BaseModel):
     climbing_speed: int = None
     image: bytes = None
 
-    race: int = None
-    subrace: int = None
+    race_id: int = None
+    subrace_id: int = None
     size_id: int = None
     type_id: int = None
 

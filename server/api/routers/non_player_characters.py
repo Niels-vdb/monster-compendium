@@ -96,16 +96,16 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)):
         attributes["climbing_speed"] = npc.climbing_speed
     if npc.image:
         attributes["image"] = npc.image
-    if npc.race:
-        race = db.query(Race).filter(Race.id == npc.race).first()
+    if npc.race_id:
+        race = db.query(Race).filter(Race.id == npc.race_id).first()
         if not race:
             raise HTTPException(status_code=404, detail="This race does not exist.")
-        attributes["race"] = race.id
-    if npc.subrace:
-        subrace = db.query(Subrace).filter(Subrace.id == npc.subrace).first()
+        attributes["race_id"] = race.id
+    if npc.subrace_id:
+        subrace = db.query(Subrace).filter(Subrace.id == npc.subrace_id).first()
         if not subrace:
             raise HTTPException(status_code=404, detail="This subrace does not exist.")
-        attributes["subrace"] = subrace.id
+        attributes["subrace_id"] = subrace.id
     if npc.size_id:
         size = db.query(Size).filter(Size.id == npc.size_id).first()
         if not size:
@@ -280,18 +280,18 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
             updated_npc.climbing_speed = npc.climbing_speed
         if npc.image:
             updated_npc.image = npc.image
-        if npc.race:
-            race = db.query(Race).filter(Race.id == npc.race).first()
+        if npc.race_id:
+            race = db.query(Race).filter(Race.id == npc.race_id).first()
             if not race:
                 raise HTTPException(status_code=404, detail="This race does not exist.")
-            updated_npc.race = race.id
-        if npc.subrace:
-            subrace = db.query(Subrace).filter(Subrace.id == npc.subrace).first()
+            updated_npc.race_id = race.id
+        if npc.subrace_id:
+            subrace = db.query(Subrace).filter(Subrace.id == npc.subrace_id).first()
             if not subrace:
                 raise HTTPException(
                     status_code=404, detail="This subrace does not exist."
                 )
-            updated_npc.subrace = subrace.id
+            updated_npc.subrace_id = subrace.id
         if npc.size_id:
             size = db.query(Size).filter(Size.id == npc.size_id).first()
             if not size:

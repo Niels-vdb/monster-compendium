@@ -24,6 +24,8 @@ class Subrace(Base):
         Integer,
         ForeignKey("races.id", ondelete="CASCADE"),
     )
+    # 1-n relationships
+    creatures = relationship("Creature", back_populates="subrace")
 
     # n-1 relationships
     race = relationship("Race", back_populates="subraces")
