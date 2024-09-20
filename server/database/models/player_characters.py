@@ -17,7 +17,7 @@ class PlayerCharacter(Creature):
         - information (str): Notes and extra information about the monster (optional).
         - alive (bool): Boolean check if monster is alive (True), or dead (False).
         - active (bool): Boolean check if the monster is visible for party (True) or not (False).
-        - amour_class (int): The armour class the monster has (optional).
+        - armour_class (int): The armour class the monster has (optional).
         - image (BLOB): An image of the monster (optional).
 
         - race (int): The race of the creature, FK to id of the race in the races table (optional).
@@ -33,8 +33,8 @@ class PlayerCharacter(Creature):
         - vulnerabilities (List[Effect]): The effect(s) the creature is vulnerable to. Linked to actual model (optional).
     """
 
-    __tablename__ = "pc_characters"
-    __mapper_args__ = {"polymorphic_identity": "pc_characters"}
+    __tablename__ = "player_characters"
+    __mapper_args__ = {"polymorphic_identity": "player_characters"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 

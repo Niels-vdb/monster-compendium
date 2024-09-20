@@ -1,14 +1,31 @@
 from typing import Dict, List
 
 from server.database.create import session
+from server.database.models.attributes import Attribute
 from server.database.models.creatures import CreatureClasses
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NPCCharacter
-from server.database.models.races import Race, Subrace
+from server.database.models.non_player_characters import NonPlayerCharacter
+from server.database.models.races import (
+    Race,
+    RaceAdvantages,
+    RaceDisadvantages,
+    RaceImmunities,
+    RaceResistances,
+    RaceVulnerabilities,
+)
+from server.database.models.subraces import (
+    Subrace,
+    SubraceAdvantages,
+    SubraceDisadvantages,
+    SubraceImmunities,
+    SubraceResistances,
+    SubraceVulnerabilities,
+)
+
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
 from server.database.models.users import User, Party, Role
 
 
@@ -45,24 +62,27 @@ def initialize_users() -> None:
     """
     users: Dict[str, Dict[str, str]] = {
         "admin": {
-            "name": "admin",
+            "name": "Admin",
+            "username": "admin",
             "roles": ["Admin", "Player"],
             "parties": ["Murder Hobo Party"],
         },
         "player": {
-            "name": "player",
+            "name": "Player",
+            "username": "player",
             "roles": ["Player"],
             "parties": ["Murder Hobo Party"],
         },
         "dungeonmaster": {
-            "name": "dungeonmaster",
+            "name": "Dungeon Master",
+            "username": "dungeonmaster",
             "roles": ["Dungeon Master"],
             "parties": ["Murder Hobo Party"],
         },
     }
 
     for user, info in users.items():
-        if not session.query(User).filter(User.name == user).first():
+        if not session.query(User).filter(User.username == info["username"]).first():
             print(f"Adding '{user}' to users table in database.")
             info["roles"] = [
                 session.query(Role).filter(Role.name == role).first()
@@ -99,47 +119,85 @@ def initialize_sizes() -> None:
         session.commit()
 
 
-def initialize_effects() -> None:
+def initialize_damage_types() -> None:
     """
-    All initial conditions and damage types to be added to the effects table.
+    All initial damage_types and damage types to be added to the damage_types table.
     """
-    effects: List[str] = [
+    damage_types: List[str] = [
         "Acid",
-        "Blinded",
         "Bludgeoning",
         "Cold",
-        "Charmed",
-        "Deafened",
         "Fire",
-        "Frightened",
         "Force",
-        "Grappled",
-        "Incapacitated",
-        "Invisible",
         "Lightning",
-        "Magic",
         "Necrotic",
-        "Paralyzed",
         "Piercing",
-        "Petrified",
         "Poison",
-        "Poisoned",
-        "Prone",
         "Psychic",
         "Radiant",
-        "Restrained",
         "Slashing",
-        "Stunned",
         "Thunder",
-        "Unconscious",
-        "Exhaustion",
     ]
 
-    for effect in effects:
-        if not session.query(Effect).filter(Effect.name == effect).first():
-            print(f"Adding '{effect}' to the effects table in the database.")
-            new_effect = Effect(name=effect)
-            session.add(new_effect)
+    for damage_type in damage_types:
+        if not session.query(DamageType).filter(DamageType.name == damage_type).first():
+            print(f"Adding '{damage_type}' to the damage_types table in the database.")
+            new_damage_type = DamageType(name=damage_type)
+            session.add(new_damage_type)
+    session.commit()
+
+
+def initialize_attributes() -> None:
+    """
+    All initial attributes to be added to the attributes table.
+    """
+    attributes: List[str] = [
+        "Acrobatics",
+        "Animal Handling",
+        "Arcana",
+        "Athletics",
+        "Blinded",
+        "Charmed",
+        "Charisma",
+        "Constitution",
+        "Deception",
+        "Dexterity",
+        "Exhaustion",
+        "Frightened",
+        "History",
+        "Incapacitated",
+        "Insight",
+        "Intelligence",
+        "Intimidation",
+        "Investigation",
+        "Invisible",
+        "Magic",
+        "Medicine",
+        "Nature",
+        "Paralyzed",
+        "Perception",
+        "Performance",
+        "Persuasion",
+        "Petrified",
+        "Poisoned",
+        "Prone",
+        "Puzzles",
+        "Religion",
+        "Restrained",
+        "Sleight of Hand",
+        "Stealth",
+        "Strength",
+        "Stunned",
+        "Survival",
+        "Unconscious",
+        "Wisdom",
+    ]
+
+    for attribute in attributes:
+        if not session.query(Attribute).filter(Attribute.name == attribute).first():
+            print(f"Adding '{attribute}' to the conditions table in the database.")
+            new_attribute = Attribute(name=attribute)
+            session.add(new_attribute)
     session.commit()
 
 
@@ -198,7 +256,7 @@ def initialize_subclasses() -> None:
             "College of Creation",
             "College of Eloquence",
             "College of Epic Poetry",
-            "College of Glamour",
+            "College of Glarmour",
             "College of Lore",
             "College of Spirits",
             "College of Swords",
@@ -351,46 +409,278 @@ def initialize_races() -> None:
     All initial races to be added to the races table
     """
     races: Dict[str, Dict[str, List[str]]] = {
-        "Aarakocra": {"size": ["medium"], "resistance": [""]},
-        "Aasimar": {"size": ["medium", "small"], "resistance": [""]},
-        "Bugbear": {"size": ["medium"], "resistance": [""]},
-        "Centaur": {"size": ["medium"], "resistance": [""]},
-        "Changeling": {"size": ["medium", "small"], "resistance": [""]},
-        "Dragonborn": {"size": ["medium"], "resistance": [""]},
-        "Dwarf": {"size": ["medium"], "resistance": [""]},
-        "Elf": {"size": ["medium"], "resistance": [""]},
-        "Gnome": {"size": ["small"], "resistance": [""]},
-        "Fairy": {"size": ["small"], "resistance": [""]},
-        "Firbolg": {"size": ["medium"], "resistance": [""]},
-        "Genasi": {"size": ["medium", "small"], "resistance": [""]},
-        "Githyanki": {"size": ["medium"], "resistance": ["psychic"]},
-        "Githzerai": {"size": ["medium"], "resistance": ["psychic"]},
-        "Goblin": {"size": ["small"], "resistance": [""]},
-        "Goliath": {"size": ["medium"], "resistance": ["cold"]},
-        "Half-Elf": {"size": ["medium"], "resistance": [""]},
-        "Half-Orc": {"size": ["medium"], "resistance": [""]},
-        "Halfling": {"size": ["small"], "resistance": [""]},
-        "Harengon": {"size": ["medium", "small"], "resistance": [""]},
-        "Hobgoblin": {"size": ["medium"], "resistance": [""]},
-        "Human": {"size": ["medium"], "resistance": [""]},
-        "Kenku": {"size": ["medium", "small"], "resistance": [""]},
-        "Kobold": {"size": ["small"], "resistance": [""]},
-        "Lizard folk": {"size": ["medium"], "resistance": [""]},
-        "Minotaur": {"size": ["medium"], "resistance": [""]},
-        "Orc": {"size": ["medium"], "resistance": [""]},
-        "Satyr": {"size": ["medium"], "resistance": [""]},
-        "Shifter": {"size": ["medium"], "resistance": [""]},
-        "Tabaxi": {"size": ["medium", "small"], "resistance": [""]},
-        "Tiefling": {"size": ["medium"], "resistance": ["fire"]},
-        "Thylean Centaur": {"size": ["medium"], "resistance": [""]},
-        "Thylean Medusa": {"size": ["medium"], "resistance": [""]},
-        "Thylean Minotaur": {"size": ["medium"], "resistance": [""]},
-        "Thylean Nymph": {"size": ["medium"], "resistance": [""]},
-        "Thylean Satyr": {"size": ["medium"], "resistance": [""]},
-        "Thylean Siren": {"size": ["medium"], "resistance": [""]},
-        "Tortle": {"size": ["medium", "small"], "resistance": [""]},
-        "Triton": {"size": ["medium"], "resistance": ["cold"]},
-        "Yuan-ti": {"size": ["medium", "small"], "resistance": ["poison"]},
+        "Aarakocra": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Aasimar": {
+            "size": ["medium", "small"],
+            "resistance": ["necrotic", "radiant"],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Bugbear": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [{"attribute": "Charmed", "attribute": ""}],
+            "disadvantages": [],
+        },
+        "Centaur": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Changeling": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Dragonborn": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Dwarf": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [{"attribute": "Poisoned", "condition": ""}],
+            "disadvantages": [],
+        },
+        "Elf": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [{"attribute": "Charmed", "condition": ""}],
+            "disadvantages": [],
+        },
+        "Gnome": {
+            "size": ["small"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Intelligence", "condition": "Against magic"},
+                {"attribute": "Wisdom", "condition": "Against magic"},
+                {"attribute": "Charisma", "condition": "Against magic"},
+            ],
+            "disadvantages": [],
+        },
+        "Fairy": {
+            "size": ["small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Firbolg": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Genasi": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Githyanki": {
+            "size": ["medium"],
+            "resistance": ["psychic"],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Githzerai": {
+            "size": ["medium"],
+            "resistance": ["psychic"],
+            "advantages": [
+                {"attribute": "Charmed", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Goblin": {
+            "size": ["small"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Charmed", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Goliath": {
+            "size": ["medium"],
+            "resistance": ["cold"],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Half-Elf": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Half-Orc": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Halfling": {
+            "size": ["small"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Frightened", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Harengon": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Hobgoblin": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Charmed", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Human": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Kenku": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Kobold": {
+            "size": ["small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Lizard folk": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Minotaur": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Orc": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Satyr": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Magic", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Shifter": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Tabaxi": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Tiefling": {
+            "size": ["medium"],
+            "resistance": ["fire"],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Thylean Centaur": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Thylean Medusa": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Poisoned", "condition": "Against spells and abilities"},
+            ],
+            "disadvantages": [],
+        },
+        "Thylean Minotaur": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Perception", "condition": "On smells"},
+                {"attribute": "Puzzles", "condition": "Maze like puzzles"},
+            ],
+            "disadvantages": [],
+        },
+        "Thylean Nymph": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Thylean Satyr": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Charmed", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
+        "Thylean Siren": {
+            "size": ["medium"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Performance", "condition": "When using your voice"},
+                {"attribute": "Persuasion", "condition": "When using your voice"},
+            ],
+            "disadvantages": [],
+        },
+        "Tortle": {
+            "size": ["medium", "small"],
+            "resistance": [],
+            "advantages": [
+                {"attribute": "Strength", "condition": "When in shell"},
+                {"attribute": "Constitution", "condition": "When in shell"},
+            ],
+            "disadvantages": [
+                {"attribute": "Dexterity", "condition": "When in shell"},
+            ],
+        },
+        "Triton": {
+            "size": ["medium"],
+            "resistance": ["cold"],
+            "advantages": [],
+            "disadvantages": [],
+        },
+        "Yuan-ti": {
+            "size": ["medium", "small"],
+            "resistance": ["poison"],
+            "advantages": [
+                {"attribute": "Magic", "condition": ""},
+                {"attribute": "Poisoned", "condition": ""},
+            ],
+            "disadvantages": [],
+        },
     }
     for race, values in races.items():
         if not session.query(Race).filter(Race.name == race).first():
@@ -400,123 +690,391 @@ def initialize_races() -> None:
                 for size in values["size"]
             ]
             resistance_list = [
-                session.query(Effect)
-                .filter(Effect.name == resistance.capitalize())
+                session.query(DamageType)
+                .filter(DamageType.name == resistance.capitalize())
                 .first()
                 for resistance in values["resistance"]
             ]
             resistance_list = [
                 resistance for resistance in resistance_list if resistance is not None
             ]
-            for size in size_list:
-                new_race = Race(name=race, size_id=size.id, resistances=resistance_list)
-                session.add(new_race)
-        session.commit()
+            new_race = Race(name=race, sizes=size_list, resistances=resistance_list)
+            session.add(new_race)
+            session.commit()
+            session.refresh(new_race)
+            # Adding of optional (dis)advantages to the race
+            for advantage in values["advantages"]:
+                attribute = (
+                    session.query(Attribute)
+                    .filter(Attribute.name == advantage["attribute"].capitalize())
+                    .first()
+                )
+                if not attribute:
+                    print(f"Attribute not found for race '{new_race}', continuing.")
+                else:
+                    advantage = RaceAdvantages(
+                        race_id=new_race.id,
+                        attribute_id=attribute.id,
+                        condition=advantage["condition"],
+                    )
+                    session.add(advantage)
+            for disadvantage in values["disadvantages"]:
+                attribute = (
+                    session.query(Attribute)
+                    .filter(Attribute.name == disadvantage["attribute"].capitalize())
+                    .first()
+                )
+                if not attribute:
+                    print(f"Attribute not found for race '{new_race}', continuing.")
+                else:
+                    disadvantage = RaceDisadvantages(
+                        race_id=new_race.id,
+                        attribute_id=attribute.id,
+                        condition=disadvantage["condition"],
+                    )
+                    session.add(disadvantage)
+            session.commit()
 
 
 def initialize_subraces() -> None:
     """
     All initial subraces to be added to the subraces table and linked to a race.
     """
-    subraces: Dict[str, Dict[str, List[str]]] = {
+    subraces: dict[str, dict[str, list[str | dict[str, str]]]] = {
         "Dragonborn": {
-            "Black": {"resistance": ["acid"]},
-            "Blue": {"resistance": ["lightning"]},
-            "Brass": {"resistance": ["fire"]},
-            "Bronze": {"resistance": ["lightning"]},
-            "Copper": {"resistance": ["acid"]},
-            "Gold": {"resistance": ["fire"]},
-            "Green": {"resistance": ["poison"]},
-            "Red": {"resistance": ["fire"]},
-            "Silver": {"resistance": ["cold"]},
-            "White": {"resistance": ["cold"]},
+            "Black": {
+                "resistances": ["acid"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Blue": {
+                "resistances": ["lightning"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Brass": {
+                "resistances": ["fire"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bronze": {
+                "resistances": ["lightning"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Copper": {
+                "resistances": ["acid"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Gold": {
+                "resistances": ["fire"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Green": {
+                "resistances": ["poison"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Red": {
+                "resistances": ["fire"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Silver": {
+                "resistances": ["cold"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "White": {
+                "resistances": ["cold"],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Dwarf": {
-            "Duergar": {"resistance": ["charmed", "stunned", "poison"]},
-            "Mountain": {"resistance": ["poison"]},
-            "Hill": {"resistance": ["poison"]},
+            "Duergar": {
+                "resistances": [],
+                "advantages": [
+                    {"attribute": "Charmed", "condition": ""},
+                    {"attribute": "Stunned", "condition": ""},
+                ],
+                "disadvantages": [],
+            },
+            "Mountain": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Hill": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Elf": {
-            "Astral": {"resistance": [""]},
-            "Bishtahar/Tirahar": {"resistance": [""]},
-            "Dark": {"resistance": [""]},
-            "Eladrin": {"resistance": [""]},
-            "High": {"resistance": [""]},
-            "Sea Elf": {"resistance": [""]},
-            "Shadar-kai": {"resistance": ["necrotic", "charmed"]},
-            "Pallid": {"resistance": [""]},
-            "Vahadar": {"resistance": [""]},
-            "Wood": {"resistance": [""]},
-            "Zendikar": {"resistance": [""]},
+            "Astral": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Dark (Drow)": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [
+                    {"attribute": "Attack rolls", "condition": "When in sunlight"},
+                    {"attribute": "Perception", "condition": "When in sunlight"},
+                ],
+            },
+            "Eladrin": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "High": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Sea Elf": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Shadar-kai": {
+                "resistances": ["necrotic"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Wood": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Genasi": {
-            "Air": {"resistance": ["lightning"]},
-            "Earth": {"resistance": [""]},
-            "Fire": {"resistance": ["fire"]},
-            "Water": {"resistance": ["acid"]},
+            "Air": {
+                "resistances": ["lightning"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Earth": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Fire": {
+                "resistances": ["fire"],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Water": {
+                "resistances": ["acid"],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Gnome": {
-            "Deep": {"resistance": [""]},
-            "Forest": {"resistance": [""]},
-            "Rock": {"resistance": [""]},
+            "Deep": {
+                "resistances": [],
+                "advantages": [
+                    {"attribute": "Dexterity", "condition": "When going into stealth"},
+                ],
+                "disadvantages": [],
+            },
+            "Forest": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Rock": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Halfling": {
-            "Ghostwise": {"resistance": [""]},
-            "Lightfoot": {"resistance": [""]},
-            "Lotusden": {"resistance": [""]},
-            "Stout": {"resistance": ["poison"]},
+            "Lightfoot": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Stout": {
+                "resistances": ["poison"],
+                "advantages": [
+                    {"attribute": "Poison", "condition": ""},
+                ],
+                "disadvantages": [],
+            },
         },
         "Human": {
-            "Variant": {"resistance": [""]},
+            "Variant": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Tiefling": {
-            "Abyssal Tiefling": {"resistance": [""]},
-            "Bloodline of Asmodeus": {"resistance": [""]},
-            "Bloodline of Baalzebul": {"resistance": [""]},
-            "Bloodline of Dispater": {"resistance": [""]},
-            "Bloodline of Fierna": {"resistance": [""]},
-            "Bloodline of Glasya": {"resistance": [""]},
-            "Bloodline of Levistus": {"resistance": [""]},
-            "Bloodline of Mammon": {"resistance": [""]},
-            "Bloodline of Mephistopheles": {"resistance": [""]},
-            "Bloodline of Zariel": {"resistance": [""]},
-            "Variant Tiefling": {"resistance": [""]},
+            "Abyssal Tiefling": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Asmodeus": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Baalzebul": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Dispater": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Fierna": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Glasya": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Levistus": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Mammon": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Mephistopheles": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Bloodline of Zariel": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Variant Tiefling": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
         },
         "Thylean Nymph": {
-            "Aurae": {"resistance": [""]},
-            "Dryad": {"resistance": [""]},
-            "Naiad": {"resistance": [""]},
-            "Nereid": {"resistance": [""]},
-            "Oread": {"resistance": [""]},
+            "Aurae": {
+                "resistances": [],
+                "advantages": [
+                    {
+                        "attribute": "Survival",
+                        "condition": "When navigating by the stars",
+                    },
+                ],
+                "disadvantages": [],
+            },
+            "Dryad": {
+                "resistances": [],
+                "advantages": [
+                    {"attribute": "Survival", "condition": "When in forested areas"},
+                ],
+                "disadvantages": [],
+            },
+            "Naiad": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Nereid": {
+                "resistances": [],
+                "advantages": [],
+                "disadvantages": [],
+            },
+            "Oread": {
+                "resistances": [],
+                "advantages": [
+                    {
+                        "attribute": "Survival",
+                        "condition": "When in steppes, rocky islands, and mountainous regions",
+                    },
+                ],
+                "disadvantages": [],
+            },
         },
     }
 
     for race, subraces in subraces.items():
         parent_race = session.query(Race).filter(Race.name == race.title()).first()
+        if not parent_race:
+            print(f"Race '{race}' not found in database")
 
         for subrace in subraces:
             if not session.query(Subrace).filter(Subrace.name == subrace).first():
                 print(
                     f"Adding subrace '{subrace}' of race '{race}' to the subraces table in the database."
                 )
-                resistances = list(subraces[subrace].values())
+                resistances = list(subraces[subrace]["resistances"])
                 resistance_list = [
-                    session.query(Effect)
-                    .filter(Effect.name == resistance[0].capitalize())
+                    session.query(DamageType)
+                    .filter(DamageType.name == resistance.capitalize())
                     .first()
                     for resistance in resistances
                 ]
-                resistance_list = [
-                    resistance
-                    for resistance in resistance_list
-                    if resistance is not None
-                ]
-
                 new_subrace = Subrace(
                     name=subrace, race=parent_race, resistances=resistance_list
                 )
                 session.add(new_subrace)
-            session.commit()
+                session.commit()
+                session.refresh(new_subrace)
+
+                # Adding of optional (dis)advantages to the subrace
+                for advantage in subraces[subrace]["advantages"]:
+                    attribute = (
+                        session.query(Attribute)
+                        .filter(Attribute.name == advantage["attribute"].capitalize())
+                        .first()
+                    )
+                    if not attribute:
+                        print(
+                            f"Attribute not found for subrace '{new_subrace}', continuing."
+                        )
+                    else:
+                        advantage = SubraceAdvantages(
+                            subrace_id=new_subrace.id,
+                            attribute_id=attribute.id,
+                            condition=advantage["condition"],
+                        )
+                        session.add(advantage)
+                for disadvantage in subraces[subrace]["disadvantages"]:
+                    attribute = (
+                        session.query(Attribute)
+                        .filter(
+                            Attribute.name == disadvantage["attribute"].capitalize()
+                        )
+                        .first()
+                    )
+                    if not attribute:
+                        print(
+                            f"Attribute not found for subrace '{new_subrace}', continuing."
+                        )
+                    else:
+                        disadvantage = SubraceDisadvantages(
+                            subrace_id=new_subrace.id,
+                            attribute_id=attribute.id,
+                            condition=disadvantage["condition"],
+                        )
+                        session.add(disadvantage)
+                session.commit()
 
 
 def initialize_types() -> None:
@@ -549,7 +1107,7 @@ def initialize_types() -> None:
 
 def create_pcs() -> None:
     """
-    Creates two player characters with attributes and adds them to the pc_characters table.
+    Creates two player characters with attributes and adds them to the player_characters table.
     """
     pcs: Dict[str, dict[str, str]] = {
         "Rhoetus": {
@@ -561,7 +1119,7 @@ def create_pcs() -> None:
             "armour_class": 17,
             "classes": ["Barbarian"],
             "subclasses": ["Herculean Path"],
-            "race": "Thylean Centaur",
+            "race_id": "Thylean Centaur",
             "user": "player",
             "parties": ["Murder Hobo Party"],
         },
@@ -574,8 +1132,8 @@ def create_pcs() -> None:
             "armour_class": 18,
             "classes": ["Fighter"],
             "subclasses": ["Hoplite Soldier"],
-            "race": "Thylean Nymph",
-            "subrace": "Naiad",
+            "race_id": "Thylean Nymph",
+            "subrace_id": "Naiad",
             "user": "admin",
             "parties": ["Murder Hobo Party"],
         },
@@ -619,17 +1177,17 @@ def create_pcs() -> None:
                     for attribute in attributes["subclasses"]
                 ]
                 del attributes["subclasses"]
-            if "race" in attributes.keys():
-                attributes["race"] = (
+            if "race_id" in attributes.keys():
+                attributes["race_id"] = (
                     session.query(Race)
-                    .filter(Race.name == attributes["race"])
+                    .filter(Race.name == attributes["race_id"])
                     .first()
                     .id
                 )
-            if "subrace" in attributes.keys():
-                attributes["subrace"] = (
+            if "subrace_id" in attributes.keys():
+                attributes["subrace_id"] = (
                     session.query(Subrace)
-                    .filter(Subrace.name == attributes["subrace"])
+                    .filter(Subrace.name == attributes["subrace_id"])
                     .first()
                     .id
                 )
@@ -641,7 +1199,7 @@ def create_pcs() -> None:
             if "user" in attributes.keys():
                 attributes["user_id"] = (
                     session.query(User)
-                    .filter(User.name == attributes["user"])
+                    .filter(User.username == attributes["user"])
                     .first()
                     .id
                 )
@@ -677,7 +1235,7 @@ def create_pcs() -> None:
 
 def create_npcs() -> None:
     """
-    Creates two non player characters with attributes and adds them to the npc_characters table.
+    Creates two non player characters with attributes and adds them to the non_player_characters table.
     """
     npcs: Dict[str, dict[str, str]] = {
         "Endofyre": {
@@ -696,7 +1254,11 @@ def create_npcs() -> None:
     }
 
     for npc, attributes in npcs.items():
-        if not session.query(NPCCharacter).filter(NPCCharacter.name == npc).first():
+        if (
+            not session.query(NonPlayerCharacter)
+            .filter(NonPlayerCharacter.name == npc)
+            .first()
+        ):
             print(
                 f"Adding '{npc}' to npc_characters table in the database with the following attributes: {attributes}."
             )
@@ -719,16 +1281,16 @@ def create_npcs() -> None:
                     for attribute in attributes["parties"]
                 ]
 
-            new_npc = NPCCharacter(name=npc, **attributes)
+            new_npc = NonPlayerCharacter(name=npc, **attributes)
             session.add(new_npc)
     session.commit()
 
 
-def create_monsters() -> None:
+def create_enemies() -> None:
     """
-    Creates two monster characters with attributes and adds them to the monsters table.
+    Creates two monster characters with attributes and adds them to the enemies table.
     """
-    monsters: Dict[str, dict[str, str]] = {
+    enemies: Dict[str, dict[str, str]] = {
         "Giff": {
             "alive": True,
             "active": True,
@@ -756,10 +1318,10 @@ def create_monsters() -> None:
         },
     }
 
-    for monster, attributes in monsters.items():
-        if not session.query(Monster).filter(Monster.name == monster).first():
+    for enemy, attributes in enemies.items():
+        if not session.query(Enemy).filter(Enemy.name == enemy).first():
             print(
-                f"Adding '{monster}' to monsters table in the database with the following attributes: {attributes}."
+                f"Adding '{enemy}' to monsters table in the database with the following attributes: {attributes}."
             )
             attributes["size_id"] = (
                 session.query(Size).filter(Size.name == attributes["size"]).first().id
@@ -791,17 +1353,23 @@ def create_monsters() -> None:
                 del attributes["subclasses"]
             if "resistances" in attributes.keys():
                 attributes["resistances"] = [
-                    session.query(Effect).filter(Effect.name == attribute).first()
+                    session.query(DamageType)
+                    .filter(DamageType.name == attribute)
+                    .first()
                     for attribute in attributes["resistances"]
                 ]
             if "immunities" in attributes.keys():
                 attributes["immunities"] = [
-                    session.query(Effect).filter(Effect.name == attribute).first()
+                    session.query(DamageType)
+                    .filter(DamageType.name == attribute)
+                    .first()
                     for attribute in attributes["immunities"]
                 ]
             if "vulnerabilities" in attributes.keys():
                 attributes["vulnerabilities"] = [
-                    session.query(Effect).filter(Effect.name == attribute).first()
+                    session.query(DamageType)
+                    .filter(DamageType.name == attribute)
+                    .first()
                     for attribute in attributes["vulnerabilities"]
                 ]
             if "parties" in attributes.keys():
@@ -810,8 +1378,8 @@ def create_monsters() -> None:
                     for attribute in attributes["parties"]
                 ]
 
-            new_monster = Monster(name=monster, **attributes)
-            session.add(new_monster)
+            new_enemy = Enemy(name=enemy, **attributes)
+            session.add(new_enemy)
             session.flush()
 
             # Adds classes and subclasses to CreatureClasses cross-reference table
@@ -823,14 +1391,14 @@ def create_monsters() -> None:
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
-                                creature_id=new_monster.id,
+                                creature_id=new_enemy.id,
                                 class_id=cls.id,
                                 subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_monster.id, class_id=cls.id
+                            creature_id=new_enemy.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
     session.commit()
@@ -844,7 +1412,8 @@ def main() -> None:
     initialize_roles()
     initialize_users()
     initialize_sizes()
-    initialize_effects()
+    initialize_damage_types()
+    initialize_attributes()
     initialize_classes()
     initialize_subclasses()
     initialize_races()
@@ -852,7 +1421,7 @@ def main() -> None:
     initialize_types()
     create_pcs()
     create_npcs()
-    create_monsters()
+    create_enemies()
 
 
 if __name__ == "__main__":

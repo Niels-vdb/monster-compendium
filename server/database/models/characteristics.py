@@ -17,11 +17,15 @@ class Size(Base):
     __tablename__ = "sizes"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False)
+    name = Column(String(20), nullable=False, unique=True)
 
     # Relationship references
     creatures = relationship("Creature", back_populates="size")
-    races = relationship("Race", back_populates="size")
+    races = relationship(
+        "Race",
+        secondary="race_sizes",
+        back_populates="sizes",
+    )
 
     def __repr__(self) -> str:
         """
@@ -54,7 +58,7 @@ class Type(Base):
     __tablename__ = "types"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text, nullable=False)
+    name = Column(Text, nullable=False, unique=True)
 
     # Relationship references
     creatures = relationship("Creature", back_populates="creature_type")

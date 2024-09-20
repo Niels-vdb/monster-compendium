@@ -3,18 +3,27 @@ import pytest
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from server.database.models.creatures import (
+    CreatureAdvantages,
+    CreatureDisadvantages,
+    CreatureImmunities,
+    CreatureResistances,
+    CreatureVulnerabilities,
+)
+
 from ..main import app
 from .. import get_db
 
 from server.database.models.base import Base
-from server.database.models.creatures import CreatureClasses
-from server.database.models.monsters import Monster
+from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NPCCharacter
-from server.database.models.races import Race, Subrace
+from server.database.models.non_player_characters import NonPlayerCharacter
+from server.database.models.races import Race
+from server.database.models.subraces import Subrace
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
+from server.database.models.attributes import Attribute
 from server.database.models.users import User, Party, Role
 
 
@@ -80,7 +89,10 @@ def create_role(db_session):
 @pytest.fixture
 def create_user(db_session, create_role, create_party):
     user = "test"
-    new_user = User(name=user, roles=[create_role], parties=[create_party])
+    username = "Test"
+    new_user = User(
+        username=username, name=user, roles=[create_role], parties=[create_party]
+    )
     db_session.add(new_user)
     db_session.commit()
 
@@ -88,11 +100,19 @@ def create_user(db_session, create_role, create_party):
 
 
 @pytest.fixture
-def create_effect(db_session):
-    new_effect = Effect(name="Fire")
-    db_session.add(new_effect)
+def create_damage_type(db_session):
+    new_damage_type = DamageType(name="Fire")
+    db_session.add(new_damage_type)
     db_session.commit()
-    return new_effect
+    return new_damage_type
+
+
+@pytest.fixture
+def create_attribute(db_session):
+    new_attribute = Attribute(name="Charmed")
+    db_session.add(new_attribute)
+    db_session.commit()
+    return new_attribute
 
 
 @pytest.fixture
@@ -121,7 +141,7 @@ def create_subclass(create_class, db_session):
 
 @pytest.fixture
 def create_race(create_size, db_session):
-    new_race = Race(name="Dwarf", size_id=create_size.id)
+    new_race = Race(name="Dwarf", sizes=[create_size])
     db_session.add(new_race)
     db_session.commit()
     return new_race
@@ -144,16 +164,72 @@ def create_type(db_session):
 
 
 @pytest.fixture
-def create_npc(create_size, create_type, db_session):
+def create_npc(
+    create_size,
+    create_party,
+    create_class,
+    create_subclass,
+    create_damage_type,
+    create_attribute,
+    create_type,
+    db_session,
+):
     npc = "Fersi (Oracle)"
     attributes: dict[str, Any] = {}
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
-    # attributes["parties"] = [create_party]
+    attributes["parties"] = [create_party]
+    attributes["description"] = "A demigod female."
+    attributes["information"] = "Some say she knows everything, but shares very little."
+    attributes["armour_class"] = 16
+    attributes["walking_speed"] = 30
+    attributes["swimming_speed"] = 25
+    attributes["flying_speed"] = 5
+    attributes["classes"] = [create_class]
+    attributes["subclasses"] = [create_subclass]
+    attributes["size_id"] = create_size.id
+    attributes["type_id"] = create_type.id
 
-    new_npc = NPCCharacter(name=npc, **attributes)
+    new_npc = NonPlayerCharacter(name=npc, **attributes)
     db_session.add(new_npc)
     db_session.commit()
+
+    immunity = CreatureImmunities(
+        creature_id=new_npc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
+    )
+    resistance = CreatureResistances(
+        creature_id=new_npc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_npc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing armour",
+    )
+    advantages = CreatureAdvantages(
+        creature_id=new_npc.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_npc.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
+    db_session.commit()
+
     return new_npc
 
 
@@ -167,51 +243,133 @@ def create_pc(
     create_subrace,
     create_size,
     create_type,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
-    npc = "Rhoetus"
+    pc = "Rhoetus"
     attributes: dict[str, Any] = {}
     attributes["user"] = create_user
     attributes["parties"] = [create_party]
     attributes["description"] = "A centaur barbarian."
     attributes["information"] = "Some information about Rhoetus."
     attributes["armour_class"] = 17
+    attributes["walking_speed"] = 40
+    attributes["swimming_speed"] = 10
+    attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
-    attributes["race"] = create_race.id
-    attributes["subrace"] = create_subrace.id
+    attributes["race_id"] = create_race.id
+    attributes["subrace_id"] = create_subrace.id
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
-    new_pc = PlayerCharacter(name=npc, **attributes)
+    new_pc = PlayerCharacter(name=pc, **attributes)
     db_session.add(new_pc)
     db_session.commit()
+
+    immunity = CreatureImmunities(
+        creature_id=new_pc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
+    )
+    resistance = CreatureResistances(
+        creature_id=new_pc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_pc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing armour",
+    )
+    advantages = CreatureAdvantages(
+        creature_id=new_pc.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_pc.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
+    db_session.commit()
+
     return new_pc
 
 
 @pytest.fixture
-def create_monster(
+def create_enemy(
     create_party,
     create_class,
     create_subclass,
     create_size,
     create_type,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
-    monster = "Giff"
+    enemy = "Giff"
     attributes: dict[str, Any] = {}
-    # attributes["parties"] = [create_party]
+    attributes["parties"] = [create_party]
     attributes["description"] = "A large hippo like creature"
     attributes["information"] = (
         "Some information about this big hippo, like his knowledge about firearms."
     )
     attributes["armour_class"] = 16
+    attributes["walking_speed"] = 30
+    attributes["swimming_speed"] = 20
+    attributes["flying_speed"] = 0
     attributes["classes"] = [create_class]
     attributes["subclasses"] = [create_subclass]
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
-    new_monster = Monster(name=monster, **attributes)
-    db_session.add(new_monster)
+    new_enemy = Enemy(name=enemy, **attributes)
+    db_session.add(new_enemy)
     db_session.commit()
-    return new_monster
+    immunity = CreatureImmunities(
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
+    )
+    resistance = CreatureResistances(
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing a shield",
+    )
+    vulnerability = CreatureVulnerabilities(
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
+        condition="When wearing armour",
+    )
+    advantages = CreatureAdvantages(
+        creature_id=new_enemy.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_enemy.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
+    db_session.commit()
+    return new_enemy

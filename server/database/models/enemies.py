@@ -5,19 +5,19 @@ from sqlalchemy import Column, Integer, ForeignKey
 from .creatures import Creature
 
 
-class Monster(Creature):
+class Enemy(Creature):
     """
-    Table that holds all monsters the party has fought along their travels.
+    Table that holds all enemies the party has fought along their travels.
     Table inherits from Creature table.
 
     Parameters:
-        - name (str): The name of the monster.
-        - description (str): Description about how the monster looks like (optional).
-        - information (str): Notes and extra information about the monster (optional).
-        - alive (bool): Boolean check if monster is alive (True), or dead (False).
-        - active (bool): Boolean check if the monster is visible for party (True) or not (False).
-        - amour_class (int): The armour class the monster has (optional).
-        - image (BLOB): An image of the monster (optional).
+        - name (str): The name of the enemy.
+        - description (str): Description about how the enemy looks like (optional).
+        - information (str): Notes and extra information about the enemy (optional).
+        - alive (bool): Boolean check if enemy is alive (True), or dead (False).
+        - active (bool): Boolean check if the enemy is visible for party (True) or not (False).
+        - armour_class (int): The armour class the enemy has (optional).
+        - image (BLOB): An image of the enemy (optional).
 
         - race (int): The race of the creature, FK to id of the races table (optional).
         - subrace (int): The race of the creature, FK to id of the subraces table (optional).
@@ -31,8 +31,8 @@ class Monster(Creature):
         - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
-    __tablename__ = "monsters"
-    __mapper_args__ = {"polymorphic_identity": "monsters"}
+    __tablename__ = "enemies"
+    __mapper_args__ = {"polymorphic_identity": "enemies"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 
@@ -41,7 +41,7 @@ class Monster(Creature):
         This method provides a readable string of the instance including all
         its attributes.
 
-        :returns: A string representation of the Monster instance.
+        :returns: A string representation of the enemy instance.
         :rtype: str
         """
         return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
@@ -56,7 +56,7 @@ class Monster(Creature):
         This method creates a dictionary where the keys are attribute names and
         the values are the attribute values, facilitating data serialization.
 
-        :returns: A dictionary representation of the Monster instance.
+        :returns: A dictionary representation of the enemy instance.
         :rtype: Dict[str, Any]
         """
         return {

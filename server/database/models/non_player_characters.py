@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from .creatures import Creature
 
 
-class NPCCharacter(Creature):
+class NonPlayerCharacter(Creature):
     """
     Table that holds all noticeable NPC's the party has met along their travels.
     Table inherits from Creature table.
@@ -15,7 +15,7 @@ class NPCCharacter(Creature):
         - information (str): Notes and extra information about the monster (optional).
         - alive (bool): Boolean check if monster is alive (True), or dead (False).
         - active (bool): Boolean check if the monster is visible for party (True) or not (False).
-        - amour_class (int): The armour class the monster has (optional).
+        - armour_class (int): The armour class the monster has (optional).
         - image (BLOB): An image of the monster (optional).
 
         - race (int): The race of the creature, FK to id of the races table (optional).
@@ -30,8 +30,8 @@ class NPCCharacter(Creature):
         - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
-    __tablename__ = "npc_characters"
-    __mapper_args__ = {"polymorphic_identity": "npc_characters"}
+    __tablename__ = "non_player_characters"
+    __mapper_args__ = {"polymorphic_identity": "non_player_characters"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
 
@@ -40,7 +40,7 @@ class NPCCharacter(Creature):
         This method provides a readable string of the instance including all
         its attributes.
 
-        :returns: A string representation of the NPCCharacter instance.
+        :returns: A string representation of the NonPlayerCharacter instance.
         :rtype: str
         """
         return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
@@ -55,7 +55,7 @@ class NPCCharacter(Creature):
         This method creates a dictionary where the keys are attribute names and
         the values are the attribute values, facilitating data serialization.
 
-        :returns: A dictionary representation of the NPCCharacter instance.
+        :returns: A dictionary representation of the NonPlayerCharacter instance.
         :rtype: Dict[str, Any]
         """
         return {
