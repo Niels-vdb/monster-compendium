@@ -2,7 +2,8 @@ from fastapi.testclient import TestClient
 
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
+from server.database.models.attributes import Attribute
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.users import Party
 
@@ -70,6 +71,8 @@ def test_get_npc_character(create_npc, db_session):
         "resistances": [{"id": 1, "name": "Fire"}],
         "immunities": [{"id": 1, "name": "Fire"}],
         "vulnerabilities": [{"id": 1, "name": "Fire"}],
+        "advantages": [{"name": "Charmed", "id": 1}],
+        "disadvantages": [{"name": "Charmed", "id": 1}],
     }
 
 
@@ -87,7 +90,8 @@ def test_post_npc(
     create_size,
     create_type,
     create_party,
-    create_effect,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
     response = client.post(
@@ -109,9 +113,11 @@ def test_post_npc(
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
-            "resistances": [{"effect_id": 1, "condition": "When in rage"}],
-            "immunities": [{"effect_id": 1, "condition": "When in rage"}],
-            "vulnerabilities": [{"effect_id": 1, "condition": "When in rage"}],
+            "resistances": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "vulnerabilities": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "advantages": [{"attribute_id": 1, "condition": "When in rage"}],
+            "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 200
@@ -150,7 +156,7 @@ def test_post_npc_fake_class(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Class with this id does not exist."}
+    assert response.json() == {"detail": "This class does not exist."}
 
 
 def test_post_npc_fake_subclass(
@@ -165,7 +171,7 @@ def test_post_npc_fake_subclass(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subclass with this id does not exist."}
+    assert response.json() == {"detail": "This subclass does not exist."}
 
 
 def test_post_npc_fake_race(
@@ -180,7 +186,7 @@ def test_post_npc_fake_race(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Race with this id does not exist."}
+    assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_post_npc_fake_subrace(
@@ -195,7 +201,7 @@ def test_post_npc_fake_subrace(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subrace with this id does not exist."}
+    assert response.json() == {"detail": "This subrace does not exist."}
 
 
 def test_post_npc_fake_size(
@@ -210,7 +216,7 @@ def test_post_npc_fake_size(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Size with this id does not exist."}
+    assert response.json() == {"detail": "This size does not exist."}
 
 
 def test_post_npc_fake_type(
@@ -225,7 +231,7 @@ def test_post_npc_fake_type(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Type with this id does not exist."}
+    assert response.json() == {"detail": "This type does not exist."}
 
 
 def test_post_npc_fake_party(
@@ -240,52 +246,86 @@ def test_post_npc_fake_party(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Party with this id does not exist."}
+    assert response.json() == {"detail": "This party does not exist."}
 
 
 def test_post_npc_fake_resistance(
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "resistances": [{"effect_id": 2, "condition": "When in rage"}],
+            "resistances": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_post_npc_fake_immunity(
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "immunities": [{"effect_id": 2, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_post_npc_fake_vulnerabilities(
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
         "/api/non_player_characters",
         json={
             "name": "Volothamp Geddarm",
-            "vulnerabilities": [{"effect_id": 2, "condition": "When in rage"}],
+            "vulnerabilities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
+
+
+def test_post_npc_fake_advantages(
+    create_user,
+    create_attribute,
+    db_session,
+):
+    response = client.post(
+        "/api/non_player_characters",
+        json={
+            "name": "Gobby",
+            "user_id": 1,
+            "advantages": [{"attribute_id": 2, "condition": "When in rage"}],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
+
+
+def test_post_npc_fake_disadvantages(
+    create_user,
+    create_attribute,
+    db_session,
+):
+    response = client.post(
+        "/api/non_player_characters",
+        json={
+            "name": "Gobby",
+            "user_id": 1,
+            "disadvantages": [{"attribute_id": 2, "condition": "When in rage"}],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
 
 
 def test_npc_add_put(
@@ -314,8 +354,11 @@ def test_npc_add_put(
     new_party = Party(name="Hobo Helping Party")
     db_session.add(new_party)
 
-    new_resistance = Effect(name="Slashing")
+    new_resistance = DamageType(name="Slashing")
     db_session.add(new_resistance)
+
+    new_attribute = Attribute(name="Poisoned")
+    db_session.add(new_attribute)
 
     db_session.commit()
 
@@ -346,23 +389,37 @@ def test_npc_add_put(
             "add_parties": True,
             "resistances": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
                 }
             ],
             "immunities": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
                 }
             ],
             "vulnerabilities": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
+                }
+            ],
+            "advantages": [
+                {
+                    "attribute_id": 2,
+                    "add_attribute": True,
+                    "condition": "When wearing armour",
+                }
+            ],
+            "disadvantages": [
+                {
+                    "attribute_id": 2,
+                    "add_attribute": True,
+                    "condition": "When not wearing armour",
                 }
             ],
         },
@@ -388,7 +445,8 @@ def test_npc_add_put(
     assert len(npc.immunities) == 2
     assert len(npc.resistances) == 2
     assert len(npc.vulnerabilities) == 2
-
+    assert len(npc.advantages) == 2
+    assert len(npc.disadvantages) == 2
     assert response.json() == {
         "message": "NPC 'Endofyre' has been updated.",
         "non_player_character": {
@@ -453,20 +511,32 @@ def test_npc_remove_put(
             "add_parties": False,
             "resistances": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
                 }
             ],
             "immunities": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
                 }
             ],
             "vulnerabilities": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
+                }
+            ],
+            "advantages": [
+                {
+                    "attribute_id": 1,
+                    "add_attribute": False,
+                }
+            ],
+            "disadvantages": [
+                {
+                    "attribute_id": 1,
+                    "add_attribute": False,
                 }
             ],
         },
@@ -492,7 +562,8 @@ def test_npc_remove_put(
     assert len(npc.immunities) == 0
     assert len(npc.resistances) == 0
     assert len(npc.vulnerabilities) == 0
-
+    assert len(npc.advantages) == 0
+    assert len(npc.disadvantages) == 0
     assert response.json() == {
         "message": "NPC 'Endofyre' has been updated.",
         "non_player_character": {
@@ -521,7 +592,7 @@ def test_npc_fake_race_put(create_npc, db_session):
         f"/api/non_player_characters/{create_npc.id}", json={"race": 3}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Race with this id does not exist."}
+    assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_npc_fake_subrace_put(create_npc, db_session):
@@ -529,7 +600,7 @@ def test_npc_fake_subrace_put(create_npc, db_session):
         f"/api/non_player_characters/{create_npc.id}", json={"subrace": 3}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subrace with this id does not exist."}
+    assert response.json() == {"detail": "This subrace does not exist."}
 
 
 def test_npc_fake_size_put(create_npc, db_session):
@@ -537,7 +608,7 @@ def test_npc_fake_size_put(create_npc, db_session):
         f"/api/non_player_characters/{create_npc.id}", json={"size_id": 3}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Size with this id does not exist."}
+    assert response.json() == {"detail": "This size does not exist."}
 
 
 def test_npc_fake_type_put(create_npc, db_session):
@@ -545,7 +616,7 @@ def test_npc_fake_type_put(create_npc, db_session):
         f"/api/non_player_characters/{create_npc.id}", json={"type_id": 3}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Type with this id does not exist."}
+    assert response.json() == {"detail": "This type does not exist."}
 
 
 def test_npc_fake_class_put(create_npc, db_session):
@@ -554,7 +625,7 @@ def test_npc_fake_class_put(create_npc, db_session):
         json={"classes": [3], "add_classes": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Class with this id does not exist."}
+    assert response.json() == {"detail": "This class does not exist."}
 
 
 def test_npc_fake_subclass_put(create_npc, db_session):
@@ -563,7 +634,7 @@ def test_npc_fake_subclass_put(create_npc, db_session):
         json={"subclasses": [3], "add_subclasses": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subclass with this id does not exist."}
+    assert response.json() == {"detail": "This subclass does not exist."}
 
 
 def test_npc_fake_part_put(create_npc, db_session):
@@ -572,7 +643,7 @@ def test_npc_fake_part_put(create_npc, db_session):
         json={"parties": [3], "add_parties": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Party with this id does not exist."}
+    assert response.json() == {"detail": "This party does not exist."}
 
 
 def test_npc_fake_resistance_put(create_npc, db_session):
@@ -581,14 +652,14 @@ def test_npc_fake_resistance_put(create_npc, db_session):
         json={
             "resistances": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_npc_fake_vulnerability_put(create_npc, db_session):
@@ -597,14 +668,14 @@ def test_npc_fake_vulnerability_put(create_npc, db_session):
         json={
             "vulnerabilities": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_npc_fake_immunity_put(create_npc, db_session):
@@ -613,14 +684,46 @@ def test_npc_fake_immunity_put(create_npc, db_session):
         json={
             "immunities": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
+
+
+def test_npc_fake_advantage_put(create_npc, db_session):
+    response = client.put(
+        f"/api/non_player_characters/{create_npc.id}",
+        json={
+            "advantages": [
+                {
+                    "attribute_id": 3,
+                    "add_attribute": False,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
+
+
+def test_npc_fake_disadvantage_put(create_npc, db_session):
+    response = client.put(
+        f"/api/non_player_characters/{create_npc.id}",
+        json={
+            "disadvantages": [
+                {
+                    "attribute_id": 3,
+                    "add_attribute": False,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
 
 
 def test_npc_delete(create_npc, db_session):

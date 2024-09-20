@@ -1,16 +1,8 @@
 from typing import Annotated
 from pydantic import BaseModel, Field
 
-
-class PostEffect(BaseModel):
-    effect_id: int
-    condition: str
-
-
-class PutEffect(BaseModel):
-    effect_id: int
-    condition: str = None
-    add_effect: bool
+from server.api.models.attributes import PostAttribute, PutAttribute
+from server.api.models.damage_types import PostDamageType, PutDamageType
 
 
 class CreaturePostBase(BaseModel):
@@ -33,9 +25,11 @@ class CreaturePostBase(BaseModel):
     parties: list[int] = None
     classes: list[int] = None
     subclasses: list[int] = None
-    immunities: list[PostEffect] = None
-    resistances: list[PostEffect] = None
-    vulnerabilities: list[PostEffect] = None
+    immunities: list[PostDamageType] = None
+    resistances: list[PostDamageType] = None
+    vulnerabilities: list[PostDamageType] = None
+    advantages: list[PostAttribute] = None
+    disadvantages: list[PostAttribute] = None
 
 
 class CreaturePutBase(BaseModel):
@@ -61,6 +55,8 @@ class CreaturePutBase(BaseModel):
     add_subclass: bool = None
     parties: list[int] = None
     add_parties: bool = None
-    immunities: list[PutEffect] = None
-    resistances: list[PutEffect] = None
-    vulnerabilities: list[PutEffect] = None
+    immunities: list[PutDamageType] = None
+    resistances: list[PutDamageType] = None
+    vulnerabilities: list[PutDamageType] = None
+    advantages: list[PutAttribute] = None
+    disadvantages: list[PutAttribute] = None

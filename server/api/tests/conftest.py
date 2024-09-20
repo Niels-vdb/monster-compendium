@@ -4,6 +4,8 @@ from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
 from server.database.models.creatures import (
+    CreatureAdvantages,
+    CreatureDisadvantages,
     CreatureImmunities,
     CreatureResistances,
     CreatureVulnerabilities,
@@ -16,10 +18,12 @@ from server.database.models.base import Base
 from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import Race, Subrace
+from server.database.models.races import Race
+from server.database.models.subraces import Subrace
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
+from server.database.models.attributes import Attribute
 from server.database.models.users import User, Party, Role
 
 
@@ -96,11 +100,19 @@ def create_user(db_session, create_role, create_party):
 
 
 @pytest.fixture
-def create_effect(db_session):
-    new_effect = Effect(name="Fire")
-    db_session.add(new_effect)
+def create_damage_type(db_session):
+    new_damage_type = DamageType(name="Fire")
+    db_session.add(new_damage_type)
     db_session.commit()
-    return new_effect
+    return new_damage_type
+
+
+@pytest.fixture
+def create_attribute(db_session):
+    new_attribute = Attribute(name="Charmed")
+    db_session.add(new_attribute)
+    db_session.commit()
+    return new_attribute
 
 
 @pytest.fixture
@@ -157,7 +169,8 @@ def create_npc(
     create_party,
     create_class,
     create_subclass,
-    create_effect,
+    create_damage_type,
+    create_attribute,
     create_type,
     db_session,
 ):
@@ -182,19 +195,39 @@ def create_npc(
     db_session.commit()
 
     immunity = CreatureImmunities(
-        creature_id=new_npc.id, effect_id=create_effect.id, condition="When in rage"
+        creature_id=new_npc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
     )
     resistance = CreatureResistances(
         creature_id=new_npc.id,
-        effect_id=create_effect.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing a shield",
     )
     vulnerability = CreatureVulnerabilities(
         creature_id=new_npc.id,
-        effect_id=create_effect.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing armour",
     )
-    db_session.add_all([immunity, resistance, vulnerability])
+    advantages = CreatureAdvantages(
+        creature_id=new_npc.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_npc.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
     db_session.commit()
 
     return new_npc
@@ -210,7 +243,8 @@ def create_pc(
     create_subrace,
     create_size,
     create_type,
-    create_effect,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
     pc = "Rhoetus"
@@ -235,19 +269,39 @@ def create_pc(
     db_session.commit()
 
     immunity = CreatureImmunities(
-        creature_id=new_pc.id, effect_id=create_effect.id, condition="When in rage"
+        creature_id=new_pc.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
     )
     resistance = CreatureResistances(
         creature_id=new_pc.id,
-        effect_id=create_effect.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing a shield",
     )
     vulnerability = CreatureVulnerabilities(
         creature_id=new_pc.id,
-        effect_id=create_effect.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing armour",
     )
-    db_session.add_all([immunity, resistance, vulnerability])
+    advantages = CreatureAdvantages(
+        creature_id=new_pc.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_pc.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
     db_session.commit()
 
     return new_pc
@@ -260,10 +314,11 @@ def create_enemy(
     create_subclass,
     create_size,
     create_type,
-    create_effect,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
-    monster = "Giff"
+    enemy = "Giff"
     attributes: dict[str, Any] = {}
     attributes["parties"] = [create_party]
     attributes["description"] = "A large hippo like creature"
@@ -279,22 +334,42 @@ def create_enemy(
     attributes["size_id"] = create_size.id
     attributes["type_id"] = create_type.id
 
-    new_monster = Enemy(name=monster, **attributes)
-    db_session.add(new_monster)
+    new_enemy = Enemy(name=enemy, **attributes)
+    db_session.add(new_enemy)
     db_session.commit()
     immunity = CreatureImmunities(
-        creature_id=new_monster.id, effect_id=create_effect.id, condition="When in rage"
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
+        condition="When in rage",
     )
     resistance = CreatureResistances(
-        creature_id=new_monster.id,
-        effect_id=create_effect.id,
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing a shield",
     )
     vulnerability = CreatureVulnerabilities(
-        creature_id=new_monster.id,
-        effect_id=create_effect.id,
+        creature_id=new_enemy.id,
+        damage_type_id=create_damage_type.id,
         condition="When wearing armour",
     )
-    db_session.add_all([immunity, resistance, vulnerability])
+    advantages = CreatureAdvantages(
+        creature_id=new_enemy.id,
+        attribute_id=create_attribute.id,
+        condition="When wearing armour",
+    )
+    disadvantages = CreatureDisadvantages(
+        creature_id=new_enemy.id,
+        attribute_id=create_attribute.id,
+        condition="When not wearing armour",
+    )
+    db_session.add_all(
+        [
+            immunity,
+            resistance,
+            vulnerability,
+            advantages,
+            disadvantages,
+        ]
+    )
     db_session.commit()
-    return new_monster
+    return new_enemy

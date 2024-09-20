@@ -24,9 +24,9 @@ class Creature(Base):
 
         - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
         - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
-        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
-        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
-        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
+        - immunities (List[Effect]): The conditions the creature is immune to, can be multiple (optional).
+        - resistances (List[Effect]): The conditions the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (List[Effect]): The conditions the creature is vulnerable to, can be multiple (optional).
     """
 
     __tablename__ = "creatures"
@@ -67,9 +67,11 @@ class Creature(Base):
         back_populates="creatures",
         overlaps="classes",
     )
-    immunities = relationship("Effect", secondary="creature_immunities")
-    resistances = relationship("Effect", secondary="creature_resistances")
-    vulnerabilities = relationship("Effect", secondary="creature_vulnerabilities")
+    immunities = relationship("DamageType", secondary="creature_immunities")
+    resistances = relationship("DamageType", secondary="creature_resistances")
+    vulnerabilities = relationship("DamageType", secondary="creature_vulnerabilities")
+    advantages = relationship("Attribute", secondary="creature_advantages")
+    disadvantages = relationship("Attribute", secondary="creature_disadvantages")
 
     # Relationship references
     creature_type = relationship("Type", back_populates="creatures")
@@ -112,37 +114,88 @@ class CreatureParties(Base):
 class CreatureResistances(Base):
     """
     Cross-reference table for many-to-many relationship between creature and its resistances.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - damage_type_id: The id of the condition
+        - condition: The condition when this resistance is active (optional).
     """
 
     __tablename__ = "creature_resistances"
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
     condition = Column("condition", String(100))
 
 
 class CreatureImmunities(Base):
     """
     Cross-reference table for many-to-many relationship between creature and its immunities.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - damage_type_id: The id of the condition
+        - condition: The condition when this immunity is active (optional).
     """
 
     __tablename__ = "creature_immunities"
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
     condition = Column("condition", String(100))
 
 
 class CreatureVulnerabilities(Base):
     """
     Cross-reference table for many-to-many relationship between creature and its vulnerabilities.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - damage_type_id: The id of the condition
+        - condition: The condition when this vulnerability is active (optional).
     """
 
     __tablename__ = "creature_vulnerabilities"
 
     id = Column(Integer, primary_key=True)
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
+    condition = Column("condition", String(100))
+
+
+class CreatureAdvantages(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature and its advantages.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - attribute_id: The id of the attribute
+        - condition: The condition when this vulnerability is active (optional).
+    """
+
+    __tablename__ = "creature_advantages"
+
+    id = Column(Integer, primary_key=True)
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
+    condition = Column("condition", String(100))
+
+
+class CreatureDisadvantages(Base):
+    """
+    Cross-reference table for many-to-many relationship between creature and its disadvantages.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - attribute_id: The id of the attribute
+        - condition: The condition when this vulnerability is active (optional).
+    """
+
+    __tablename__ = "creature_disadvantages"
+
+    id = Column(Integer, primary_key=True)
+    creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
+    attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
     condition = Column("condition", String(100))

@@ -2,7 +2,8 @@ from fastapi.testclient import TestClient
 
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
+from server.database.models.attributes import Attribute
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.users import Party
 
@@ -63,21 +64,23 @@ def test_get_pc(create_pc, db_session):
         "image": None,
         "race": 1,
         "subrace": 1,
-        "size": {"name": "Tiny", "id": 1},
-        "creature_type": {"name": "Aberration", "id": 1},
+        "size": {"id": 1, "name": "Tiny"},
+        "creature_type": {"id": 1, "name": "Aberration"},
         "user": {
-            "id": 1,
-            "password": None,
-            "name": "test",
             "username": "Test",
+            "name": "test",
             "image": None,
+            "password": None,
+            "id": 1,
         },
         "parties": [{"name": "Murder Hobo Party", "id": 1}],
-        "classes": [{"id": 1, "name": "Artificer"}],
-        "subclasses": [{"name": "Alchemist", "class_id": 1, "id": 1}],
+        "classes": [{"name": "Artificer", "id": 1}],
+        "subclasses": [{"id": 1, "name": "Alchemist", "class_id": 1}],
         "resistances": [{"id": 1, "name": "Fire"}],
         "immunities": [{"id": 1, "name": "Fire"}],
         "vulnerabilities": [{"id": 1, "name": "Fire"}],
+        "advantages": [{"name": "Charmed", "id": 1}],
+        "disadvantages": [{"name": "Charmed", "id": 1}],
     }
 
 
@@ -96,7 +99,8 @@ def test_post_pc(
     create_size,
     create_type,
     create_party,
-    create_effect,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
     response = client.post(
@@ -119,9 +123,11 @@ def test_post_pc(
             "size_id": 1,
             "type_id": 1,
             "parties": [1],
-            "resistances": [{"effect_id": 1, "condition": "When in rage"}],
-            "immunities": [{"effect_id": 1, "condition": "When in rage"}],
-            "vulnerabilities": [{"effect_id": 1, "condition": "When in rage"}],
+            "resistances": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "vulnerabilities": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "advantages": [{"attribute_id": 1, "condition": "When in rage"}],
+            "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 200
@@ -163,7 +169,7 @@ def test_post_pc_fake_class(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Class with this id does not exist."}
+    assert response.json() == {"detail": "This class does not exist."}
 
 
 def test_post_pc_fake_subclass(
@@ -180,7 +186,7 @@ def test_post_pc_fake_subclass(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subclass with this id does not exist."}
+    assert response.json() == {"detail": "This subclass does not exist."}
 
 
 def test_post_pc_fake_race(
@@ -197,7 +203,7 @@ def test_post_pc_fake_race(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Race with this id does not exist."}
+    assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_post_pc_fake_subrace(
@@ -216,7 +222,7 @@ def test_post_pc_fake_subrace(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subrace with this id does not exist."}
+    assert response.json() == {"detail": "This subrace does not exist."}
 
 
 def test_post_pc_fake_size(
@@ -233,7 +239,7 @@ def test_post_pc_fake_size(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Size with this id does not exist."}
+    assert response.json() == {"detail": "This size does not exist."}
 
 
 def test_post_pc_fake_type(
@@ -250,7 +256,7 @@ def test_post_pc_fake_type(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Type with this id does not exist."}
+    assert response.json() == {"detail": "This type does not exist."}
 
 
 def test_post_pc_fake_party(
@@ -267,12 +273,12 @@ def test_post_pc_fake_party(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Party with this id does not exist."}
+    assert response.json() == {"detail": "This party does not exist."}
 
 
 def test_post_pc_fake_resistance(
     create_user,
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
@@ -280,16 +286,16 @@ def test_post_pc_fake_resistance(
         json={
             "name": "Gobby",
             "user_id": 1,
-            "resistances": [{"effect_id": 2, "condition": "When in rage"}],
+            "resistances": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_post_pc_fake_immunity(
     create_user,
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
@@ -297,16 +303,16 @@ def test_post_pc_fake_immunity(
         json={
             "name": "Gobby",
             "user_id": 1,
-            "immunities": [{"effect_id": 2, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_post_pc_fake_vulnerabilities(
     create_user,
-    create_effect,
+    create_damage_type,
     db_session,
 ):
     response = client.post(
@@ -314,11 +320,45 @@ def test_post_pc_fake_vulnerabilities(
         json={
             "name": "Gobby",
             "user_id": 1,
-            "vulnerabilities": [{"effect_id": 2, "condition": "When in rage"}],
+            "vulnerabilities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
+
+
+def test_post_pc_fake_advantages(
+    create_user,
+    create_attribute,
+    db_session,
+):
+    response = client.post(
+        "/api/player_characters",
+        json={
+            "name": "Gobby",
+            "user_id": 1,
+            "advantages": [{"attribute_id": 2, "condition": "When in rage"}],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
+
+
+def test_post_pc_fake_disadvantages(
+    create_user,
+    create_attribute,
+    db_session,
+):
+    response = client.post(
+        "/api/player_characters",
+        json={
+            "name": "Gobby",
+            "user_id": 1,
+            "disadvantages": [{"attribute_id": 2, "condition": "When in rage"}],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
 
 
 def test_pc_add_put(
@@ -327,6 +367,8 @@ def test_pc_add_put(
     create_subrace,
     create_class,
     create_subclass,
+    create_damage_type,
+    create_attribute,
     db_session,
 ):
 
@@ -348,8 +390,11 @@ def test_pc_add_put(
     new_party = Party(name="Hobo Helping Party")
     db_session.add(new_party)
 
-    new_resistance = Effect(name="Slashing")
+    new_resistance = DamageType(name="Slashing")
     db_session.add(new_resistance)
+
+    new_attribute = Attribute(name="Poisoned")
+    db_session.add(new_attribute)
 
     db_session.commit()
 
@@ -380,28 +425,41 @@ def test_pc_add_put(
             "add_parties": True,
             "resistances": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
                 }
             ],
             "immunities": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
                 }
             ],
             "vulnerabilities": [
                 {
-                    "effect_id": 2,
+                    "damage_type_id": 2,
                     "condition": "When in rage",
-                    "add_effect": True,
+                    "add_damage_type": True,
+                }
+            ],
+            "advantages": [
+                {
+                    "attribute_id": 2,
+                    "add_attribute": True,
+                    "condition": "When wearing armour",
+                }
+            ],
+            "disadvantages": [
+                {
+                    "attribute_id": 2,
+                    "add_attribute": True,
+                    "condition": "When not wearing armour",
                 }
             ],
         },
     )
-
     pc = db_session.query(PlayerCharacter).first()
     assert response.status_code == 200
     assert pc.name == "Electra"
@@ -423,6 +481,8 @@ def test_pc_add_put(
     assert len(pc.immunities) == 2
     assert len(pc.resistances) == 2
     assert len(pc.vulnerabilities) == 2
+    assert len(pc.advantages) == 2
+    assert len(pc.disadvantages) == 2
     assert response.json() == {
         "message": "Player character 'Electra' has been updated.",
         "player_character": {
@@ -493,20 +553,32 @@ def test_pc_remove_put(
             "add_parties": False,
             "resistances": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
                 }
             ],
             "immunities": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
                 }
             ],
             "vulnerabilities": [
                 {
-                    "effect_id": 1,
-                    "add_effect": False,
+                    "damage_type_id": 1,
+                    "add_damage_type": False,
+                }
+            ],
+            "advantages": [
+                {
+                    "attribute_id": 1,
+                    "add_attribute": False,
+                }
+            ],
+            "disadvantages": [
+                {
+                    "attribute_id": 1,
+                    "add_attribute": False,
                 }
             ],
         },
@@ -533,26 +605,28 @@ def test_pc_remove_put(
     assert len(pc.immunities) == 0
     assert len(pc.resistances) == 0
     assert len(pc.vulnerabilities) == 0
+    assert len(pc.advantages) == 0
+    assert len(pc.disadvantages) == 0
     assert response.json() == {
         "message": "Player character 'Electra' has been updated.",
         "player_character": {
             "name": "Electra",
-            "type_id": 2,
-            "description": "Something else about the Electra.",
+            "race": 1,
             "alive": False,
-            "size_id": 2,
-            "user_id": 1,
-            "creature": "player_characters",
+            "subrace": 1,
+            "description": "Something else about the Electra.",
             "active": False,
+            "type_id": 2,
             "armour_class": 20,
+            "size_id": 2,
             "walking_speed": 35,
+            "creature": "player_characters",
+            "id": 1,
             "swimming_speed": 30,
             "flying_speed": 5,
-            "image": None,
             "information": "Some new information about Electra.",
-            "race": 1,
-            "subrace": 1,
-            "id": 1,
+            "user_id": 1,
+            "image": None,
         },
     }
 
@@ -560,25 +634,25 @@ def test_pc_remove_put(
 def test_pc_fake_race_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"race": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "Race with this id does not exist."}
+    assert response.json() == {"detail": "This race does not exist."}
 
 
 def test_pc_fake_subrace_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"subrace": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subrace with this id does not exist."}
+    assert response.json() == {"detail": "This subrace does not exist."}
 
 
 def test_pc_fake_size_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"size_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "Size with this id does not exist."}
+    assert response.json() == {"detail": "This size does not exist."}
 
 
 def test_pc_fake_type_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"type_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "Type with this id does not exist."}
+    assert response.json() == {"detail": "This type does not exist."}
 
 
 def test_pc_fake_class_put(create_pc, db_session):
@@ -587,7 +661,7 @@ def test_pc_fake_class_put(create_pc, db_session):
         json={"classes": [3], "add_classes": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Class with this id does not exist."}
+    assert response.json() == {"detail": "This class does not exist."}
 
 
 def test_pc_fake_subclass_put(create_pc, db_session):
@@ -596,16 +670,16 @@ def test_pc_fake_subclass_put(create_pc, db_session):
         json={"subclasses": [3], "add_subclasses": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Subclass with this id does not exist."}
+    assert response.json() == {"detail": "This subclass does not exist."}
 
 
-def test_pc_fake_part_put(create_pc, db_session):
+def test_pc_fake_party_put(create_pc, db_session):
     response = client.put(
         f"/api/player_characters/{create_pc.id}",
         json={"parties": [3], "add_parties": False},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Party with this id does not exist."}
+    assert response.json() == {"detail": "This party does not exist."}
 
 
 def test_pc_fake_resistance_put(create_pc, db_session):
@@ -614,14 +688,14 @@ def test_pc_fake_resistance_put(create_pc, db_session):
         json={
             "resistances": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_pc_fake_vulnerability_put(create_pc, db_session):
@@ -630,14 +704,14 @@ def test_pc_fake_vulnerability_put(create_pc, db_session):
         json={
             "vulnerabilities": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
 
 
 def test_pc_fake_immunity_put(create_pc, db_session):
@@ -646,14 +720,46 @@ def test_pc_fake_immunity_put(create_pc, db_session):
         json={
             "immunities": [
                 {
-                    "effect_id": 3,
-                    "add_effect": False,
+                    "damage_type_id": 3,
+                    "add_damage_type": False,
                 }
             ],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "Effect with this id does not exist."}
+    assert response.json() == {"detail": "This damage type does not exist."}
+
+
+def test_pc_fake_advantage_put(create_pc, db_session):
+    response = client.put(
+        f"/api/player_characters/{create_pc.id}",
+        json={
+            "advantages": [
+                {
+                    "attribute_id": 3,
+                    "add_attribute": False,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
+
+
+def test_pc_fake_disadvantage_put(create_pc, db_session):
+    response = client.put(
+        f"/api/player_characters/{create_pc.id}",
+        json={
+            "disadvantages": [
+                {
+                    "attribute_id": 3,
+                    "add_attribute": False,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "This attribute does not exist."}
 
 
 def test_pc_delete(create_pc, db_session):

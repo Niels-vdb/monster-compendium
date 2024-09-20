@@ -14,7 +14,7 @@ class Race(Base):
         - name (str): The name of the race.
         - size_id (int): FK to sizes table holding the PK of the size of this race.
 
-        - resistances (List[Effect]): The resistances this race has (optional).
+        - resistances (List[DamageType]): The resistances this race has (optional).
     """
 
     __tablename__ = "races"
@@ -29,9 +29,29 @@ class Race(Base):
         back_populates="races",
     )
     resistances = relationship(
-        "Effect",
+        "DamageType",
         secondary="race_resistances",
         back_populates="race_resistances",
+    )
+    immunities = relationship(
+        "DamageType",
+        secondary="race_immunities",
+        back_populates="race_immunities",
+    )
+    vulnerabilities = relationship(
+        "DamageType",
+        secondary="race_vulnerabilities",
+        back_populates="race_vulnerabilities",
+    )
+    advantages = relationship(
+        "Attribute",
+        secondary="race_advantages",
+        back_populates="race_advantages",
+    )
+    disadvantages = relationship(
+        "Attribute",
+        secondary="race_disadvantages",
+        back_populates="race_disadvantages",
     )
 
     # Relationships
@@ -64,62 +84,6 @@ class Race(Base):
         }
 
 
-class Subrace(Base):
-    """
-    Table that holds all subraces that a race can have.
-
-    Parameters:
-        - name (str): The name of the subrace.
-        - race_id (int): FK to sizes table holding the PK of the race this subrace belongs to.
-    """
-
-    __tablename__ = "subraces"
-    __table_args__ = (UniqueConstraint("name", "race_id", name="_name_race_id_uc"),)
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(30), nullable=False)
-    race_id = Column(
-        Integer,
-        ForeignKey("races.id", ondelete="CASCADE"),
-    )
-
-    # n-1 relationships
-    race = relationship("Race", back_populates="subraces")
-
-    # n-n relationships
-    resistances = relationship(
-        "Effect",
-        secondary="subrace_resistances",
-        back_populates="subrace_resistances",
-    )
-
-    def __repr__(self) -> str:
-        """
-        This method provides a readable string of the instance including all
-        its attributes.
-
-        :returns: A string representation of the Subrace instance.
-        :rtype: str
-        """
-        return f"""{self.__class__.__tablename__}('{self.id}',
-                '{self.name}', '{self.race}', '{self.resistances}')"""
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Subrace instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "subrace_id": self.id,
-            "name": self.name,
-            "race_id": self.race,
-            "resistances": self.resistances,
-        }
-
-
 class RaceSizes(Base):
     """
     Cross-reference table for many-to-many relationship between a race and it's sizes.
@@ -135,22 +99,120 @@ class RaceSizes(Base):
 class RaceResistances(Base):
     """
     Cross-reference table for many-to-many relationship between a race and it's resistances.
+
+    Parameters:
+        - race_id: The id of the race.
+        - damage_type_id: The id of the damage type
+        - condition: The condition when this vulnerability is active (optional).
     """
 
     __tablename__ = "race_resistances"
+    __table_args__ = (
+        UniqueConstraint("race_id", "damage_type_id", name="_race_id_damage_type_uc"),
+    )
 
     id = Column(Integer, primary_key=True)
     race_id = Column("race_id", Integer, ForeignKey("races.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
+    condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        return f"""RaceResistances('{self.race_id}', '{self.damage_type_id}')"""
 
 
-class SubraceResistances(Base):
+class RaceVulnerabilities(Base):
     """
-    Cross-reference table for many-to-many relationship between a subrace and it's resistances.
+    Cross-reference table for many-to-many relationship between a race and it's vulnerabilities.
+
+    Parameters:
+        - race_id: The id of the race.
+        - damage_type_id: The id of the damage type
+        - condition: The condition when this vulnerability is active (optional).
     """
 
-    __tablename__ = "subrace_resistances"
+    __tablename__ = "race_vulnerabilities"
+    __table_args__ = (
+        UniqueConstraint("race_id", "damage_type_id", name="_race_id_damage_type_uc"),
+    )
 
     id = Column(Integer, primary_key=True)
-    subrace_id = Column("subrace_id", Integer, ForeignKey("subraces.id"))
-    effect_id = Column("effect_id", Integer, ForeignKey("effects.id"))
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
+    condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        return f"""RaceVulnerabilities('{self.race_id}', '{self.damage_type_id}')"""
+
+
+class RaceImmunities(Base):
+    """
+    Cross-reference table for many-to-many relationship between a race and it's immunities.
+
+    Parameters:
+        - race_id: The id of the race.
+        - damage_type_id: The id of the damage type
+        - condition: The condition when this vulnerability is active (optional).
+    """
+
+    __tablename__ = "race_immunities"
+    __table_args__ = (
+        UniqueConstraint("race_id", "damage_type_id", name="_race_id_damage_type_uc"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
+    condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        return f"""RaceImmunities('{self.race_id}', '{self.damage_type_id}')"""
+
+
+class RaceAdvantages(Base):
+    """
+    Cross-reference table for many-to-many relationship between race and its advantages.
+
+    Parameters:
+        - race_id: The id of the race.
+        - attribute_id: The id of the attribute
+        - condition: The condition when this vulnerability is active (optional).
+    """
+
+    __tablename__ = "race_advantages"
+    __table_args__ = (
+        UniqueConstraint("race_id", "attribute_id", name="_race_id_attribute_uc"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
+    condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        return f"""RaceAdvantages('{self.race_id}', '{self.attribute_id}', 
+        '{self.condition}')"""
+
+
+class RaceDisadvantages(Base):
+    """
+    Cross-reference table for many-to-many relationship between race and its disadvantages.
+
+    Parameters:
+        - race_id: The id of the race.
+        - attribute_id: The id of the attribute
+        - condition: The condition when this vulnerability is active (optional).
+    """
+
+    __tablename__ = "race_disadvantages"
+    __table_args__ = (
+        UniqueConstraint("race_id", "attribute_id", name="_race_id_attribute_uc"),
+    )
+
+    id = Column(Integer, primary_key=True)
+    race_id = Column("race_id", Integer, ForeignKey("races.id"))
+    attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
+    condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        return f"""RaceDisadvantages('{self.race_id}', '{self.attribute_id}', 
+        '{self.condition}')"""

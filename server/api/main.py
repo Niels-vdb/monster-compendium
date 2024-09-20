@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 
 from .routers import (
+    attributes,
     classes,
-    effects,
+    damage_types,
     enemies,
     non_player_characters,
     parties,
@@ -18,11 +19,15 @@ from .routers import (
 
 tags_metadata = [
     {
+        "name": "Attributes",
+        "description": "All operations with attributes can be done here.",
+    },
+    {
         "name": "Classes",
         "description": "All operations with classes can be done here.",
     },
     {
-        "name": "Effects",
+        "name": "Damage Types",
         "description": "All operations with effects can be done here.",
     },
     {
@@ -65,8 +70,9 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata, title="DnD Creature Compendium")
 
+app.include_router(attributes.router)
 app.include_router(classes.router)
-app.include_router(effects.router)
+app.include_router(damage_types.router)
 app.include_router(enemies.router)
 app.include_router(non_player_characters.router)
 app.include_router(player_characters.router)

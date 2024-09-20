@@ -1,5 +1,4 @@
-from typing import Annotated, Any
-from pydantic import BaseModel, Field
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import and_
@@ -8,16 +7,20 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.api.models.creatures import CreaturePostBase, CreaturePutBase
+from server.database.models.attributes import Attribute
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
 from server.database.models.creatures import (
+    CreatureAdvantages,
+    CreatureDisadvantages,
     CreatureImmunities,
     CreatureResistances,
     CreatureVulnerabilities,
 )
-from server.database.models.effects import Effect
+from server.database.models.damage_types import DamageType
 from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import Race, Subrace
+from server.database.models.races import Race
+from server.database.models.subraces import Subrace
 from server.database.models.users import Party
 
 router = APIRouter(
@@ -63,6 +66,8 @@ def get_npc(npc_id: int, db: Session = Depends(get_db)):
         "resistances": npc.resistances,
         "immunities": npc.immunities,
         "vulnerabilities": npc.vulnerabilities,
+        "advantages": npc.advantages,
+        "disadvantages": npc.disadvantages,
     }
 
 
@@ -91,58 +96,50 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)):
     if npc.race:
         race = db.query(Race).filter(Race.id == npc.race).first()
         if not race:
-            raise HTTPException(
-                status_code=404, detail="Race with this id does not exist."
-            )
+            raise HTTPException(status_code=404, detail="This race does not exist.")
         attributes["race"] = race.id
     if npc.subrace:
         subrace = db.query(Subrace).filter(Subrace.id == npc.subrace).first()
         if not subrace:
-            raise HTTPException(
-                status_code=404, detail="Subrace with this id does not exist."
-            )
+            raise HTTPException(status_code=404, detail="This subrace does not exist.")
         attributes["subrace"] = subrace.id
     if npc.size_id:
         size = db.query(Size).filter(Size.id == npc.size_id).first()
         if not size:
-            raise HTTPException(
-                status_code=404, detail="Size with this id does not exist."
-            )
+            raise HTTPException(status_code=404, detail="This size does not exist.")
         attributes["size_id"] = size.id
     if npc.type_id:
         creature_type = db.query(Type).filter(Type.id == npc.type_id).first()
         if not creature_type:
-            raise HTTPException(
-                status_code=404, detail="Type with this id does not exist."
-            )
+            raise HTTPException(status_code=404, detail="This type does not exist.")
         attributes["type_id"] = creature_type.id
     if npc.parties:
         attributes["parties"] = [
             db.query(Party).filter(Party.id == party).first() for party in npc.parties
         ]
-        for value in attributes["parties"]:
-            if value == None:
+        for party in attributes["parties"]:
+            if not party:
                 raise HTTPException(
-                    status_code=404, detail="Party with this id does not exist."
+                    status_code=404, detail="This party does not exist."
                 )
     if npc.classes:
         attributes["classes"] = [
             db.query(Class).filter(Class.id == cls).first() for cls in npc.classes
         ]
-        for value in attributes["classes"]:
-            if value == None:
+        for cls in attributes["classes"]:
+            if not cls:
                 raise HTTPException(
-                    status_code=404, detail="Class with this id does not exist."
+                    status_code=404, detail="This class does not exist."
                 )
     if npc.subclasses:
         attributes["subclasses"] = [
             db.query(Subclass).filter(Subclass.id == subclass).first()
             for subclass in npc.subclasses
         ]
-        for value in attributes["subclasses"]:
-            if value == None:
+        for subclass in attributes["subclasses"]:
+            if not subclass:
                 raise HTTPException(
-                    status_code=404, detail="Subclass with this id does not exist."
+                    status_code=404, detail="This subclass does not exist."
                 )
     try:
         new_npc = NonPlayerCharacter(name=npc.name, **attributes)
@@ -156,45 +153,90 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)):
 
     if npc.immunities:
         for immunity in npc.immunities:
-            effect = db.query(Effect).filter(Effect.id == immunity.effect_id).first()
-            if not effect:
+            damage_type = (
+                db.query(DamageType)
+                .filter(DamageType.id == immunity.damage_type_id)
+                .first()
+            )
+            if not damage_type:
                 raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
+                    status_code=404,
+                    detail=f"This damage type does not exist.",
                 )
             npc_immunity = CreatureImmunities(
                 creature_id=new_npc.id,
-                effect_id=effect.id,
+                damage_type_id=damage_type.id,
                 condition=immunity.condition,
             )
             db.add(npc_immunity)
     if npc.resistances:
         for resistance in npc.resistances:
-            effect = db.query(Effect).filter(Effect.id == resistance.effect_id).first()
-            if not effect:
+            damage_type = (
+                db.query(DamageType)
+                .filter(DamageType.id == resistance.damage_type_id)
+                .first()
+            )
+            if not damage_type:
                 raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
+                    status_code=404,
+                    detail=f"This damage type does not exist.",
                 )
             npc_resistance = CreatureResistances(
                 creature_id=new_npc.id,
-                effect_id=effect.id,
+                damage_type_id=damage_type.id,
                 condition=resistance.condition,
             )
             db.add(npc_resistance)
     if npc.vulnerabilities:
         for vulnerability in npc.vulnerabilities:
-            effect = (
-                db.query(Effect).filter(Effect.id == vulnerability.effect_id).first()
+            damage_type = (
+                db.query(DamageType)
+                .filter(DamageType.id == vulnerability.damage_type_id)
+                .first()
             )
-            if not effect:
+            if not damage_type:
                 raise HTTPException(
-                    status_code=404, detail="Effect with this id does not exist."
+                    status_code=404,
+                    detail=f"This damage type does not exist.",
                 )
             npc_vulnerability = CreatureVulnerabilities(
                 creature_id=new_npc.id,
-                effect_id=effect.id,
+                damage_type_id=damage_type.id,
                 condition=vulnerability.condition,
             )
             db.add(npc_vulnerability)
+    if npc.advantages:
+        for advantage in npc.advantages:
+            attribute = (
+                db.query(Attribute)
+                .filter(Attribute.id == advantage.attribute_id)
+                .first()
+            )
+            if not attribute:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"This attribute does not exist.",
+                )
+            npc_advantage = CreatureAdvantages(
+                creature_id=new_npc.id, attribute_id=attribute.id
+            )
+            db.add(npc_advantage)
+    if npc.disadvantages:
+        for disadvantage in npc.disadvantages:
+            attribute = (
+                db.query(Attribute)
+                .filter(Attribute.id == disadvantage.attribute_id)
+                .first()
+            )
+            if not attribute:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"This attribute does not exist.",
+                )
+            npc_disadvantage = CreatureDisadvantages(
+                creature_id=new_npc.id, attribute_id=attribute.id
+            )
+            db.add(npc_disadvantage)
     try:
         db.commit()
         return {
@@ -236,30 +278,24 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
         if npc.race:
             race = db.query(Race).filter(Race.id == npc.race).first()
             if not race:
-                raise HTTPException(
-                    status_code=404, detail="Race with this id does not exist."
-                )
+                raise HTTPException(status_code=404, detail="This race does not exist.")
             updated_npc.race = race.id
         if npc.subrace:
             subrace = db.query(Subrace).filter(Subrace.id == npc.subrace).first()
             if not subrace:
                 raise HTTPException(
-                    status_code=404, detail="Subrace with this id does not exist."
+                    status_code=404, detail="This subrace does not exist."
                 )
             updated_npc.subrace = subrace.id
         if npc.size_id:
             size = db.query(Size).filter(Size.id == npc.size_id).first()
             if not size:
-                raise HTTPException(
-                    status_code=404, detail="Size with this id does not exist."
-                )
+                raise HTTPException(status_code=404, detail="This size does not exist.")
             updated_npc.size_id = size.id
         if npc.type_id:
             creature_type = db.query(Type).filter(Type.id == npc.type_id).first()
             if not creature_type:
-                raise HTTPException(
-                    status_code=404, detail="Type with this id does not exist."
-                )
+                raise HTTPException(status_code=404, detail="This type does not exist.")
             updated_npc.type_id = creature_type.id
         if npc.classes:
             classes = [
@@ -268,7 +304,7 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
             for cls in classes:
                 if cls == None:
                     raise HTTPException(
-                        status_code=404, detail="Class with this id does not exist."
+                        status_code=404, detail="This class does not exist."
                     )
             if npc.add_class:
                 updated_npc.classes += classes
@@ -284,7 +320,7 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
             for subclass in subclasses:
                 if subclass == None:
                     raise HTTPException(
-                        status_code=404, detail="Subclass with this id does not exist."
+                        status_code=404, detail="This subclass does not exist."
                     )
             if npc.add_subclass:
                 updated_npc.subclasses += subclasses
@@ -300,7 +336,7 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
             for party in parties:
                 if party == None:
                     raise HTTPException(
-                        status_code=404, detail="Party with this id does not exist."
+                        status_code=404, detail="This party does not exist."
                     )
             if npc.add_parties:
                 updated_npc.parties += parties
@@ -310,17 +346,20 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                         updated_npc.parties.remove(party)
         if npc.immunities:
             for immunity in npc.immunities:
-                effect = (
-                    db.query(Effect).filter(Effect.id == immunity.effect_id).first()
+                damage_type = (
+                    db.query(DamageType)
+                    .filter(DamageType.id == immunity.damage_type_id)
+                    .first()
                 )
-                if not effect:
+                if not damage_type:
                     raise HTTPException(
-                        status_code=404, detail="Effect with this id does not exist."
+                        status_code=404,
+                        detail="This damage type does not exist.",
                     )
-                elif immunity.add_effect:
+                elif immunity.add_damage_type:
                     new_immunity = CreatureImmunities(
                         creature_id=npc_id,
-                        effect_id=effect.id,
+                        damage_type_id=damage_type.id,
                         condition=immunity.condition,
                     )
                     db.add(new_immunity)
@@ -330,7 +369,7 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                         .filter(
                             and_(
                                 CreatureImmunities.creature_id == npc_id,
-                                CreatureImmunities.effect_id == effect.id,
+                                CreatureImmunities.damage_type_id == damage_type.id,
                             )
                         )
                         .first()
@@ -338,17 +377,20 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                     db.delete(old_immunity)
         if npc.resistances:
             for resistance in npc.resistances:
-                effect = (
-                    db.query(Effect).filter(Effect.id == resistance.effect_id).first()
+                damage_type = (
+                    db.query(DamageType)
+                    .filter(DamageType.id == resistance.damage_type_id)
+                    .first()
                 )
-                if not effect:
+                if not damage_type:
                     raise HTTPException(
-                        status_code=404, detail="Effect with this id does not exist."
+                        status_code=404,
+                        detail="This damage type does not exist.",
                     )
-                elif resistance.add_effect:
+                elif resistance.add_damage_type:
                     new_resistance = CreatureResistances(
                         creature_id=npc_id,
-                        effect_id=effect.id,
+                        damage_type_id=damage_type.id,
                         condition=immunity.condition,
                     )
                     db.add(new_resistance)
@@ -358,7 +400,7 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                         .filter(
                             and_(
                                 CreatureResistances.creature_id == npc_id,
-                                CreatureResistances.effect_id == effect.id,
+                                CreatureResistances.damage_type_id == damage_type.id,
                             )
                         )
                         .first()
@@ -366,19 +408,20 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                     db.delete(old_resistance)
         if npc.vulnerabilities:
             for vulnerability in npc.vulnerabilities:
-                effect = (
-                    db.query(Effect)
-                    .filter(Effect.id == vulnerability.effect_id)
+                damage_type = (
+                    db.query(DamageType)
+                    .filter(DamageType.id == vulnerability.damage_type_id)
                     .first()
                 )
-                if not effect:
+                if not damage_type:
                     raise HTTPException(
-                        status_code=404, detail="Effect with this id does not exist."
+                        status_code=404,
+                        detail="This damage type does not exist.",
                     )
-                elif vulnerability.add_effect:
+                elif vulnerability.add_damage_type:
                     new_vulnerability = CreatureVulnerabilities(
                         creature_id=npc_id,
-                        effect_id=effect.id,
+                        damage_type_id=damage_type.id,
                         condition=immunity.condition,
                     )
                     db.add(new_vulnerability)
@@ -388,12 +431,76 @@ def put_npc(npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)):
                         .filter(
                             and_(
                                 CreatureVulnerabilities.creature_id == npc_id,
-                                CreatureVulnerabilities.effect_id == effect.id,
+                                CreatureVulnerabilities.damage_type_id
+                                == damage_type.id,
                             )
                         )
                         .first()
                     )
                     db.delete(old_vulnerability)
+        if npc.advantages:
+            for advantage in npc.advantages:
+                attribute = (
+                    db.query(Attribute)
+                    .filter(Attribute.id == advantage.attribute_id)
+                    .first()
+                )
+                if not attribute:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="This attribute does not exist.",
+                    )
+                elif advantage.add_attribute:
+                    new_advantage = CreatureAdvantages(
+                        creature_id=npc_id,
+                        attribute_id=attribute.id,
+                        condition=advantage.condition,
+                    )
+                    db.add(new_advantage)
+                else:
+                    old_advantage = (
+                        db.query(CreatureAdvantages)
+                        .filter(
+                            and_(
+                                CreatureAdvantages.creature_id == npc_id,
+                                CreatureAdvantages.attribute_id == attribute.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_advantage)
+        if npc.disadvantages:
+            for disadvantage in npc.disadvantages:
+                attribute = (
+                    db.query(Attribute)
+                    .filter(Attribute.id == disadvantage.attribute_id)
+                    .first()
+                )
+                if not attribute:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="This attribute does not exist.",
+                    )
+                elif disadvantage.add_attribute:
+                    new_disadvantage = CreatureDisadvantages(
+                        creature_id=npc_id,
+                        attribute_id=attribute.id,
+                        condition=disadvantage.condition,
+                    )
+                    db.add(new_disadvantage)
+                else:
+                    old_disadvantage = (
+                        db.query(CreatureDisadvantages)
+                        .filter(
+                            and_(
+                                CreatureDisadvantages.creature_id == npc_id,
+                                CreatureDisadvantages.attribute_id == attribute.id,
+                            )
+                        )
+                        .first()
+                    )
+                    db.delete(old_disadvantage)
+
         db.commit()
         return {
             "message": f"NPC '{updated_npc.name}' has been updated.",

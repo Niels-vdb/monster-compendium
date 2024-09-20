@@ -23,14 +23,17 @@ def test_get_no_races(db_session):
 
 def test_get_race(create_race, db_session):
     response = client.get("/api/races/1")
-
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
         "name": "Dwarf",
-        "sizes": [{"name": "Tiny", "id": 1}],
+        "sizes": [{"id": 1, "name": "Tiny"}],
         "subraces": [],
         "resistances": [],
+        "immunities": [],
+        "vulnerabilities": [],
+        "advantages": [],
+        "disadvantages": [],
     }
 
 
@@ -40,29 +43,54 @@ def test_get_no_race(create_race, db_session):
     assert response.json() == {"detail": "Race not found."}
 
 
-def test_post_race(create_size, create_effect, db_session):
+def test_post_race(create_size, create_damage_type, create_attribute, db_session):
     response = client.post(
         "/api/races",
         json={
             "race_name": "Locathah",
             "sizes": [1],
-            "resistances": [1],
+            "resistances": [
+                {"damage_type_id": 1, "condition": "When in rage"},
+            ],
+            "immunities": [
+                {"damage_type_id": 1, "condition": "When not in rage"},
+            ],
+            "vulnerabilities": [
+                {"damage_type_id": 1, "condition": "When wearing armour"},
+            ],
+            "advantages": [
+                {"attribute_id": 1, "condition": "When wearing a shield"},
+            ],
+            "disadvantages": [
+                {"attribute_id": 1, "condition": "When not wearing a shield"},
+            ],
         },
     )
     assert response.status_code == 200
     assert response.json() == {
         "message": "New race 'Locathah' has been added to the database.",
-        "race": {"name": "Locathah", "id": 1},
+        "race": {
+            "race_name": "Locathah",
+            "sizes": [1],
+            "resistances": [{"damage_type_id": 1, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 1, "condition": "When not in rage"}],
+            "vulnerabilities": [
+                {"damage_type_id": 1, "condition": "When wearing armour"}
+            ],
+            "advantages": [{"attribute_id": 1, "condition": "When wearing a shield"}],
+            "disadvantages": [
+                {"attribute_id": 1, "condition": "When not wearing a shield"}
+            ],
+        },
     }
 
 
-def test_post_duplicate_race(create_size, create_effect, db_session):
+def test_post_duplicate_race(create_size, db_session):
     client.post(
         "/api/races",
         json={
             "race_name": "Locathah",
             "sizes": [1],
-            "resistances": [1],
         },
     )
     response = client.post(
@@ -70,41 +98,54 @@ def test_post_duplicate_race(create_size, create_effect, db_session):
         json={
             "race_name": "Locathah",
             "sizes": [1],
-            "resistances": [1],
         },
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Race already exists."}
 
 
-def test_post_race_wrong_size(create_size, create_effect, db_session):
+def test_post_race_wrong_size(create_size, db_session):
     response = client.post(
         "/api/races",
         json={
             "race_name": "Locathah",
             "sizes": [2],
-            "resistances": [1],
         },
     )
     assert response.status_code == 400
     assert response.json() == {
-        "detail": "The size or resistance you are trying to bind to this race does not exist."
+        "detail": "The size you are trying to bind to this race does not exist."
     }
 
 
-def test_post_race_wrong_effect(create_size, create_effect, db_session):
+def test_post_race_wrong_damage_type(create_size, create_damage_type, db_session):
     response = client.post(
         "/api/races",
         json={
             "race_name": "Locathah",
             "sizes": [1],
-            "resistances": [2],
+            "resistances": [
+                {"damage_type_id": 2, "condition": "When in rage"},
+            ],
         },
     )
-    assert response.status_code == 400
-    assert response.json() == {
-        "detail": "The size or resistance you are trying to bind to this race does not exist."
-    }
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with id '2' does not exist."}
+
+
+def test_post_race_wrong_attribute(create_size, create_attribute, db_session):
+    response = client.post(
+        "/api/races",
+        json={
+            "race_name": "Locathah",
+            "sizes": [1],
+            "advantages": [
+                {"attribute_id": 2, "condition": "When in rage"},
+            ],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Attribute with id '2' does not exist."}
 
 
 def test_race_name_put(create_race, db_session):
@@ -116,7 +157,7 @@ def test_race_name_put(create_race, db_session):
     assert response.status_code == 200
     assert race.name == "Elf"
     assert response.json() == {
-        "message": "Subrace 'Elf' has been updated.",
+        "message": "Race 'Elf' has been updated.",
         "subrace": {"id": 1, "name": "Elf"},
     }
 
@@ -135,32 +176,202 @@ def test_race_duplicate_name_put(create_size, create_race, db_session):
     }
 
 
-def test_race_resistance_put(create_race, create_effect, db_session):
+def test_race_resistance_put(create_race, create_damage_type, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",
-        json={"resistances": [1]},
+        json={
+            "resistances": [
+                {
+                    "damage_type_id": 1,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
     )
     race = db_session.query(Race).first()
     assert response.status_code == 200
-    assert race.resistances[0].id == 1
+    assert len(race.resistances) == 1
     assert response.json() == {
-        "message": "Subrace 'Dwarf' has been updated.",
+        "message": "Race 'Dwarf' has been updated.",
         "subrace": {"id": 1, "name": "Dwarf"},
     }
 
 
-def test_race_fake_resistance_put(create_race, create_effect, db_session):
+def test_race_fake_resistance_put(create_race, create_damage_type, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",
-        json={"resistances": [2]},
+        json={
+            "resistances": [
+                {
+                    "damage_type_id": 2,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
     )
     assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with this id does not exist."}
+
+
+def test_race_vulnerability_put(create_race, create_damage_type, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "vulnerabilities": [
+                {
+                    "damage_type_id": 1,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
+    )
+    race = db_session.query(Race).first()
+    assert response.status_code == 200
+    assert len(race.vulnerabilities) == 1
     assert response.json() == {
-        "detail": "The effect you are trying to link to this subrace does not exist."
+        "message": "Race 'Dwarf' has been updated.",
+        "subrace": {"id": 1, "name": "Dwarf"},
     }
 
 
-def test_race_size_put(create_race, create_effect, db_session):
+def test_race_fake_vulnerability_put(create_race, create_damage_type, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "vulnerabilities": [
+                {
+                    "damage_type_id": 2,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with this id does not exist."}
+
+
+def test_race_immunity_put(create_race, create_damage_type, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "immunities": [
+                {
+                    "damage_type_id": 1,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
+    )
+    race = db_session.query(Race).first()
+    assert response.status_code == 200
+    assert len(race.immunities) == 1
+    assert response.json() == {
+        "message": "Race 'Dwarf' has been updated.",
+        "subrace": {"id": 1, "name": "Dwarf"},
+    }
+
+
+def test_race_fake_immunity_put(create_race, create_damage_type, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "immunities": [
+                {
+                    "damage_type_id": 2,
+                    "condition": "When in rage",
+                    "add_damage_type": True,
+                }
+            ]
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with this id does not exist."}
+
+
+def test_race_advantage_put(create_race, create_attribute, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "advantages": [
+                {
+                    "attribute_id": 1,
+                    "condition": "When in rage",
+                    "add_attribute": True,
+                }
+            ]
+        },
+    )
+    race = db_session.query(Race).first()
+    assert response.status_code == 200
+    assert len(race.advantages) == 1
+    assert response.json() == {
+        "message": "Race 'Dwarf' has been updated.",
+        "subrace": {"id": 1, "name": "Dwarf"},
+    }
+
+
+def test_race_fake_advantage_put(create_race, create_attribute, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "advantages": [
+                {
+                    "attribute_id": 2,
+                    "condition": "When in rage",
+                    "add_attribute": True,
+                }
+            ]
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with this id does not exist."}
+
+
+def test_race_disadvantage_put(create_race, create_attribute, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "disadvantages": [
+                {
+                    "attribute_id": 1,
+                    "condition": "When in rage",
+                    "add_attribute": True,
+                }
+            ]
+        },
+    )
+    race = db_session.query(Race).first()
+    assert response.status_code == 200
+    assert len(race.disadvantages) == 1
+    assert response.json() == {
+        "message": "Race 'Dwarf' has been updated.",
+        "subrace": {"id": 1, "name": "Dwarf"},
+    }
+
+
+def test_race_fake_disadvantage_put(create_race, create_attribute, db_session):
+    response = client.put(
+        f"/api/races/{create_race.id}",
+        json={
+            "disadvantages": [
+                {
+                    "attribute_id": 2,
+                    "condition": "When in rage",
+                    "add_attribute": True,
+                }
+            ]
+        },
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Damage type with this id does not exist."}
+
+
+def test_race_size_put(create_race, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",
         json={"sizes": [1]},
@@ -169,12 +380,12 @@ def test_race_size_put(create_race, create_effect, db_session):
     assert response.status_code == 200
     assert race.sizes[0].id == 1
     assert response.json() == {
-        "message": "Subrace 'Dwarf' has been updated.",
+        "message": "Race 'Dwarf' has been updated.",
         "subrace": {"id": 1, "name": "Dwarf"},
     }
 
 
-def test_race_fake_size_put(create_race, create_effect, db_session):
+def test_race_fake_size_put(create_race, db_session):
     response = client.put(
         f"/api/races/{create_race.id}",
         json={"sizes": [2]},
