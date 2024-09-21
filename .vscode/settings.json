@@ -3,5 +3,6 @@
         "Dragonlord",
         "Thylean",
         "vunrabilities"
-    ]
+    ],
+    "autoDocstring.customTemplatePath": "config/docstrings.mustache"
 }
