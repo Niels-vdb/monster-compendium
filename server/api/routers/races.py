@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from pydantic.types import Annotated
+import logging.handlers
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import and_
@@ -21,6 +22,8 @@ from server.database.models.races import (
     RaceResistances,
     RaceVulnerabilities,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/races",
@@ -51,6 +54,7 @@ class RacePutBase(BaseModel):
 
 @router.get("/")
 def get_races(db: Session = Depends(get_db)):
+    logger.info("Getting all races from the database.")
     races = db.query(Race).all()
     if not races:
         raise HTTPException(status_code=404, detail="No races found.")

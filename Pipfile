@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 sqlalchemy = "*"
 fastapi = {extras = ["standard"], version = "*"}
+loguru = "*"
 
 [dev-packages]
 graphviz = "*"
