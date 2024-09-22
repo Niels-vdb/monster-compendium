@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,6 +13,20 @@ router = APIRouter(
     tags=["Sizes"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class SizeModel(BaseModel):
+    """
+    Represents a size entity.
+
+    - `id`: Unique identifier of the size.
+    - `name`: Name of the size.
+    """
+
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SizePostBase(BaseModel):

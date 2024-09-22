@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 import logging.handlers
 
@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from server.api import get_db
 from server.api.models.attributes import PostAttribute, PutAttribute
 from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.routers.subraces import SubraceModel
 from server.database.models.characteristics import Size
 from server.database.models.damage_types import DamageType
 from server.database.models.attributes import Attribute
@@ -30,6 +31,22 @@ router = APIRouter(
     tags=["Races"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class RaceModel(BaseModel):
+    """
+    Represents a race entity.
+
+    - `id`: Unique identifier of the race.
+    - `name`: Name of the race.
+    - `subraces`: List of related subclass entities.
+    """
+
+    id: int
+    name: str
+    subraces: list[SubraceModel]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RacePostBase(BaseModel):

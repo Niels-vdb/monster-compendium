@@ -1,5 +1,5 @@
 import re
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -28,6 +28,14 @@ router = APIRouter(
     tags=["Races"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class SubraceModel(BaseModel):
+    id: int
+    name: str
+    race_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SubracePostBase(BaseModel):

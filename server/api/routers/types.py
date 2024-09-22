@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +14,20 @@ router = APIRouter(
     tags=["Types"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class TypeModel(BaseModel):
+    """
+    Represents a type entity.
+
+    - `id`: Unique identifier of the type.
+    - `name`: Name of the type.
+    """
+
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TypePostBase(BaseModel):

@@ -18,6 +18,20 @@ router = APIRouter(
 )
 
 
+class UserModel(BaseModel):
+    """
+    Represents an user entity.
+
+    - `id`: Unique identifier of the user.
+    - `name`: Name of the user.
+    - `username`: Username of the user.
+    """
+
+    id: int
+    name: str
+    username: str
+
+
 class UserPostBase(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     username: Annotated[str, Field(min_length=1)]
