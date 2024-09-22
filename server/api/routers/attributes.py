@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.logger.logger import logger
+from server.api.models.delete_response import DeleteResponse
 from server.database.models.attributes import Attribute
 
 router = APIRouter(
@@ -25,11 +26,11 @@ class AttributeModel(BaseModel):
 
 
 class AttributePostBase(BaseModel):
-    attribute_name: Annotated[str, Field(min_length=1)]
+    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class AttributePutBase(BaseModel):
-    attribute_name: Annotated[str, Field(min_length=1)]
+    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class AttributeResponse(BaseModel):
@@ -37,10 +38,6 @@ class AttributeResponse(BaseModel):
     attribute: AttributeModel
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class DeleteResponse(BaseModel):
-    message: str
 
 
 @router.get("/", response_model=list[AttributeModel])
@@ -117,6 +114,7 @@ def post_attribute(
         "attribute_name": "example_attribute"
     }
     ```
+    - `attribute_name`: A string between 1 and 50 characters long (inclusive).
 
     **Response Example**:
     ```json
@@ -180,20 +178,17 @@ def put_attribute(
     """
     try:
         logger.info(f"Updating attribute with id '{attribute_id}'.")
-        updated_attribute = (
-            db.query(Attribute).filter(Attribute.id == attribute_id).first()
-        )
+        updated_attribute = db.get(Attribute, attribute_id)
         if not updated_attribute:
             logger.exception(f"Attribute with id '{attribute_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The attribute you are trying to update does not exist.",
             )
-        if attribute.attribute_name:
-            logger.debug(
-                f"Changing attribute with id '{attribute_id}' name to '{attribute.attribute_name}'."
-            )
-            updated_attribute.name = attribute.attribute_name
+        logger.debug(
+            f"Changing attribute with id '{attribute_id}' name to '{attribute.attribute_name}'."
+        )
+        updated_attribute.name = attribute.attribute_name
         db.commit()
         logger.info(f"Committed changes to attribute with id '{attribute_id}'.")
 
@@ -229,7 +224,7 @@ def delete_attribute(
     ```
     """
     logger.info(f"Deleting attribute with the id '{attribute_id}'.")
-    attribute = db.query(Attribute).filter(Attribute.id == attribute_id).first()
+    attribute = db.get(Attribute, attribute_id)
     if not attribute:
         logger.exception(f"Attribute with id '{attribute_id}' not found.")
         raise HTTPException(
