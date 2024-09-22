@@ -19,7 +19,7 @@ def test_get_no_attributes(db_session):
     assert response.json() == []
 
 
-def test_getattribute(create_attribute, db_session):
+def test_get_attribute(create_attribute, db_session):
     response = client.get("/api/attributes/1")
     assert response.status_code == 200
     assert response.json() == {"id": 1, "name": "Charmed"}

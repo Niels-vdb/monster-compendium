@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,6 +15,14 @@ router = APIRouter(
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class SubclassModel(BaseModel):
+    id: int
+    name: str
+    class_id: int = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SubclassPostBase(BaseModel):

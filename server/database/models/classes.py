@@ -17,7 +17,7 @@ class Class(Base):
     __tablename__ = "classes"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False, unique=True)
+    name = Column(String(50), nullable=False, unique=True)
 
     # Relationship references
     subclasses = relationship(

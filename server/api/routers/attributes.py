@@ -19,6 +19,13 @@ router = APIRouter(
 
 
 class AttributeModel(BaseModel):
+    """
+    Represents an attribute entity.
+
+    - `id`: Unique identifier of the attribute.
+    - `name`: Name of the attribute.
+    """
+
     id: int
     name: str
 
@@ -26,14 +33,33 @@ class AttributeModel(BaseModel):
 
 
 class AttributePostBase(BaseModel):
+    """
+    Schema for creating a new attribute.
+
+    - `attribute_name`: Name of the attribute to be created, must be between 1 and 50 characters.
+    """
+
     attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class AttributePutBase(BaseModel):
+    """
+    Schema for updating an attribute.
+
+    - `attribute_name`: Name of the attribute to be created, must be between 1 and 50 characters.
+    """
+
     attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class AttributeResponse(BaseModel):
+    """
+    Response model for creating or retrieving an attribute.
+
+    - `message`: A descriptive message about the action performed.
+    - `attribute`: The actual attribute data, represented by the `AttributeModel`.
+    """
+
     message: str
     attribute: AttributeModel
 
@@ -141,7 +167,7 @@ def post_attribute(
             attribute=new_attribute,
         )
     except IntegrityError as e:
-        logger.exception(
+        logger.error(
             f"Attribute with the name '{attribute.attribute_name}' already exists. Error: {str(e)}"
         )
         raise HTTPException(status_code=400, detail="Attribute already exists.")
@@ -164,6 +190,7 @@ def put_attribute(
         "attribute_name": "updated_attribute"
     }
     ```
+    - `attribute_name`: A string between 1 and 50 characters long (inclusive).
 
     **Response Example**:
     ```json
@@ -180,7 +207,7 @@ def put_attribute(
         logger.info(f"Updating attribute with id '{attribute_id}'.")
         updated_attribute = db.get(Attribute, attribute_id)
         if not updated_attribute:
-            logger.exception(f"Attribute with id '{attribute_id}' not found.")
+            logger.error(f"Attribute with id '{attribute_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The attribute you are trying to update does not exist.",
@@ -197,8 +224,8 @@ def put_attribute(
             attribute=updated_attribute,
         )
     except IntegrityError as e:
-        logger.exception(
-            f"The name '{attribute.attribute_name}' already exists in the database."
+        logger.error(
+            f"The name '{attribute.attribute_name}' already exists in the database. Error: {str(e)}"
         )
         raise HTTPException(
             status_code=400, detail="The name you are trying to use already exists."
@@ -226,7 +253,7 @@ def delete_attribute(
     logger.info(f"Deleting attribute with the id '{attribute_id}'.")
     attribute = db.get(Attribute, attribute_id)
     if not attribute:
-        logger.exception(f"Attribute with id '{attribute_id}' not found.")
+        logger.error(f"Attribute with id '{attribute_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The attribute you are trying to delete does not exist.",
@@ -234,4 +261,4 @@ def delete_attribute(
     db.delete(attribute)
     db.commit()
     logger.info(f"Attribute with id '{attribute_id}' deleted.")
-    return {"message": f"Attribute has been deleted."}
+    return DeleteResponse(message="Attribute has been deleted.")
