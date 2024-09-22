@@ -20,7 +20,7 @@ class Race(Base):
     __tablename__ = "races"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False, unique=True)
+    name = Column(String(50), nullable=False, unique=True)
 
     # n-n relationships
     sizes = relationship(

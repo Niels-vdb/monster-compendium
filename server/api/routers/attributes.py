@@ -46,7 +46,7 @@ class AttributePutBase(BaseModel):
     """
     Schema for updating an attribute.
 
-    - `attribute_name`: Name of the attribute to be created, must be between 1 and 50 characters.
+    - `attribute_name`: New name of the attribute, must be between 1 and 50 characters.
     """
 
     attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
