@@ -89,8 +89,8 @@ def get_attributes(db: Session = Depends(get_db)) -> list[AttributeModel]:
     logger.info("Querying attributes table for all results.")
     stmt = select(Attribute)
     attributes = db.execute(stmt).scalars().all()
-    logger.info(f"Returned {len(attributes)} from the attributes table.")
 
+    logger.info(f"Returned {len(attributes)} from the attributes table.")
     return attributes
 
 
@@ -261,4 +261,5 @@ def delete_attribute(
     db.delete(attribute)
     db.commit()
     logger.info(f"Attribute with id '{attribute_id}' deleted.")
+
     return DeleteResponse(message="Attribute has been deleted.")

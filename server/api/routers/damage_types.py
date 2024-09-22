@@ -1,13 +1,15 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-
-from ...database.models.damage_types import DamageType
+from server.logger.logger import logger
+from server.api.models.delete_response import DeleteResponse
+from server.database.models.damage_types import DamageType
 
 router = APIRouter(
     prefix="/api/damage_types",
@@ -16,79 +18,252 @@ router = APIRouter(
 )
 
 
+class DamageTypeModel(BaseModel):
+    """
+    Represents an damage type entity.
+
+    - `id`: Unique identifier of the damage type.
+    - `name`: Name of the damage type.
+    """
+
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DamageTypePostBase(BaseModel):
-    damage_type_name: Annotated[str, Field(min_length=1)]
+    """
+    Schema for creating a new damage type.
+
+    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
+    """
+
+    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class DamageTypePutBase(BaseModel):
-    damage_type_name: Annotated[str, Field(min_length=1)]
+    """
+    Schema for updating an damage type.
+
+    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
+    """
+
+    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-@router.get("/")
-def get_damage_types(db: Session = Depends(get_db)):
-    damage_types = db.query(DamageType).all()
-    if not damage_types:
-        raise HTTPException(status_code=404, detail="No damage_types found.")
-    return {"damage_types": damage_types}
+class DamageTypeResponse(BaseModel):
+    """
+    Response model for creating or retrieving an damage type.
+
+    - `message`: A descriptive message about the action performed.
+    - `damage_type`: The actual damage type data, represented by the `AttributeModel`.
+    """
+
+    message: str
+    damage_type: DamageTypeModel
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-@router.get("/{damage_type_id}")
-def get_damage_type(damage_type_id: int, db: Session = Depends(get_db)):
-    damage_type = db.query(DamageType).filter(DamageType.id == damage_type_id).first()
+@router.get("/", response_model=list[DamageTypeModel])
+def get_damage_types(db: Session = Depends(get_db)) -> list[DamageTypeModel]:
+    """
+    Queries the damage_types database table for all rows.
+
+    - **Returns** list[DamageTypeModel]: All damage type instances in the database.
+
+    **Response Example**:
+    ```json
+    [
+        {
+            "id": 1,
+            "name": "Fire"
+        },
+        {
+            "id": 2,
+            "name": "Slashing"
+        },
+    ]
+    """
+    logger.info("Querying damage_types table for all results.")
+    stmt = select(DamageType)
+    damage_types = db.execute(stmt).scalars().all()
+
+    logger.info(f"Returned {len(damage_types)} from the damage_types table.")
+    return damage_types
+
+
+@router.get("/{damage_type_id}", response_model=DamageTypeModel)
+def get_damage_type(
+    damage_type_id: int, db: Session = Depends(get_db)
+) -> DamageTypeModel:
+    """
+    Queries the damage_types table in the database table for a specific row with the id of damage_type_id.
+
+    - **Returns** DamageTypeModel: The damage type instance queried for, otherwise 404 HTTPException.
+
+    - **HTTPException**: If the queried damage type does not exist.
+
+    **Response Example**:
+    ```json
+    {
+        "id": 1,
+        "name": "Fire"
+    }
+    ```
+    """
+    logger.info(f"Querying damage_types table for row with id '{damage_type_id}'.")
+    stmt = select(DamageType).where(DamageType.id == damage_type_id)
+    damage_type = db.execute(stmt).scalars().first()
+
     if not damage_type:
+        logger.error(f"No damage type with the id of '{damage_type_id}'.")
         raise HTTPException(status_code=404, detail="Damage type not found.")
-    return {"id": damage_type.id, "name": damage_type.name}
+
+    logger.info(f"Returning damage type info with id of {damage_type_id}.")
+    return damage_type
 
 
-@router.post("/")
-def post_damage_type(damage_type: DamageTypePostBase, db: Session = Depends(get_db)):
+@router.post("/", response_model=DamageTypeResponse, status_code=201)
+def post_damage_type(
+    damage_type: DamageTypePostBase, db: Session = Depends(get_db)
+) -> DamageTypeResponse:
+    """
+    Creates a new row in the damage_types table.
+
+    - **Returns** DamageTypeResponse: A dictionary holding a message and the new damage type.
+
+    - **HTTPException**: If an damage type with this name already exists.
+
+    **Request Body Example**:
+    ```json
+    {
+        "damage_type_name": "example_damage_type"
+    }
+    ```
+    - `damage_type_name`: A string between 1 and 50 characters long (inclusive).
+
+    **Response Example**:
+    ```json
+    {
+        "message": "New damage type 'example_damage_type' has been added to the database.",
+        "damage_type": {
+            "id": 1,
+            "name": "example_damage_type"
+        }
+    }
+    ```
+    """
     try:
+        logger.info(
+            f"Creating new damage type with name '{damage_type.damage_type_name}'."
+        )
         new_damage_type = DamageType(name=damage_type.damage_type_name)
         db.add(new_damage_type)
         db.commit()
+        logger.debug(
+            f"Committed damage type with name '{new_damage_type.name}' to the database."
+        )
         db.refresh(new_damage_type)
-        return {
-            "message": f"New damage_type '{new_damage_type.name}' has been added to the database.",
-            "damage_type": new_damage_type,
-        }
+        return DamageTypeResponse(
+            message=f"New damage type '{new_damage_type.name}' has been added to the database.",
+            damage_type=new_damage_type,
+        )
     except IntegrityError as e:
+        logger.error(
+            f"Attribute with the name '{damage_type.damage_type_name}' already exists. Error: {str(e)}"
+        )
         raise HTTPException(status_code=400, detail="Damage type already exists.")
 
 
-@router.put("/{damage_type_id}")
+@router.put("/{damage_type_id}", response_model=DamageTypeResponse)
 def put_damage_type(
     damage_type_id: int, damage_type: DamageTypePutBase, db: Session = Depends(get_db)
-):
+) -> DamageTypeResponse:
+    """
+    Updates a damage type in the database by its unique id.
+
+    - **Returns** DamageTypeResponse: A message and the updated damage type.
+
+    - **HTTPException**: When the damage type id does not exist or the name of the damage type already exists in the database.
+
+    **Request Body Example**:
+    ```json
+    {
+        "damage_type_name": "updated_damage_type"
+    }
+    ```
+    - `damage_type_name`: A string between 1 and 50 characters long (inclusive).
+
+    **Response Example**:
+    ```json
+    {
+        "message": "Damage type 'updated_damage_type' has been updated.",
+        "damage_type": {
+            "id": 1,
+            "name": "updated_damage_type"
+        }
+    }
+    ```
+    """
     try:
-        updated_damage_type = (
-            db.query(DamageType).filter(DamageType.id == damage_type_id).first()
-        )
+        logger.info(f"Updating damage type with id '{damage_type_id}'.")
+        updated_damage_type = db.get(DamageType, damage_type_id)
         if not updated_damage_type:
+            logger.error(f"Damage type with id '{damage_type_id}' not found.")
             raise HTTPException(
                 status_code=404,
-                detail="The damage_type you are trying to update does not exist.",
+                detail="The damage type you are trying to update does not exist.",
             )
-        if damage_type.damage_type_name != None:
-            updated_damage_type.name = damage_type.damage_type_name
+        logger.debug(
+            f"Changing damage type with id '{damage_type_id}' name to '{damage_type.damage_type_name}'."
+        )
+        updated_damage_type.name = damage_type.damage_type_name
         db.commit()
-        return {
-            "message": f"Damage type '{updated_damage_type.name}' has been updated.",
-            "damage_type": updated_damage_type,
-        }
+        logger.info(f"Committed changes to damage type with id '{damage_type_id}'.")
+
+        return DamageTypeResponse(
+            message=f"Damage type '{updated_damage_type.name}' has been updated.",
+            damage_type=updated_damage_type,
+        )
     except IntegrityError as e:
+        logger.error(
+            f"The name '{damage_type.damage_type_name}' already exists in the database. Error: {str(e)}"
+        )
         raise HTTPException(
             status_code=400, detail="The name you are trying to use already exists."
         )
 
 
-@router.delete("/{damage_type_id}")
-def delete_damage_type(damage_type_id: int, db: Session = Depends(get_db)):
-    damage_type = db.query(DamageType).filter(DamageType.id == damage_type_id).first()
+@router.delete("/{damage_type_id}", response_model=DeleteResponse)
+def delete_damage_type(
+    damage_type_id: int, db: Session = Depends(get_db)
+) -> DeleteResponse:
+    """
+    Deletes an damage type from the database.
+
+    - **Returns** DeleteResponse: A dictionary holding the confirmation message.
+
+    - **HTTPException**: Raised when the id does not exist in the database.
+
+    **Response Example**:
+    ```json
+    {
+        "message": "Damage type has been deleted.",
+    }
+    ```
+    """
+    logger.info(f"Deleting damage type with the id '{damage_type_id}'.")
+    damage_type = db.get(DamageType, damage_type_id)
     if not damage_type:
+        logger.error(f"Damage type with id '{damage_type_id}' not found.")
         raise HTTPException(
             status_code=404,
-            detail="The damage_type you are trying to delete does not exist.",
+            detail="The damage type you are trying to delete does not exist.",
         )
     db.delete(damage_type)
     db.commit()
-    return {"message": f"Damage type has been deleted."}
+    logger.info(f"Damage type with id '{damage_type_id}' deleted.")
+
+    return DeleteResponse(message="Damage type has been deleted.")

@@ -10,17 +10,13 @@ client = TestClient(app)
 def test_get_damage_types(create_damage_type, db_session):
     response = client.get("/api/damage_types")
     assert response.status_code == 200
-    assert response.json() == {
-        "damage_types": [
-            {"id": 1, "name": "Fire"},
-        ]
-    }
+    assert response.json() == [{"id": 1, "name": "Fire"}]
 
 
 def test_get_no_users(db_session):
     response = client.get("/api/damage_types")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No damage_types found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_damage_type(create_damage_type, db_session):
@@ -42,9 +38,9 @@ def test_post_damage_type(db_session):
             "damage_type_name": "Fire",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
-        "message": "New damage_type 'Fire' has been added to the database.",
+        "message": "New damage type 'Fire' has been added to the database.",
         "damage_type": {"id": 1, "name": "Fire"},
     }
 
@@ -101,7 +97,7 @@ def test_damage_type_fake_damage_type_put(create_race, create_damage_type, db_se
     )
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The damage_type you are trying to update does not exist.",
+        "detail": "The damage type you are trying to update does not exist.",
     }
 
 
@@ -121,5 +117,5 @@ def test_damage_type_fake_delete(create_damage_type, db_session):
     response = client.delete(f"/api/damage_types/2")
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The damage_type you are trying to delete does not exist."
+        "detail": "The damage type you are trying to delete does not exist."
     }
