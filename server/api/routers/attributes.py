@@ -46,7 +46,7 @@ class AttributePutBase(BaseModel):
     """
     Schema for updating an attribute.
 
-    - `attribute_name`: New name of the attribute, must be between 1 and 50 characters.
+    - `attribute_name`: Updated name of the attribute, must be between 1 and 50 characters.
     """
 
     attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
@@ -182,7 +182,8 @@ def put_attribute(
 
     - **Returns** AttributeResponse: A message and the updated attribute.
 
-    - **HTTPException**: When the attribute id does not exist or the name of the attribute already exists in the database.
+    - **HTTPException**: When the attribute id does not exist.
+    - **HTTPException**: When the name of the attribute already exists in the database.
 
     **Request Body Example**:
     ```json

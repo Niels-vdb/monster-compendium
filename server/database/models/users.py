@@ -124,7 +124,7 @@ class Role(Base):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True)
-    name: str = Column(String(20), nullable=False, unique=True)
+    name: str = Column(String(50), nullable=False, unique=True)
 
     # n-n relationships
     users = relationship(

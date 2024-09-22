@@ -11,27 +11,19 @@ client = TestClient(app)
 def test_get_roles(create_role, db_session):
     response = client.get("/api/roles")
     assert response.status_code == 200
-    assert response.json() == {
-        "roles": [
-            {"id": 1, "name": "Player"},
-        ]
-    }
+    assert response.json() == [{"id": 1, "name": "Player", "users": []}]
 
 
 def test_get_no_roles(db_session):
     response = client.get("/api/roles")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No roles found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_role(create_role, db_session):
     response = client.get("/api/roles/1")
     assert response.status_code == 200
-    assert response.json() == {
-        "id": 1,
-        "name": "Player",
-        "users": [],
-    }
+    assert response.json() == {"id": 1, "name": "Player", "users": []}
 
 
 def test_get_no_role(create_role, db_session):
@@ -47,10 +39,10 @@ def test_post_role(db_session):
             "role_name": "Admin",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New role 'Admin' has been added to the database.",
-        "role": {"name": "Admin", "id": 1},
+        "role": {"id": 1, "name": "Admin", "users": []},
     }
 
 
@@ -79,9 +71,10 @@ def test_role_name_put(create_role, db_session):
     role = db_session.query(Role).first()
     assert response.status_code == 200
     assert role.name == "Admin"
+    print("response.json(): ", response.json())
     assert response.json() == {
         "message": "Role 'Admin' has been updated.",
-        "role": {"id": 1, "name": "Admin"},
+        "role": {"id": 1, "name": "Admin", "users": []},
     }
 
 
