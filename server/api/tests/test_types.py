@@ -11,23 +11,19 @@ client = TestClient(app)
 def test_get_types(create_type, db_session):
     response = client.get("/api/types")
     assert response.status_code == 200
-    assert response.json() == {
-        "types": [
-            {"name": "Aberration", "id": 1},
-        ]
-    }
+    assert response.json() == [{"name": "Aberration", "id": 1}]
 
 
 def test_get_no_types(db_session):
     response = client.get("/api/types")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No types found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_type(create_type, db_session):
     response = client.get("/api/types/1")
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "name": "Aberration", "creatures": []}
+    assert response.json() == {"id": 1, "name": "Aberration"}
 
 
 def test_get_no_type(create_type, db_session):
@@ -43,7 +39,7 @@ def test_post_type(db_session):
             "type_name": "Humanoid",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New type 'Humanoid' has been added to the database.",
         "type": {"id": 1, "name": "Humanoid"},
