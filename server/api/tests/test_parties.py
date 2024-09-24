@@ -68,9 +68,9 @@ def test_party_name_put(create_party, db_session):
         f"/api/parties/{create_party.id}",
         json={"party_name": "Children of Truth"},
     )
-    cls = db_session.query(Party).first()
+    party = db_session.query(Party).first()
     assert response.status_code == 200
-    assert cls.name == "Children of Truth"
+    assert party.name == "Children of Truth"
     assert response.json() == {
         "message": "Party 'Children of Truth' has been updated.",
         "party": {

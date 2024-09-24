@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from server.api import get_db
 from server.api.models.creatures import CreatureModel
 from server.api.models.delete_response import DeleteResponse
-from server.api.routers.users import UserModel
+from server.api.models.user_relations import PartyBase, UserBase
 from server.logger.logger import logger
 from server.database.models.users import Party
 
@@ -20,20 +20,16 @@ router = APIRouter(
 )
 
 
-class PartyModel(BaseModel):
+class PartyModel(PartyBase):
     """
-    Represents a party entity.
+    Extension on the PartyBase entity.
 
-    - `id`: Unique identifier of the party.
-    - `name`: Name of the party.
+    - `users`: List holding all users in a party.
+    - `creatures`: List holing all creatures the party has encountered.
     """
 
-    id: int
-    name: str
-    users: list[UserModel]
-    creatures: list[CreatureModel]
-
-    model_config = ConfigDict(from_attributes=True)
+    users: list[UserBase] | None
+    creatures: list[CreatureModel] | None
 
 
 class PartyPostBase(BaseModel):

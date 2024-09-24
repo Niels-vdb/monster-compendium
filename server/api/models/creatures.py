@@ -1,5 +1,5 @@
 from typing import Annotated
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from server.api.models.attributes import PostAttribute, PutAttribute
 from server.api.models.damage_types import PostDamageType, PutDamageType
@@ -44,29 +44,31 @@ class CreatureModel(BaseModel):
 
     id: int
     name: str
-    description: str
-    information: str
-    alive: bool
-    active: bool
-    armour_class: int
-    walking_speed: int
-    swimming_speed: int
-    flying_speed: int
-    climbing_speed: int
-    image: bytes
+    description: str | None
+    information: str | None
+    alive: bool | None
+    active: bool | None
+    armour_class: int | None
+    walking_speed: int | None
+    swimming_speed: int | None
+    flying_speed: int | None
+    climbing_speed: int | None
+    image: bytes | None
 
-    race_id: RaceModel
-    subrace_id: SubraceModel
-    size_id: SizeModel
-    type_id: TypeModel
+    race_id: RaceModel | None
+    subrace_id: SubraceModel | None
+    size_id: SizeModel | None
+    type_id: TypeModel | None
 
-    classes: list[ClassModel]
-    subclasses: list[SubclassModel]
-    immunities: list[DamageTypeModel]
-    resistances: list[DamageTypeModel]
-    vulnerabilities: list[DamageTypeModel]
-    advantages: list[AttributeModel]
-    disadvantages: list[AttributeModel]
+    classes: list[ClassModel] | None
+    subclasses: list[SubclassModel] | None
+    immunities: list[DamageTypeModel] | None
+    resistances: list[DamageTypeModel] | None
+    vulnerabilities: list[DamageTypeModel] | None
+    advantages: list[AttributeModel] | None
+    disadvantages: list[AttributeModel] | None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreaturePostBase(BaseModel):

@@ -118,7 +118,7 @@ class RacePutBase(BaseModel):
 
 class RaceResponse(BaseModel):
     """
-    Response model for creating or retrieving an race.
+    Response model for creating or retrieving a race.
 
     - `message`: A descriptive message about the action performed.
     - `race`: The actual race data, represented by the `AttributeModel`.

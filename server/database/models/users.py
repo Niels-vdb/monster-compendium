@@ -21,8 +21,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(20), nullable=False, unique=True)
-    name = Column(String(20), nullable=False)
+    username = Column(String(25), nullable=False, unique=True)
+    name = Column(String(50), nullable=False)
     password = Column(String(80), nullable=True)
     image = Column(BLOB, nullable=True)
 
@@ -49,7 +49,9 @@ class User(Base):
         :returns: A string representation of the Role instance.
         :rtype: str
         """
-        return f"User('{self.id}', '{self.name}', '{self.roles}', '{self.parties}')"
+        return f"""User('{self.id}', '{self.name}', '{self.username}', 
+                    '{self.image}', '{self.roles}', '{self.parties}', 
+                    '{self.characters}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -62,8 +64,11 @@ class User(Base):
         return {
             "user_id": self.id,
             "name": self.name,
-            "role": self.roles,
-            "party": self.parties,
+            "image": self.image,
+            "username": self.username,
+            "roles": self.roles,
+            "parties": self.parties,
+            "characters": self.characters,
         }
 
 

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.user_relations import RoleBase
 from server.logger.logger import logger
 from server.api.routers.users import UserModel
 from server.api.models.delete_response import DeleteResponse
@@ -19,19 +20,14 @@ router = APIRouter(
 )
 
 
-class RoleModel(BaseModel):
+class RoleModel(RoleBase):
     """
-    Represents a role entity.
+    Extension of the RoleBase entity.
 
-    - `id`: Unique identifier of the role.
-    - `name`: Name of the role.
+    - `users`: List of all users that have this role.
     """
 
-    id: int
-    name: str
     users: list[UserModel]
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class RolePostBase(BaseModel):

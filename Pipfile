@@ -5,8 +5,9 @@ name = "pypi"
 
 [packages]
 sqlalchemy = "*"
-fastapi = {extras = ["standard"], version = "*"}
+fastapi = {extras = ["standard"] }
 loguru = "*"
+argon2-cffi = "*"
 
 [dev-packages]
 graphviz = "*"

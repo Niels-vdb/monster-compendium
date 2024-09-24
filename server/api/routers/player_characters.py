@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.api.models.creatures import CreaturePostBase, CreaturePutBase
+from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
+from server.api.models.user_relations import UserBase
 from server.database.models.attributes import Attribute
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
@@ -29,6 +30,10 @@ router = APIRouter(
     tags=["Player Characters"],
     responses={404: {"description": "Not found."}},
 )
+
+
+class PCModel(CreatureModel):
+    user: UserBase
 
 
 class PCPostBase(CreaturePostBase):

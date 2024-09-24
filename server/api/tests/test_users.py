@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.users import Party, Role, User
@@ -11,23 +12,23 @@ client = TestClient(app)
 def test_get_users(create_user, db_session):
     response = client.get("/api/users")
     assert response.status_code == 200
-    assert response.json() == {
-        "users": [
-            {
-                "id": 1,
-                "password": None,
-                "username": "Test",
-                "name": "test",
-                "image": None,
-            }
-        ]
-    }
+    assert response.json() == [
+        {
+            "id": 1,
+            "name": "test",
+            "username": "Test",
+            "image": None,
+            "parties": [{"id": 1, "name": "Murder Hobo Party"}],
+            "roles": [{"id": 1, "name": "Player"}],
+            "characters": [],
+        }
+    ]
 
 
 def test_get_no_users(db_session):
     response = client.get("/api/users")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No users found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_user(create_user, db_session):
@@ -38,7 +39,7 @@ def test_get_user(create_user, db_session):
         "name": "test",
         "username": "Test",
         "image": None,
-        "parties": [{"name": "Murder Hobo Party", "id": 1}],
+        "parties": [{"id": 1, "name": "Murder Hobo Party"}],
         "roles": [{"id": 1, "name": "Player"}],
         "characters": [],
     }
@@ -55,10 +56,10 @@ def test_post_user(create_party, create_role, create_pc, db_session):
         "/api/users",
         json={
             "name": "Player",
+            "password": "Test",
             "username": "player",
             "parties": [1],
             "roles": [1],
-            "characters": [1],
         },
     )
     assert response.status_code == 200
@@ -66,10 +67,12 @@ def test_post_user(create_party, create_role, create_pc, db_session):
         "message": "New user 'Player' has been added to the database.",
         "user": {
             "id": 2,
-            "password": None,
-            "username": "player",
             "name": "Player",
+            "username": "player",
             "image": None,
+            "parties": [{"id": 1, "name": "Murder Hobo Party"}],
+            "roles": [{"id": 1, "name": "Player"}],
+            "characters": [],
         },
     }
 
@@ -82,7 +85,6 @@ def test_post_duplicate_user(create_party, create_role, create_pc, db_session):
             "username": "player",
             "parties": [1],
             "roles": [1],
-            "characters": [1],
         },
     )
     response = client.post(
@@ -92,82 +94,36 @@ def test_post_duplicate_user(create_party, create_role, create_pc, db_session):
             "username": "player",
             "parties": [1],
             "roles": [1],
-            "characters": [1],
         },
     )
     assert response.status_code == 400
-    assert response.json() == {"detail": "User already exists."}
+    assert response.json() == {"detail": "Username already exists."}
 
 
-def test_post_user_fake_party(create_party, create_role, create_pc, db_session):
+def test_post_user_fake_party(create_party, db_session):
     response = client.post(
         "/api/users",
         json={
             "name": "Player",
             "username": "player",
             "parties": [2],
-            "roles": [1],
-            "characters": [1],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {
-        "detail": "The party, role or character you are trying to bind to this race does not exist."
-    }
+    assert response.json() == {"detail": "One or more parties not found."}
 
 
-def test_post_user_fake_role(create_party, create_role, create_pc, db_session):
+def test_post_user_fake_role(create_role, db_session):
     response = client.post(
         "/api/users",
         json={
             "name": "Player",
             "username": "player",
-            "parties": [1],
             "roles": [2],
-            "characters": [1],
         },
     )
     assert response.status_code == 404
-    assert response.json() == {
-        "detail": "The party, role or character you are trying to bind to this race does not exist."
-    }
-
-
-def test_post_user_fake_character(create_party, create_role, create_pc, db_session):
-    response = client.post(
-        "/api/users",
-        json={
-            "name": "Player",
-            "username": "player",
-            "parties": [1],
-            "roles": [1],
-            "characters": [2],
-        },
-    )
-    assert response.status_code == 404
-    assert response.json() == {
-        "detail": "The party, role or character you are trying to bind to this race does not exist."
-    }
-
-
-def test_user_username_put(create_user, db_session):
-    response = client.put(
-        f"/api/users/{create_user.id}",
-        json={"username": "DM"},
-    )
-    user = db_session.query(User).first()
-    assert response.status_code == 200
-    assert user.username == "DM"
-    assert response.json() == {
-        "message": "User 'test' has been updated.",
-        "user": {
-            "id": 1,
-            "password": None,
-            "username": "DM",
-            "image": None,
-            "name": "test",
-        },
-    }
+    assert response.json() == {"detail": "One or more roles not found."}
 
 
 def test_user_duplicate_name_put(create_user, create_role, create_party, db_session):
@@ -189,47 +145,77 @@ def test_user_duplicate_name_put(create_user, create_role, create_party, db_sess
     }
 
 
-def test_user_name_put(create_user, db_session):
+def test_user_put(create_user, db_session):
+    role = Role(name="Test Role")
+    db_session.add(role)
+
+    party = Party(name="Test Party")
+    db_session.add(party)
+
+    character = PlayerCharacter(name="Test Character", user_id=create_user.id)
+    db_session.add(character)
+
+    db_session.commit()
+    db_session.refresh(role)
+    db_session.refresh(character)
+    db_session.refresh(party)
+
     response = client.put(
         f"/api/users/{create_user.id}",
-        json={"name": "Dungeon Master"},
+        json={
+            "name": "Dungeon Master",
+            "username": "DM",
+            "roles": [{"role_id": role.id, "add_role": True}],
+            "parties": [{"party_id": party.id, "add_party": True}],
+            "characters": [{"character_id": character.id, "add_character": True}],
+        },
     )
-    user = db_session.query(User).first()
+    user = db_session.get(User, 1)
     assert response.status_code == 200
     assert user.name == "Dungeon Master"
+    assert user.username == "DM"
+    assert len(user.roles) == 2
+    assert len(user.parties) == 2
+    assert len(user.characters) == 1
     assert response.json() == {
         "message": "User 'Dungeon Master' has been updated.",
         "user": {
             "id": 1,
-            "password": None,
-            "username": "Test",
-            "image": None,
             "name": "Dungeon Master",
-        },
-    }
-
-
-def test_user_role_put(create_user, db_session):
-    role = Role(name="Test Role")
-    db_session.add(role)
-    db_session.commit()
-    db_session.refresh(role)
-
-    response = client.put(
-        f"/api/users/{create_user.id}",
-        json={"roles": [role.id]},
-    )
-    user = db_session.query(User).first()
-    assert response.status_code == 200
-    assert user.roles[0].id == 2
-    assert response.json() == {
-        "message": "User 'test' has been updated.",
-        "user": {
-            "id": 1,
-            "password": None,
-            "name": "test",
+            "username": "DM",
             "image": None,
-            "username": "Test",
+            "parties": [
+                {"id": 1, "name": "Murder Hobo Party"},
+                {"id": 2, "name": "Test Party"},
+            ],
+            "roles": [{"id": 1, "name": "Player"}, {"id": 2, "name": "Test Role"}],
+            "characters": [
+                {
+                    "id": 1,
+                    "name": "Test Character",
+                    "description": None,
+                    "information": None,
+                    "alive": True,
+                    "active": True,
+                    "armour_class": None,
+                    "walking_speed": None,
+                    "swimming_speed": None,
+                    "flying_speed": None,
+                    "climbing_speed": None,
+                    "image": None,
+                    "race_id": None,
+                    "subrace_id": None,
+                    "size_id": None,
+                    "type_id": None,
+                    "classes": [],
+                    "subclasses": [],
+                    "immunities": [],
+                    "resistances": [],
+                    "vulnerabilities": [],
+                    "advantages": [],
+                    "disadvantages": [],
+                }
+            ],
         },
     }
 
@@ -237,83 +223,37 @@ def test_user_role_put(create_user, db_session):
 def test_user_fake_role_put(create_user, db_session):
     response = client.put(
         f"/api/users/{create_user.id}",
-        json={"roles": [2]},
+        json={
+            "roles": [{"role_id": 2, "add_role": True}],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The role you are trying to link to this user does not exist.",
-    }
-
-
-def test_user_party_put(create_user, db_session):
-    party = Party(name="Test Party")
-    db_session.add(party)
-    db_session.commit()
-    db_session.refresh(party)
-
-    response = client.put(
-        f"/api/users/{create_user.id}",
-        json={"parties": [party.id]},
-    )
-    user = db_session.query(User).first()
-    assert response.status_code == 200
-    assert user.parties[0].id == 2
-    assert response.json() == {
-        "message": "User 'test' has been updated.",
-        "user": {
-            "id": 1,
-            "password": None,
-            "name": "test",
-            "image": None,
-            "username": "Test",
-        },
+        "detail": "Role with id '2' not found.",
     }
 
 
 def test_user_fake_party_put(create_user, db_session):
     response = client.put(
         f"/api/users/{create_user.id}",
-        json={"parties": [2]},
+        json={"parties": [{"party_id": 2, "add_party": True}]},
     )
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The party you are trying to link to this user does not exist.",
-    }
-
-
-def test_user_character_put(create_user, db_session):
-    character = PlayerCharacter(name="Test Character", user_id=create_user.id)
-    db_session.add(character)
-    db_session.commit()
-    db_session.refresh(character)
-
-    response = client.put(
-        f"/api/users/{create_user.id}",
-        json={"characters": [character.id]},
-    )
-    user = db_session.query(User).first()
-    assert response.status_code == 200
-    assert user.characters[0].id == 1
-    assert response.json() == {
-        "message": "User 'test' has been updated.",
-        "user": {
-            "id": 1,
-            "password": None,
-            "name": "test",
-            "image": None,
-            "username": "Test",
-        },
+        "detail": "Party with id '2' not found.",
     }
 
 
 def test_user_fake_character_put(create_user, db_session):
     response = client.put(
         f"/api/users/{create_user.id}",
-        json={"characters": [1]},
+        json={
+            "characters": [{"character_id": 2, "add_character": True}],
+        },
     )
     assert response.status_code == 404
     assert response.json() == {
-        "detail": "The character you are trying to link to this user does not exist.",
+        "detail": "Character with id '2' not found.",
     }
 
 
@@ -330,7 +270,8 @@ def test_user_fake_user_put(create_race, create_user, db_session):
 
 def test_user_delete(create_user, db_session):
     response = client.delete(f"/api/users/{create_user.id}")
-    user = db_session.query(User).filter(User.id == create_user.id).first()
+    stmt = select(User).where(User.id == create_user.id)
+    user = db_session.execute(stmt).scalars().first()
     assert response.status_code == 200
     assert response.json() == {"message": f"User has been deleted."}
     assert user == None
