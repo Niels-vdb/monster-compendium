@@ -13,12 +13,25 @@ from server.api.routers.subclasses import SubclassModel
 from server.api.routers.types import TypeModel
 
 
-class CreatureModel(BaseModel):
+class CreatureBase(BaseModel):
     """
     Represents a creature entity.
 
-    - `id`: Unique identifier of the user.
-    - `name`: Name of the user.
+    - `id`: Unique identifier of the creature.
+    - `name`: Name of the creature
+    """
+
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreatureModel(CreatureBase):
+    """
+    Extends the CreatureBase entity.
+    - `id`: Unique identifier of the creature.
+    - `name`: Name of the creature
     - `description`: Description of the creature.
     - `information`: Information about the creature.
     - `alive`: Boolean if creature is alive.
@@ -42,8 +55,6 @@ class CreatureModel(BaseModel):
     - `disadvantages`:The attributes the creature has disadvantage on.
     """
 
-    id: int
-    name: str
     description: str | None
     information: str | None
     alive: bool | None
@@ -68,71 +79,61 @@ class CreatureModel(BaseModel):
     advantages: list[AttributeModel] | None
     disadvantages: list[AttributeModel] | None
 
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PCBase(CreatureModel):
-    """
-    Represents a player character entity. Extends the CreatureModel.
-    """
-
-    pass
-
 
 class CreaturePostBase(BaseModel):
-    name: Annotated[str, Field(min_length=1)]
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    climbing_speed: int = None
-    image: bytes = None
+    name: Annotated[str, Field(min_length=1, max_length=100)]
+    description: str | None = None
+    information: str | None = None
+    alive: bool | None = None
+    active: bool | None = None
+    armour_class: int | None = None
+    walking_speed: int | None = None
+    swimming_speed: int | None = None
+    flying_speed: int | None = None
+    climbing_speed: int | None = None
+    image: bytes | None = None
 
-    race_id: int = None
-    subrace_id: int = None
-    size_id: int = None
-    type_id: int = None
+    race_id: int | None = None
+    subrace_id: int | None = None
+    size_id: int | None = None
+    type_id: int | None = None
 
-    parties: list[int] = None
-    classes: list[int] = None
-    subclasses: list[int] = None
-    immunities: list[PostDamageType] = None
-    resistances: list[PostDamageType] = None
-    vulnerabilities: list[PostDamageType] = None
-    advantages: list[PostAttribute] = None
-    disadvantages: list[PostAttribute] = None
+    parties: list[int] | None = None
+    classes: list[int] | None = None
+    subclasses: list[int] | None = None
+    immunities: list[PostDamageType] | None = None
+    resistances: list[PostDamageType] | None = None
+    vulnerabilities: list[PostDamageType] | None = None
+    advantages: list[PostAttribute] | None = None
+    disadvantages: list[PostAttribute] | None = None
 
 
 class CreaturePutBase(BaseModel):
-    name: str = None
-    description: str = None
-    information: str = None
-    alive: bool = None
-    active: bool = None
-    armour_class: int = None
-    walking_speed: int = None
-    swimming_speed: int = None
-    flying_speed: int = None
-    climbing_speed: int = None
-    image: bytes = None
+    name: Annotated[str, Field(min_length=1, max_length=100)] | None = None
+    description: str | None = None
+    information: str | None = None
+    alive: bool | None = None
+    active: bool | None = None
+    armour_class: int | None = None
+    walking_speed: int | None = None
+    swimming_speed: int | None = None
+    flying_speed: int | None = None
+    climbing_speed: int | None = None
+    image: bytes | None = None
 
-    race_id: int = None
-    subrace_id: int = None
-    size_id: int = None
-    type_id: int = None
+    race_id: int | None = None
+    subrace_id: int | None = None
+    size_id: int | None = None
+    type_id: int | None = None
 
-    classes: list[int] = None
-    add_class: bool = None
-    subclasses: list[int] = None
-    add_subclass: bool = None
-    parties: list[int] = None
-    add_parties: bool = None
-    immunities: list[PutDamageType] = None
-    resistances: list[PutDamageType] = None
-    vulnerabilities: list[PutDamageType] = None
-    advantages: list[PutAttribute] = None
-    disadvantages: list[PutAttribute] = None
+    classes: list[int] | None = None
+    add_class: bool | None = None
+    subclasses: list[int] | None = None
+    add_subclass: bool | None = None
+    parties: list[int] | None = None
+    add_parties: bool | None = None
+    immunities: list[PutDamageType] | None = None
+    resistances: list[PutDamageType] | None = None
+    vulnerabilities: list[PutDamageType] | None = None
+    advantages: list[PutAttribute] | None = None
+    disadvantages: list[PutAttribute] | None = None

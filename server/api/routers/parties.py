@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.api.models.creatures import CreatureModel
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.user_relations import PartyBase, UserBase
@@ -52,18 +53,16 @@ class PartyPutBase(BaseModel):
     party_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-class PartyResponse(BaseModel):
+class PartyResponse(BaseResponse):
     """
     Party model for creating or retrieving an party.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `party`: The actual party data, represented by the `AttributeModel`.
     """
 
-    message: str
     party: PartyModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[PartyModel])

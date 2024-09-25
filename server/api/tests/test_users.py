@@ -126,7 +126,9 @@ def test_post_user_fake_role(create_role, db_session):
     assert response.json() == {"detail": "One or more roles not found."}
 
 
-def test_user_duplicate_name_put(create_user, create_role, create_party, db_session):
+def test_user_duplicate_username_put(
+    create_user, create_role, create_party, db_session
+):
     user = User(
         name="Duplicate",
         username="duplicate",
@@ -194,27 +196,6 @@ def test_user_put(create_user, db_session):
                 {
                     "id": 1,
                     "name": "Test Character",
-                    "description": None,
-                    "information": None,
-                    "alive": True,
-                    "active": True,
-                    "armour_class": None,
-                    "walking_speed": None,
-                    "swimming_speed": None,
-                    "flying_speed": None,
-                    "climbing_speed": None,
-                    "image": None,
-                    "race": None,
-                    "subrace": None,
-                    "size": None,
-                    "creature_type": None,
-                    "classes": [],
-                    "subclasses": [],
-                    "immunities": [],
-                    "resistances": [],
-                    "vulnerabilities": [],
-                    "advantages": [],
-                    "disadvantages": [],
                 }
             ],
         },

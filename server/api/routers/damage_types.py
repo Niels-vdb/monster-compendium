@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.logger.logger import logger
 from server.api.models.delete_response import DeleteResponse
 from server.database.models.damage_types import DamageType
@@ -52,18 +53,16 @@ class DamageTypePutBase(BaseModel):
     damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-class DamageTypeResponse(BaseModel):
+class DamageTypeResponse(BaseResponse):
     """
     Response model for creating or retrieving an damage type.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `damage_type`: The actual damage type data, represented by the `AttributeModel`.
     """
 
-    message: str
     damage_type: DamageTypeModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[DamageTypeModel])

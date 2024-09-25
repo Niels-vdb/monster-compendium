@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.logger.logger import logger
 from server.api.models.delete_response import DeleteResponse
 from server.database.models.attributes import Attribute
@@ -52,18 +53,16 @@ class AttributePutBase(BaseModel):
     attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-class AttributeResponse(BaseModel):
+class AttributeResponse(BaseResponse):
     """
     Response model for creating or retrieving an attribute.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `attribute`: The actual attribute data, represented by the `AttributeModel`.
     """
 
-    message: str
     attribute: AttributeModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[AttributeModel])

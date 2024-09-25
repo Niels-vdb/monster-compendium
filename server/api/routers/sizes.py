@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.logger.logger import logger
 from server.api.models.delete_response import DeleteResponse
 from server.database.models.characteristics import Size
@@ -52,18 +53,16 @@ class SizePutBase(BaseModel):
     size_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-class SizeResponse(BaseModel):
+class SizeResponse(BaseResponse):
     """
     Response model for creating or retrieving a size.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `size`: The actual size data, represented by the `RoleModel`.
     """
 
-    message: str
     size: SizeModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[SizeModel])

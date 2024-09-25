@@ -9,7 +9,8 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 
 from server.api import get_db
-from server.api.models.creatures import PCBase
+from server.api.models.base_response import BaseResponse
+from server.api.models.creatures import CreatureBase
 from server.api.models.user_relations import PartyBase, RoleBase, UserBase
 from server.logger.logger import logger
 from server.api.models.delete_response import DeleteResponse
@@ -37,7 +38,7 @@ class UserModel(UserBase):
 
     parties: list[PartyBase] | None
     roles: list[RoleBase] | None
-    characters: list[PCBase] | None
+    characters: list[CreatureBase] | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -103,18 +104,16 @@ class UserPutBase(BaseModel):
     characters: list[CharacterPut] | None = None
 
 
-class UserResponse(BaseModel):
+class UserResponse(BaseResponse):
     """
     Response model for creating or retrieving a user.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `user`: The actual user data, represented by the `UserModel`.
     """
 
-    message: str
     user: UserModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[UserModel])
@@ -399,7 +398,6 @@ def put_user(
                     )
                     if found_role in updated_user.roles:
                         updated_user.roles.remove(found_role)
-
         if user.parties:
             logger.debug(f"Updating parties for user with id: '{user_id}'.")
 
@@ -426,7 +424,6 @@ def put_user(
                     )
                     if found_party in updated_user.parties:
                         updated_user.parties.remove(found_party)
-
         if user.characters:
             logger.debug(f"Updating characters for user with id: '{user_id}'.")
 
@@ -465,6 +462,7 @@ def put_user(
         )
 
     except IntegrityError as e:
+        logger.error(f"The username '{user.username}' already exists. Error: {str(e)}")
         raise HTTPException(
             status_code=400, detail="The username you are trying to use already exists."
         )

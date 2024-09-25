@@ -108,15 +108,13 @@ class SubracePutBase(BaseModel):
 class SubraceResponse(BaseModel):
     """
     Response model for creating or retrieving a subrace.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `subrace`: The actual subrace data, represented by the `SubraceModel`.
     """
 
-    message: str
     subrace: SubraceModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[SubraceModel])

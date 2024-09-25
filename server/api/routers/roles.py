@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.api.models.user_relations import RoleBase
 from server.logger.logger import logger
 from server.api.routers.users import UserModel
@@ -50,7 +51,7 @@ class RolePutBase(BaseModel):
     role_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
-class RoleResponse(BaseModel):
+class RoleResponse(BaseResponse):
     """
     Response model for creating or retrieving a role.
 
@@ -58,10 +59,7 @@ class RoleResponse(BaseModel):
     - `role`: The actual role data, represented by the `RoleModel`.
     """
 
-    message: str
     role: RoleModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[RoleModel])

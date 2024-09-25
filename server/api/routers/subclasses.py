@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.api.models.class_subclass_bases import ClassBase, SubclassBase
 from server.api.models.delete_response import DeleteResponse
 from server.logger.logger import logger
@@ -57,18 +58,16 @@ class SubclassPutBase(BaseModel):
     class_id: int | None = None
 
 
-class SubclassResponse(BaseModel):
+class SubclassResponse(BaseResponse):
     """
     Response model for creating or retrieving a subclass.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `subclass`: The actual subclass data, represented by the `SubclassModel`.
     """
 
-    message: str
     subclass: SubclassModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[SubclassModel])

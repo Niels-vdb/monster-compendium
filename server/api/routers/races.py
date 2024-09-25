@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.race_subrace_bases import RaceBase, SubraceBase
 from server.api.routers.attributes import AttributeModel
@@ -108,18 +109,16 @@ class RacePutBase(BaseModel):
     disadvantages: list[PutAttribute] = None
 
 
-class RaceResponse(BaseModel):
+class RaceResponse(BaseResponse):
     """
     Response model for creating or retrieving a race.
+    Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
     - `race`: The actual race data, represented by the `AttributeModel`.
     """
 
-    message: str
     race: RaceModel
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 @router.get("/", response_model=list[RaceModel])
