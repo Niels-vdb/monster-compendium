@@ -155,17 +155,21 @@ def post_attribute(
     """
     try:
         logger.info(f"Creating new attribute with name '{attribute.attribute_name}'.")
+
         new_attribute = Attribute(name=attribute.attribute_name)
         db.add(new_attribute)
+
         db.commit()
+        db.refresh(new_attribute)
         logger.debug(
             f"Committed attribute with name '{new_attribute.name}' to the database."
         )
-        db.refresh(new_attribute)
+
         return AttributeResponse(
             message=f"New attribute '{new_attribute.name}' has been added to the database.",
             attribute=new_attribute,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Attribute with the name '{attribute.attribute_name}' already exists. Error: {str(e)}"
@@ -207,16 +211,19 @@ def put_attribute(
     try:
         logger.info(f"Updating attribute with id '{attribute_id}'.")
         updated_attribute = db.get(Attribute, attribute_id)
+
         if not updated_attribute:
             logger.error(f"Attribute with id '{attribute_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The attribute you are trying to update does not exist.",
             )
+
         logger.debug(
             f"Changing attribute with id '{attribute_id}' name to '{attribute.attribute_name}'."
         )
         updated_attribute.name = attribute.attribute_name
+
         db.commit()
         logger.info(f"Committed changes to attribute with id '{attribute_id}'.")
 
@@ -224,6 +231,7 @@ def put_attribute(
             message=f"Attribute '{updated_attribute.name}' has been updated.",
             attribute=updated_attribute,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{attribute.attribute_name}' already exists in the database. Error: {str(e)}"
@@ -253,14 +261,16 @@ def delete_attribute(
     """
     logger.info(f"Deleting attribute with the id '{attribute_id}'.")
     attribute = db.get(Attribute, attribute_id)
+
     if not attribute:
         logger.error(f"Attribute with id '{attribute_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The attribute you are trying to delete does not exist.",
         )
+
     db.delete(attribute)
     db.commit()
-    logger.info(f"Attribute with id '{attribute_id}' deleted.")
 
+    logger.info(f"Attribute with id '{attribute_id}' deleted.")
     return DeleteResponse(message="Attribute has been deleted.")

@@ -86,11 +86,11 @@ def get_damage_types(db: Session = Depends(get_db)) -> list[DamageTypeModel]:
         },
     ]
     """
-    logger.info("Querying damage_types table for all results.")
+    logger.info("Querying damage types table for all results.")
     stmt = select(DamageType)
     damage_types = db.execute(stmt).scalars().all()
 
-    logger.info(f"Returned {len(damage_types)} from the damage_types table.")
+    logger.info(f"Returned {len(damage_types)} from the damage types table.")
     return damage_types
 
 
@@ -99,7 +99,7 @@ def get_damage_type(
     damage_type_id: int, db: Session = Depends(get_db)
 ) -> DamageTypeModel:
     """
-    Queries the damage_types table in the database table for a specific row with the id of damage_type_id.
+    Queries the damage types table in the database table for a specific row with the id of damage_type_id.
 
     - **Returns** DamageTypeModel: The damage type instance queried for, otherwise 404 HTTPException.
 
@@ -113,7 +113,7 @@ def get_damage_type(
     }
     ```
     """
-    logger.info(f"Querying damage_types table for row with id '{damage_type_id}'.")
+    logger.info(f"Querying damage types table for row with id '{damage_type_id}'.")
     stmt = select(DamageType).where(DamageType.id == damage_type_id)
     damage_type = db.execute(stmt).scalars().first()
 
@@ -159,20 +159,24 @@ def post_damage_type(
         logger.info(
             f"Creating new damage type with name '{damage_type.damage_type_name}'."
         )
+
         new_damage_type = DamageType(name=damage_type.damage_type_name)
         db.add(new_damage_type)
+
         db.commit()
+        db.refresh(new_damage_type)
         logger.debug(
             f"Committed damage type with name '{new_damage_type.name}' to the database."
         )
-        db.refresh(new_damage_type)
+
         return DamageTypeResponse(
             message=f"New damage type '{new_damage_type.name}' has been added to the database.",
             damage_type=new_damage_type,
         )
+
     except IntegrityError as e:
         logger.error(
-            f"Attribute with the name '{damage_type.damage_type_name}' already exists. Error: {str(e)}"
+            f"Damage type with the name '{damage_type.damage_type_name}' already exists. Error: {str(e)}"
         )
         raise HTTPException(status_code=400, detail="Damage type already exists.")
 
@@ -210,16 +214,19 @@ def put_damage_type(
     try:
         logger.info(f"Updating damage type with id '{damage_type_id}'.")
         updated_damage_type = db.get(DamageType, damage_type_id)
+
         if not updated_damage_type:
             logger.error(f"Damage type with id '{damage_type_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The damage type you are trying to update does not exist.",
             )
+
         logger.debug(
             f"Changing damage type with id '{damage_type_id}' name to '{damage_type.damage_type_name}'."
         )
         updated_damage_type.name = damage_type.damage_type_name
+
         db.commit()
         logger.info(f"Committed changes to damage type with id '{damage_type_id}'.")
 
@@ -227,6 +234,7 @@ def put_damage_type(
             message=f"Damage type '{updated_damage_type.name}' has been updated.",
             damage_type=updated_damage_type,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{damage_type.damage_type_name}' already exists in the database. Error: {str(e)}"
@@ -256,14 +264,16 @@ def delete_damage_type(
     """
     logger.info(f"Deleting damage type with the id '{damage_type_id}'.")
     damage_type = db.get(DamageType, damage_type_id)
+
     if not damage_type:
         logger.error(f"Damage type with id '{damage_type_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The damage type you are trying to delete does not exist.",
         )
+
     db.delete(damage_type)
     db.commit()
-    logger.info(f"Damage type with id '{damage_type_id}' deleted.")
 
+    logger.info(f"Damage type with id '{damage_type_id}' deleted.")
     return DeleteResponse(message="Damage type has been deleted.")

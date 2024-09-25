@@ -7,8 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
+from server.api.models.class_subclass_bases import ClassBase, SubclassBase
 from server.api.models.delete_response import DeleteResponse
-from server.api.routers.subclasses import SubclassModel
 from server.logger.logger import logger
 from server.database.models.classes import Class
 
@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 
-class ClassModel(BaseModel):
+class ClassModel(ClassBase):
     """
     Represents a class entity.
 
@@ -29,9 +29,7 @@ class ClassModel(BaseModel):
     - `subclasses`: List of related subclass entities.
     """
 
-    id: int
-    name: str
-    subclasses: list[SubclassModel]
+    subclasses: list[SubclassBase] | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,8 +105,8 @@ def get_classes(db: Session = Depends(get_db)) -> list[ClassModel]:
     logger.info("Querying classes table for all results.")
     stmt = select(Class)
     classes = db.execute(stmt).scalars().all()
-    logger.info(f"Returned {len(classes)} from the classes table.")
 
+    logger.info(f"Returned {len(classes)} from the classes table.")
     return classes
 
 
@@ -145,7 +143,7 @@ def get_class(class_id: int, db: Session = Depends(get_db)) -> ClassModel:
         raise HTTPException(status_code=404, detail="Class not found.")
 
     logger.info(f"Returning class info with id of {class_id}.")
-    return {"id": cls.id, "name": cls.name, "subclasses": cls.subclasses}
+    return cls
 
 
 @router.post("/", response_model=ClassResponse, status_code=201)
@@ -185,15 +183,19 @@ def post_class(cls: ClassPostBase, db: Session = Depends(get_db)) -> ClassRespon
     """
     try:
         logger.info(f"Creating new class with name '{cls.class_name}'.")
+
         new_class = Class(name=cls.class_name)
         db.add(new_class)
+
         db.commit()
-        logger.debug(f"Committed class with name '{new_class.name}' to the database.")
         db.refresh(new_class)
+        logger.debug(f"Committed class with name '{new_class.name}' to the database.")
+
         return ClassResponse(
             message=f"New class '{new_class.name}' has been added to the database.",
             cls=new_class,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Class with the name '{cls.class_name}' already exists. Error: {str(e)}"
@@ -242,21 +244,25 @@ def put_class(
         logger.info(f"Updating class with id '{class_id}'.")
 
         updated_class = db.get(Class, class_id)
+
         if not updated_class:
-            logger.error(f"Attribute with id '{class_id}' not found.")
+            logger.error(f"Class with id '{class_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The class you are trying to update does not exist.",
             )
+
         logger.debug(f"Changing class with id '{class_id}' name to '{cls.class_name}'.")
         updated_class.name = cls.class_name
+
         db.commit()
         logger.info(f"Committed changes to class with id '{class_id}'.")
 
         return ClassResponse(
-            message=f"Attribute '{updated_class.name}' has been updated.",
+            message=f"Class '{updated_class.name}' has been updated.",
             cls=updated_class,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{cls.class_name}' already exists in the database. Error: {str(e)}"
@@ -284,13 +290,16 @@ def delete_race(class_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     logger.info(f"Deleting class with the id '{class_id}'.")
     cls = db.get(Class, class_id)
+
     if not cls:
         logger.error(f"Class with id '{class_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The class you are trying to delete does not exist.",
         )
+
     db.delete(cls)
     db.commit()
+
     logger.info(f"Class with id '{class_id}' deleted.")
     return DeleteResponse(message="Class has been deleted.")

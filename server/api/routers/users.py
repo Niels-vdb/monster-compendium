@@ -9,7 +9,8 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 
 from server.api import get_db
-from server.api.models.user_relations import PCBase, PartyBase, RoleBase, UserBase
+from server.api.models.creatures import PCBase
+from server.api.models.user_relations import PartyBase, RoleBase, UserBase
 from server.logger.logger import logger
 from server.api.models.delete_response import DeleteResponse
 from server.database.models.player_characters import PlayerCharacter
@@ -26,6 +27,10 @@ class UserModel(UserBase):
     """
     Extension of the UserBase entity.
 
+    - `id`: Unique identifier of the user.
+    - `name`: Name of the user.
+    - `username`: Username of the user.
+    - `image`: The user's image. NOT IMPLEMENTED YET!
     - `parties`: The parties the user is in.
     - `characters`: The characters the user has.
     """
@@ -48,7 +53,7 @@ class UserPostBase(BaseModel):
     - `roles`: List of the roles of the user.
     """
 
-    name: Annotated[str, Field(min_length=1, max_length=25)]
+    name: Annotated[str, Field(min_length=1, max_length=50)]
     username: Annotated[str, Field(min_length=1, max_length=50)]
     image: bytes | None = None
     password: str | None = None
@@ -89,7 +94,7 @@ class UserPutBase(BaseModel):
     - `characters`: List of all characters of the user.
     """
 
-    name: Annotated[str, Field(min_length=1, max_length=25)] | None = None
+    name: Annotated[str, Field(min_length=1, max_length=50)] | None = None
     username: Annotated[str, Field(min_length=1, max_length=50)] | None = None
     image: bytes | None = None
     password: str | None = None
@@ -237,9 +242,9 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
             attributes["parties"] = psw_hash
         if user.parties:
             logger.debug(f"Adding parties with ids '{user.parties}' to new user.")
+
             stmt = select(Party).where(Party.id.in_(user.parties))
             parties = db.execute(stmt).scalars().all()
-            logger.debug(f"Found parties: '{parties}'")
 
             missing_parties = set(user.parties) - {party.id for party in parties}
             if missing_parties:
@@ -247,13 +252,14 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
                 raise HTTPException(
                     status_code=404, detail="One or more parties not found."
                 )
+            logger.debug(f"Found parties: '{parties}'")
 
             attributes["parties"] = parties
         if user.roles:
             logger.debug(f"Adding roles with ids '{user.roles}' to new user.")
+
             stmt = select(Role).where(Role.id.in_(user.roles))
             roles = db.execute(stmt).scalars().all()
-            logger.debug(f"Found roles: '{roles}'")
 
             missing_roles = set(user.roles) - {role.id for role in roles}
             if missing_roles:
@@ -261,21 +267,24 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
                 raise HTTPException(
                     status_code=404, detail="One or more roles not found."
                 )
+            logger.debug(f"Found roles: '{roles}'")
 
             attributes["roles"] = roles
 
         new_user = User(**attributes)
         db.add(new_user)
+
         db.commit()
+        db.refresh(new_user)
         logger.debug(
             f"Committed new user with username '{new_user.username}' to the database."
         )
-        db.refresh(new_user)
 
         return UserResponse(
             message=f"New user '{new_user.name}' has been added to the database.",
             user=new_user,
         )
+
     except IntegrityError as e:
         logger.error(
             f"User with the username '{user.username}' already exists. Error: {str(e)}"
@@ -349,10 +358,12 @@ def put_user(
     try:
         updated_user = db.get(User, user_id)
         if not updated_user:
+            logger.error(f"No user found with id '{user_id}'.")
             raise HTTPException(
                 status_code=404,
                 detail="The user you are trying to update does not exist.",
             )
+
         if user.name:
             logger.debug(f"Updating name of user with id '{user_id}'.")
             updated_user.name = user.name
@@ -366,14 +377,18 @@ def put_user(
             updated_user.password = hash
         if user.roles:
             logger.debug(f"Updating roles of user with id: '{user_id}'.")
+
             for update_role in user.roles:
                 stmt = select(Role).where(Role.id == update_role.role_id)
                 found_role = db.execute(stmt).scalars().first()
+
                 if not found_role:
+                    logger.error(f"No role found with id '{update_role}'.")
                     raise HTTPException(
                         status_code=404,
                         detail=f"Role with id '{update_role.role_id}' not found.",
                     )
+
                 elif update_role.add_role:
                     logger.debug(f"Adding role with name '{found_role.name}' to user.")
                     if found_role not in updated_user.roles:
@@ -387,17 +402,18 @@ def put_user(
 
         if user.parties:
             logger.debug(f"Updating parties for user with id: '{user_id}'.")
+
             for update_party in user.parties:
                 stmt = select(Party).where(Party.id == update_party.party_id)
                 found_party = db.execute(stmt).scalars().first()
+
                 if not found_party:
-                    logger.error(
-                        f"The party you are trying to link to this user does not exist."
-                    )
+                    logger.error(f"No role party with id '{update_party}'.")
                     raise HTTPException(
                         status_code=404,
                         detail=f"Party with id '{update_party.party_id}' not found.",
                     )
+
                 elif update_party.add_party:
                     logger.debug(
                         f"Adding party with name '{found_party.name}' to user."
@@ -413,19 +429,20 @@ def put_user(
 
         if user.characters:
             logger.debug(f"Updating characters for user with id: '{user_id}'.")
+
             for update_character in user.characters:
                 stmt = select(PlayerCharacter).where(
                     PlayerCharacter.id == update_character.character_id
                 )
                 found_character = db.execute(stmt).scalars().first()
+
                 if not found_character:
-                    logger.error(
-                        f"The character you are trying to link to this user does not exist."
-                    )
+                    logger.error(f"No character found with id '{update_character}'.")
                     raise HTTPException(
                         status_code=404,
                         detail=f"Character with id '{update_character.character_id}' not found.",
                     )
+
                 elif update_character.add_character:
                     logger.debug(
                         f"Adding character with name '{found_character.name}' to user."
@@ -441,10 +458,12 @@ def put_user(
 
         db.commit()
         logger.info(f"Committed changes to the database for user with id: '{user_id}'")
+
         return UserResponse(
             message=f"User '{updated_user.name}' has been updated.",
             user=updated_user,
         )
+
     except IntegrityError as e:
         raise HTTPException(
             status_code=400, detail="The username you are trying to use already exists."
@@ -476,6 +495,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
             status_code=404,
             detail="The user you are trying to delete does not exist.",
         )
+
     db.delete(user)
     db.commit()
 

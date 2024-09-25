@@ -3,13 +3,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from server.api.models.attributes import PostAttribute, PutAttribute
 from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.models.race_subrace_bases import SubraceBase
+from server.api.models.user_relations import RoleBase
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.classes import ClassModel
 from server.api.routers.damage_types import DamageTypeModel
-from server.api.routers.races import RaceModel
 from server.api.routers.sizes import SizeModel
 from server.api.routers.subclasses import SubclassModel
-from server.api.routers.subraces import SubraceModel
 from server.api.routers.types import TypeModel
 
 
@@ -29,10 +29,10 @@ class CreatureModel(BaseModel):
     - `flying_speed`: The flying speed of the creature.
     - `climbing_speed`: The climbing speed of the creature.
     - `image`: An image of the creature.
-    - `race_id`: The race of the creature.
-    - `subrace_id`: The subrace of the creature.
-    - `size_id`: The size of the creature.
-    - `type_id`: The type of creature.
+    - `race`: The race of the creature.
+    - `subrace`: The subrace of the creature.
+    - `size`: The size of the creature.
+    - `type`: The type of creature.
     - `classes`: The classes of the creature.
     - `subclasses`: The subclasses of the creature.
     - `immunities`: The damage types the creature is immune to.
@@ -55,10 +55,10 @@ class CreatureModel(BaseModel):
     climbing_speed: int | None
     image: bytes | None
 
-    race_id: RaceModel | None
-    subrace_id: SubraceModel | None
-    size_id: SizeModel | None
-    type_id: TypeModel | None
+    race: RoleBase | None
+    subrace: SubraceBase | None
+    size: SizeModel | None
+    creature_type: TypeModel | None
 
     classes: list[ClassModel] | None
     subclasses: list[SubclassModel] | None
@@ -69,6 +69,14 @@ class CreatureModel(BaseModel):
     disadvantages: list[AttributeModel] | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PCBase(CreatureModel):
+    """
+    Represents a player character entity. Extends the CreatureModel.
+    """
+
+    pass
 
 
 class CreaturePostBase(BaseModel):

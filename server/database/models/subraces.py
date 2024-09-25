@@ -19,7 +19,7 @@ class Subrace(Base):
     __table_args__ = (UniqueConstraint("name", "race_id", name="_name_race_id_uc"),)
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(30), nullable=False)
+    name = Column(String(50), nullable=False)
     race_id = Column(
         Integer,
         ForeignKey("races.id", ondelete="CASCADE"),

@@ -235,7 +235,7 @@ def initialize_subclasses() -> None:
     subclasses: Dict[str, str] = {
         "Artificer": [
             "Alchemist",
-            "Armorer",
+            "Armourer",
             "Artillerist",
             "Battle Smith",
         ],

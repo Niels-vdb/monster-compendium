@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.classes import Class
 
@@ -61,11 +62,12 @@ def test_class_name_put(create_class, db_session):
         f"/api/classes/{create_class.id}",
         json={"class_name": "Barbarian"},
     )
-    cls = db_session.query(Class).first()
+    stmt = select(Class)
+    cls = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert cls.name == "Barbarian"
     assert response.json() == {
-        "message": "Attribute 'Barbarian' has been updated.",
+        "message": "Class 'Barbarian' has been updated.",
         "cls": {"id": 1, "name": "Barbarian", "subclasses": []},
     }
 
@@ -97,7 +99,7 @@ def test_fake_class_put(create_class, db_session):
 
 def test_class_delete(create_class, db_session):
     response = client.delete(f"/api/classes/{create_class.id}")
-    cls = db_session.query(Class).filter(Class.id == create_class.id).first()
+    cls = db_session.get(Class, create_class.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Class has been deleted."}
     assert cls == None

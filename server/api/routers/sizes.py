@@ -39,7 +39,7 @@ class SizePostBase(BaseModel):
     - `size_name`: Name of the size to be created, must be between 1 and 50 characters.
     """
 
-    size_name: Annotated[str, Field(min_length=1)]
+    size_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class SizePutBase(BaseModel):
@@ -49,7 +49,7 @@ class SizePutBase(BaseModel):
     - `size_name`: Updated name of the size, must be between 1 and 50 characters.
     """
 
-    size_name: str = None
+    size_name: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class SizeResponse(BaseModel):
@@ -153,15 +153,19 @@ def post_size(size: SizePostBase, db: Session = Depends(get_db)) -> SizeResponse
     """
     try:
         logger.info(f"Creating new size with name '{size.size_name}'.")
+
         new_size = Size(name=size.size_name)
         db.add(new_size)
+
         db.commit()
-        logger.debug(f"Committed size with name '{new_size.name}' to the database.")
         db.refresh(new_size)
+        logger.debug(f"Committed size with name '{new_size.name}' to the database.")
+
         return SizeResponse(
             message=f"New size '{new_size.name}' has been added to the database.",
             size=new_size,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Size with the name '{size.size_name}' already exists. Error: {str(e)}"
@@ -203,14 +207,17 @@ def put_size(
     try:
         logger.info(f"Updating size with id '{size_id}'.")
         updated_size = db.get(Size, size_id)
+
         if not updated_size:
             logger.error(f"Size with id '{size_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The size you are trying to update does not exist.",
             )
+
         logger.debug(f"Changing size with id '{size_id}' name to '{size.size_name}'.")
         updated_size.name = size.size_name
+
         db.commit()
         logger.info(f"Committed changes to size with id '{size_id}'.")
 
@@ -218,6 +225,7 @@ def put_size(
             message=f"Size '{updated_size.name}' has been updated.",
             size=updated_size,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{size.size_name}' already exists in the database. Error: {str(e)}"
@@ -245,14 +253,16 @@ def delete_size(size_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     logger.info(f"Deleting size with the id '{size_id}'.")
     size = db.get(Size, size_id)
+
     if not size:
         logger.error(f"Attribute with id '{size_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The size you are trying to delete does not exist.",
         )
+
     db.delete(size)
     db.commit()
-    logger.info(f"Attribute with id '{size_id}' deleted.")
 
+    logger.info(f"Attribute with id '{size_id}' deleted.")
     return DeleteResponse(message=f"Size has been deleted.")

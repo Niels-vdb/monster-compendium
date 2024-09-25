@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.classes import Class, Subclass
 
@@ -11,17 +12,19 @@ client = TestClient(app)
 def test_get_subclasses(create_subclass, db_session):
     response = client.get("/api/subclasses")
     assert response.status_code == 200
-    assert response.json() == {
-        "subclasses": [
-            {"name": "Alchemist", "class_id": 1, "id": 1},
-        ]
-    }
+    assert response.json() == [
+        {
+            "id": 1,
+            "name": "Alchemist",
+            "parent_class": {"id": 1, "name": "Artificer"},
+        }
+    ]
 
 
 def test_get_no_subclasses(db_session):
     response = client.get("/api/subclasses")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No subclasses found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_subclass(create_subclass, db_session):
@@ -30,7 +33,7 @@ def test_get_subclass(create_subclass, db_session):
     assert response.json() == {
         "id": 1,
         "name": "Alchemist",
-        "class": {"name": "Artificer", "id": 1},
+        "parent_class": {"id": 1, "name": "Artificer"},
     }
 
 
@@ -45,10 +48,14 @@ def test_post_subclass(create_class, db_session):
         "/api/subclasses",
         json={"class_id": 1, "subclass_name": "Alchemist"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New subclass 'Alchemist' has been added to the database.",
-        "class": {"id": 1, "name": "Alchemist", "class_id": 1},
+        "subclass": {
+            "id": 1,
+            "name": "Alchemist",
+            "parent_class": {"id": 1, "name": "Artificer"},
+        },
     }
 
 
@@ -76,17 +83,27 @@ def test_post_subclass_no_class(db_session):
     }
 
 
-def test_subclass_name_put(create_subclass, db_session):
+def test_subclass_put(create_subclass, db_session):
+    cls = Class(name="Barbarian")
+    db_session.add(cls)
+    db_session.commit()
+
     response = client.put(
         f"/api/subclasses/{create_subclass.id}",
-        json={"subclass_name": "Armourer"},
+        json={"subclass_name": "Armourer", "class_id": cls.id},
     )
-    subclass = db_session.query(Subclass).first()
+    stmt = select(Subclass)
+    subclass = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert subclass.name == "Armourer"
+    assert subclass.class_id == 2
     assert response.json() == {
         "message": "Subclass 'Armourer' has been updated.",
-        "subclass": {"id": 1, "class_id": 1, "name": "Armourer"},
+        "subclass": {
+            "id": 1,
+            "name": "Armourer",
+            "parent_class": {"id": 2, "name": "Barbarian"},
+        },
     }
 
 
@@ -104,29 +121,13 @@ def test_subclass_duplicate_name_put(create_class, create_subclass, db_session):
     }
 
 
-def test_subclass_class_put(create_subclass, db_session):
-    cls = Class(name="Barbarian")
-    db_session.add(cls)
-    db_session.commit()
-    response = client.put(
-        f"/api/subclasses/{create_subclass.id}",
-        json={"class_id": cls.id},
-    )
-    subclass = db_session.query(Subclass).first()
-    assert response.status_code == 200
-    assert subclass.class_id == 2
-    assert response.json() == {
-        "message": "Subclass 'Alchemist' has been updated.",
-        "subclass": {"id": 1, "class_id": 2, "name": "Alchemist"},
-    }
-
-
 def test_subclass_wrong_class_put(create_subclass, db_session):
     response = client.put(
         f"/api/subclasses/{create_subclass.id}",
         json={"class_id": 2},
     )
-    subclass = db_session.query(Subclass).first()
+    stmt = select(Subclass)
+    subclass = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 404
     assert subclass.class_id == 1
     assert response.json() == {
@@ -147,9 +148,7 @@ def test_fake_subclass_put(create_subclass, db_session):
 
 def test_subclass_delete(create_subclass, db_session):
     response = client.delete(f"/api/subclasses/{create_subclass.id}")
-    subclass = (
-        db_session.query(Subclass).filter(Subclass.id == create_subclass.id).first()
-    )
+    subclass = db_session.get(Subclass, create_subclass.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Subclass has been deleted."}
     assert subclass == None

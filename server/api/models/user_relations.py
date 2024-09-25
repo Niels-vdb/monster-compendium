@@ -1,7 +1,5 @@
 from pydantic import BaseModel, ConfigDict
 
-from server.api.models.creatures import CreatureModel
-
 
 class UserBase(BaseModel):
     """
@@ -47,11 +45,3 @@ class RoleBase(BaseModel):
     name: str
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class PCBase(CreatureModel):
-    """
-    Represents a player character entity. Extends the CreatureModel.
-    """
-
-    pass

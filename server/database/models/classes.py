@@ -67,7 +67,7 @@ class Subclass(Base):
     __table_args__ = (UniqueConstraint("name", "class_id", name="_name_class_id_uc"),)
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False)
+    name = Column(String(50), nullable=False)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"))
 
     # n-1 relationships
@@ -90,7 +90,7 @@ class Subclass(Base):
         :rtype: str
         """
         return f"""{self.__class__.__tablename__}('{self.id}',
-                '{self.name}', '{self.class_id}')"""
+                '{self.name}', '{self.parent_class}')"""
 
     def to_dict(self) -> Dict[str, Any]:
         """

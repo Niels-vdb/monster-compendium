@@ -79,10 +79,14 @@ def get_parties(db: Session = Depends(get_db)) -> list[PartyModel]:
         {
             "id": 1,
             "name": "Murder Hobo Party"
+            "users": [],
+            "creatures": [],
         },
         {
             "id": 2,
             "name": "Children of Truth"
+            "users": [],
+            "creatures": [],
         },
     ]
     """
@@ -108,6 +112,8 @@ def get_party(party_id: int, db: Session = Depends(get_db)) -> PartyModel:
     {
         "id": 1,
         "name": "Charmed"
+        "users": [],
+        "creatures": [],
     }
     ```
     """
@@ -147,21 +153,27 @@ def post_party(party: PartyPostBase, db: Session = Depends(get_db)) -> PartyResp
         "party": {
             "id": 1,
             "name": "example_party"
+            "users": [],
+            "creatures": [],
         }
     }
     ```
     """
     try:
         logger.info(f"Creating new party with name '{party.party_name}'.")
+
         new_party = Party(name=party.party_name)
         db.add(new_party)
+
         db.commit()
-        logger.debug(f"Committed party with name '{new_party.name}' to the database.")
         db.refresh(new_party)
+
+        logger.debug(f"Committed party with name '{new_party.name}' to the database.")
         return PartyResponse(
             message=f"New party '{new_party.name}' has been added to the database.",
             party=new_party,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Party with the name '{party.party_name}' already exists. Error: {str(e)}"
@@ -194,20 +206,25 @@ def put_party(
         "message": "Party 'updated_party' has been updated.",
         "party": {
             "id": 1,
-            "name": "updated_party"
+            "name": "updated_party",
+            "users": [],
+            "creatures": [],
         }
     }
     ```
     """
     updated_party = db.get(Party, party_id)
+
     if not updated_party:
         logger.error(f"Party with id '{party_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The party you are trying to update does not exist.",
         )
+
     logger.debug(f"Changing party with id '{party_id}' name to '{party.party_name}'.")
     updated_party.name = party.party_name
+
     db.commit()
     logger.info(f"Committed changes to party with id '{party_id}'.")
 
@@ -235,14 +252,16 @@ def delete_party(party_id: int, db: Session = Depends(get_db)) -> DeleteResponse
     """
     logger.info(f"Deleting party with the id '{party_id}'.")
     party = db.get(Party, party_id)
+
     if not party:
         logger.error(f"Party with id '{party_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The party you are trying to delete does not exist.",
         )
+
     db.delete(party)
     db.commit()
-    logger.info(f"Party with id '{party_id}' deleted.")
 
+    logger.info(f"Party with id '{party_id}' deleted.")
     return DeleteResponse(message="Party has been deleted.")

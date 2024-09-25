@@ -17,7 +17,7 @@ class Size(Base):
     __tablename__ = "sizes"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(20), nullable=False, unique=True)
+    name = Column(String(50), nullable=False, unique=True)
 
     # Relationship references
     creatures = relationship("Creature", back_populates="size")

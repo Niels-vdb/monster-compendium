@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.users import Party
 
@@ -68,7 +69,8 @@ def test_party_name_put(create_party, db_session):
         f"/api/parties/{create_party.id}",
         json={"party_name": "Children of Truth"},
     )
-    party = db_session.query(Party).first()
+    stmt = select(Party)
+    party = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert party.name == "Children of Truth"
     assert response.json() == {
@@ -95,7 +97,7 @@ def test_fake_party_put(create_party, db_session):
 
 def test_party_delete(create_party, db_session):
     response = client.delete(f"/api/parties/{create_party.id}")
-    cls = db_session.query(Party).filter(Party.id == create_party.id).first()
+    cls = db_session.get(Party, create_party.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Party has been deleted."}
     assert cls == None

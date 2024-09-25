@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.characteristics import Type
 
@@ -68,7 +69,8 @@ def test_type_name_put(create_type, db_session):
         f"/api/types/{create_type.id}",
         json={"type_name": "Celestial"},
     )
-    type = db_session.query(Type).first()
+    stmt = select(Type)
+    type = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert type.name == "Celestial"
     assert response.json() == {
@@ -104,7 +106,7 @@ def test_type_fake_type_put(create_race, create_type, db_session):
 
 def test_type_delete(create_type, db_session):
     response = client.delete(f"/api/types/{create_type.id}")
-    type = db_session.query(Type).filter(Type.id == create_type.id).first()
+    type = db_session.get(Type, create_type.id)
     assert response.status_code == 200
     assert response.json() == {"message": f"Type has been deleted."}
     assert type == None

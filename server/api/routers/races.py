@@ -8,13 +8,13 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.api.models.delete_response import DeleteResponse
+from server.api.models.race_subrace_bases import RaceBase, SubraceBase
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.routers.sizes import SizeModel
 from server.logger.logger import logger
 from server.api.models.attributes import PostAttribute, PutAttribute
 from server.api.models.damage_types import PostDamageType, PutDamageType
-from server.api.routers.subraces import SubraceModel
 from server.database.models.characteristics import Size
 from server.database.models.damage_types import DamageType
 from server.database.models.attributes import Attribute
@@ -34,7 +34,7 @@ router = APIRouter(
 )
 
 
-class RaceModel(BaseModel):
+class RaceModel(RaceBase):
     """
     Represents a race entity.
 
@@ -49,15 +49,7 @@ class RaceModel(BaseModel):
     - `disadvantages`:The attributes the race has disadvantage on.
     """
 
-    id: int
-    name: str
-    sizes: list[SizeModel]
-    subraces: list[SubraceModel]
-    resistances: list[DamageTypeModel]
-    immunities: list[DamageTypeModel]
-    vulnerabilities: list[DamageTypeModel]
-    advantages: list[AttributeModel]
-    disadvantages: list[AttributeModel]
+    subraces: list[SubraceBase] | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -91,7 +83,7 @@ class RacePostBase(BaseModel):
 
 class RacePutBase(BaseModel):
     """
-    Schema for creating a new race.
+    Schema for updating an existing race.
 
     - `race_name`: New name of the race, must be between 1 and 50 characters.
     - `sizes`: New list of size id's this race has.
@@ -144,22 +136,9 @@ def get_races(db: Session = Depends(get_db)) -> list[RaceModel]:
                 "id": 1,
                 "name": "Dwarf",
                 "sizes": [
-                    {
-                        "id": 1,
-                        "name": "Small"
-                    },
-                    {
-                        "id": 2,
-                        "name": "Medium"
-                    },
+
                 ],
-                "subraces": [
-                    {
-                        "id": 1,
-                        "name": "Duergar",
-                        "race_id": 1
-                    },
-                ],
+                "subraces": [],
                 "resistances": [
                     {
                         "id": 1,
@@ -168,12 +147,7 @@ def get_races(db: Session = Depends(get_db)) -> list[RaceModel]:
                 ],
                 "immunities": [],
                 "vulnerabilities": [],
-                "advantages": [
-                    {
-                        "id": 1,
-                        "name": "Poisoned"
-                    },
-                ],
+                "advantages": [],
                 "disadvantages": [],
             },
             {
@@ -233,20 +207,10 @@ def get_race(race_id: int, db: Session = Depends(get_db)) -> RaceModel:
                     "race_id": 1
                 },
             ],
-            "resistances": [
-                {
-                    "id": 1,
-                    "name": "Poison"
-                },
-            ],
+            "resistances": [],
             "immunities": [],
             "vulnerabilities": [],
-            "advantages": [
-                {
-                    "id": 1,
-                    "name": "Poisoned"
-                },
-            ],
+            "advantages": [],
             "disadvantages": [],
         },
     ```
@@ -312,6 +276,7 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
     }
     ```
     - `race_name`: A string between 1 and 50 characters long (inclusive).
+    - `sizes`: A list containing the id's of the sizes the race can be.
     - `immunities`: Optional.
     - `resistances`: Optional.
     - `vulnerabilities`: Optional.
@@ -343,20 +308,10 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                     "race_id": 1
                 },
             ],
-            "resistances": [
-                {
-                    "id": 1,
-                    "name": "Poison"
-                },
-            ],
+            "resistances": [],
             "immunities": [],
             "vulnerabilities": [],
-            "advantages": [
-                {
-                    "id": 1,
-                    "name": "Poisoned"
-                },
-            ],
+            "advantages": [],
             "disadvantages": [],
         },
         }
@@ -374,28 +329,26 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
         if missing_sizes:
             logger.error(f"No size found for the following ids: {missing_sizes}")
             raise HTTPException(status_code=404, detail="One or more sizes not found.")
-
         logger.debug("Successfully fetched all sizes.")
 
         new_race = Race(name=race.race_name, sizes=sizes)
         db.add(new_race)
+
         db.commit()
-        logger.debug(f"Committed race with name '{new_race.name}' to the database.")
         db.refresh(new_race)
+        logger.debug(f"Committed race with name '{new_race.name}' to the database.")
+
     except IntegrityError as e:
         logger.error(
-            f"Attribute with the name '{race.race_name}' already exists. Error: {str(e)}"
+            f"Race with the name '{race.race_name}' already exists. Error: {str(e)}"
         )
         raise HTTPException(status_code=400, detail="Race already exists.")
     try:
         if race.resistances:
-            logger.debug(f"Adding resistances to race")
+            logger.debug(f"Trying to add resistances to race with id: {new_race.id}")
             for resistance in race.resistances:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == resistance.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, resistance.damage_type_id)
+
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{resistance.damage_type_id}' found."
@@ -404,19 +357,18 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                         status_code=404,
                         detail=f"Damage type with id '{resistance.damage_type_id}' does not exist.",
                     )
+
                 race_resistance = RaceResistances(
                     race_id=new_race.id, damage_type_id=damage_type.id
                 )
                 db.add(race_resistance)
             logger.debug(f"Added resistances to '{new_race.name}'.")
+
         if race.immunities:
-            logger.debug(f"Adding immunities to race")
+            logger.debug(f"Trying to add immunities to race with id: {new_race.id}")
             for immunity in race.immunities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == immunity.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, immunity.damage_type_id)
+
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{immunity.damage_type_id}' found."
@@ -425,19 +377,17 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                         status_code=404,
                         detail=f"Damage type with id '{immunity.damage_type_id}' does not exist.",
                     )
+
                 race_immunity = RaceImmunities(
                     race_id=new_race.id, damage_type_id=damage_type.id
                 )
                 db.add(race_immunity)
             logger.debug(f"Added immunities to '{new_race.name}'.")
+
         if race.vulnerabilities:
-            logger.info(f"Adding vulnerabilities to race")
+            logger.info(f"Trying to add vulnerabilities to race with id: {new_race.id}")
             for vulnerability in race.vulnerabilities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == vulnerability.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, vulnerability.damage_type_id)
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{vulnerability.damage_type_id}' found."
@@ -451,8 +401,10 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                 )
                 db.add(race_vulnerability)
             logger.debug(f"Added vulnerabilities to '{new_race.name}'.")
+
         if race.advantages:
-            logger.info(f"Adding advantages to race")
+            logger.info(f"Trying to add advantages to race with id: {new_race.id}")
+
             for advantage in race.advantages:
                 attribute = (
                     db.query(Attribute)
@@ -472,14 +424,12 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                 )
                 db.add(race_advantage)
             logger.debug(f"Added advantages to '{new_race.name}'.")
+
         if race.disadvantages:
-            logger.info(f"Adding disadvantages to race")
+            logger.info(f"Trying to add disadvantages to race with id: {new_race.id}")
             for disadvantage in race.disadvantages:
-                attribute = (
-                    db.query(Attribute)
-                    .filter(Attribute.id == disadvantage.attribute_id)
-                    .first()
-                )
+                attribute = db.get(Attribute, disadvantage.attribute_id)
+
                 if not attribute:
                     logger.error(
                         f"No attribute with id '{disadvantage.attribute_id}' found."
@@ -488,22 +438,27 @@ def post_race(race: RacePostBase, db: Session = Depends(get_db)) -> RaceResponse
                         status_code=404,
                         detail=f"Attribute with id '{disadvantage.attribute_id}' does not exist.",
                     )
+
                 race_disadvantage = RaceDisadvantages(
                     race_id=new_race.id, attribute_id=attribute.id
                 )
                 db.add(race_disadvantage)
             logger.debug(f"Added advantages to '{new_race.name}'.")
+
         db.commit()
         logger.debug(
             f"Committed '{new_race.name}' to the database with optional attributes and damage types."
         )
+
         return RaceResponse(
             message=f"New race '{new_race.name}' has been added to the database.",
             race=new_race,
         )
+
     except IntegrityError as e:
         logger.error(
-            f"Attribute with the name '{race.race_name}' already exists. Error: {str(e)}"
+            f"Combination of race with the name '{race.race_name}'  \
+            and a damage type or attribute already exists. Error: {str(e)}"
         )
         raise HTTPException(
             status_code=400,
@@ -567,6 +522,7 @@ def put_race(
     }
     ```
     - `race_name`: A string between 1 and 50 characters long (inclusive).
+    - `sizes`: A list containing the id's of the sizes the race can be.
     - `immunities`: Optional.
     - `resistances`: Optional.
     - `vulnerabilities`: Optional.
@@ -618,6 +574,7 @@ def put_race(
     """
     try:
         logger.info(f"Updating race with id '{race_id}'.")
+
         updated_race = db.get(Race, race_id)
         if not updated_race:
             logger.error(f"Attribute with id '{race_id}' not found.")
@@ -625,13 +582,15 @@ def put_race(
                 status_code=404,
                 detail="The race you are trying to update does not exist.",
             )
+
         if race.race_name:
             logger.debug(
                 f"Changing race with id '{race_id}' name to '{race.race_name}'."
             )
             updated_race.name = race.race_name
+
         if race.sizes:
-            logger.debug("Fetching sizes for race and checking if all are correct.")
+            logger.debug(f"Trying to change sizes for race '{updated_race.name}'.")
 
             stmt = select(Size).where(Size.id.in_(race.sizes))
             sizes = db.execute(stmt).scalars().all()
@@ -645,14 +604,13 @@ def put_race(
 
             logger.debug("Successfully fetched all sizes.")
             updated_race.sizes = sizes
+
         if race.immunities:
-            logger.debug(f"Changing immunities for race '{updated_race.name}'.")
+            logger.debug(f"Trying to change immunities for race '{updated_race.name}'.")
+
             for immunity in race.immunities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == immunity.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, immunity.damage_type_id)
+
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{immunity.damage_type_id}' found."
@@ -661,9 +619,10 @@ def put_race(
                         status_code=404,
                         detail="Damage type with this id does not exist.",
                     )
+
                 elif immunity.add_damage_type:
                     logger.debug(
-                        f"Adding immunity with name '{damage_type.name}' to race."
+                        f"Adding immunity with name '{damage_type.name}' to race with id: {race_id}."
                     )
                     new_immunity = RaceImmunities(
                         race_id=race_id,
@@ -673,28 +632,35 @@ def put_race(
                     db.add(new_immunity)
                 else:
                     logger.debug(
-                        f"Removing immunity with name '{damage_type.name}' from race."
+                        f"Removing immunity with name '{damage_type.name}' from race with id: {race_id}."
                     )
-                    old_immunity = (
-                        db.query(RaceImmunities)
-                        .filter(
-                            and_(
-                                RaceImmunities.race_id == race_id,
-                                RaceImmunities.damage_type_id == damage_type.id,
-                            )
+                    stmt = select(RaceImmunities).where(
+                        and_(
+                            RaceImmunities.race_id == race_id,
+                            RaceImmunities.damage_type_id == damage_type.id,
                         )
-                        .first()
                     )
+                    old_immunity = db.execute(stmt).scalar_one_or_none()
+
+                    if not old_immunity:
+                        logger.error(
+                            f"The race '{race_id}' does not have immunity with id '{damage_type.id}'."
+                        )
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"The race '{updated_race.name}' does not have this immunity.",
+                        )
+
                     db.delete(old_immunity)
                 logger.debug(f"Changed immunities from race '{updated_race.name}'.")
+
         if race.resistances:
-            logger.debug(f"Changing resistances for race '{updated_race.name}'.")
+            logger.debug(
+                f"Trying to change resistances for race '{updated_race.name}'."
+            )
             for resistance in race.resistances:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == resistance.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, resistance.damage_type_id)
+
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{resistance.damage_type_id}' found."
@@ -703,9 +669,10 @@ def put_race(
                         status_code=404,
                         detail="Damage type with this id does not exist.",
                     )
+
                 elif resistance.add_damage_type:
                     logger.debug(
-                        f"Adding resistance with name '{damage_type.name}' to race."
+                        f"Adding resistance with name '{damage_type.name}' to race with id: {race_id}."
                     )
                     new_resistance = RaceResistances(
                         race_id=race_id,
@@ -715,28 +682,34 @@ def put_race(
                     db.add(new_resistance)
                 else:
                     logger.debug(
-                        f"Removing immunity with name '{damage_type.name}' from race."
+                        f"Removing resistance with name '{damage_type.name}' from race with id: {race_id}."
                     )
-                    old_resistance = (
-                        db.query(RaceResistances)
-                        .filter(
-                            and_(
-                                RaceResistances.race_id == race_id,
-                                RaceResistances.damage_type_id == damage_type.id,
-                            )
+                    stmt = select(RaceResistances).where(
+                        and_(
+                            RaceResistances.race_id == race_id,
+                            RaceResistances.damage_type_id == damage_type.id,
                         )
-                        .first()
                     )
+                    old_resistance = db.execute(stmt).scalar_one_or_none()
+
+                    if not old_resistance:
+                        logger.error(
+                            f"The race '{race_id}' does not have resistance with id '{damage_type.id}'."
+                        )
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"The race '{updated_race.name}' does not have this resistance.",
+                        )
+
                     db.delete(old_resistance)
                 logger.debug(f"Changed resistances from race '{updated_race.name}'.")
         if race.vulnerabilities:
-            logger.debug(f"Changing vulnerabilities for race '{updated_race.name}'.")
+            logger.debug(
+                f"Trying to change vulnerabilities for race '{updated_race.name}'."
+            )
             for vulnerability in race.vulnerabilities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == vulnerability.damage_type_id)
-                    .first()
-                )
+                damage_type = db.get(DamageType, vulnerability.damage_type_id)
+
                 if not damage_type:
                     logger.error(
                         f"No damage type with id '{vulnerability.damage_type_id}' found."
@@ -747,7 +720,7 @@ def put_race(
                     )
                 elif vulnerability.add_damage_type:
                     logger.debug(
-                        f"Adding vulnerability with name '{damage_type.name}' to race."
+                        f"Adding vulnerability with name '{damage_type.name}' to race with id: {race_id}."
                     )
                     new_vulnerability = RaceVulnerabilities(
                         race_id=race_id,
@@ -757,30 +730,34 @@ def put_race(
                     db.add(new_vulnerability)
                 else:
                     logger.debug(
-                        f"Removing vulnerability with name '{damage_type.name}' from race."
+                        f"Removing vulnerability with name '{damage_type.name}' from race with id: {race_id}."
                     )
-                    old_vulnerability = (
-                        db.query(RaceVulnerabilities)
-                        .filter(
-                            and_(
-                                RaceVulnerabilities.race_id == race_id,
-                                RaceVulnerabilities.damage_type_id == damage_type.id,
-                            )
+                    stmt = select(RaceVulnerabilities).where(
+                        and_(
+                            RaceVulnerabilities.race_id == race_id,
+                            RaceVulnerabilities.damage_type_id == damage_type.id,
                         )
-                        .first()
                     )
+                    old_vulnerability = db.execute(stmt).scalar_one_or_none()
+
+                    if not old_vulnerability:
+                        logger.error(
+                            f"The race '{race_id}' does not have vulnerability with id '{damage_type.id}'."
+                        )
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"The race '{updated_race.name}' does not have this resistance.",
+                        )
+
                     db.delete(old_vulnerability)
                 logger.debug(
                     f"Changed vulnerabilities from race '{updated_race.name}'."
                 )
         if race.advantages:
-            logger.debug(f"Changing advantages for race '{updated_race.name}'.")
+            logger.debug(f"Trying to change advantages for race '{updated_race.name}'.")
             for advantage in race.advantages:
-                attribute = (
-                    db.query(Attribute)
-                    .filter(Attribute.id == advantage.attribute_id)
-                    .first()
-                )
+                attribute = db.get(Attribute, advantage.attribute_id)
+
                 if not attribute:
                     logger.error(
                         f"No attribute with id '{advantage.attribute_id}' found."
@@ -791,7 +768,7 @@ def put_race(
                     )
                 elif advantage.add_attribute:
                     logger.debug(
-                        f"Adding advantage with name '{attribute.name}' to race."
+                        f"Adding advantage with name '{attribute.name}' to race with id: {race_id}."
                     )
                     new_advantage = RaceAdvantages(
                         race_id=race_id,
@@ -801,28 +778,35 @@ def put_race(
                     db.add(new_advantage)
                 else:
                     logger.debug(
-                        f"Removing advantage with name '{attribute.name}' from race."
+                        f"Removing advantage with name '{attribute.name}' from race with id: {race_id}."
                     )
-                    old_advantage = (
-                        db.query(RaceAdvantages)
-                        .filter(
-                            and_(
-                                RaceAdvantages.race_id == race_id,
-                                RaceAdvantages.attribute_id == attribute.id,
-                            )
+                    stmt = select(RaceAdvantages).where(
+                        and_(
+                            RaceAdvantages.race_id == race_id,
+                            RaceAdvantages.attribute_id == attribute.id,
                         )
-                        .first()
                     )
+                    old_advantage = db.execute(stmt).scalar_one_or_none()
+
+                    if not old_advantage:
+                        logger.error(
+                            f"The race '{race_id}' does not have advantage with id '{attribute.id}'."
+                        )
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"The race '{updated_race.name}' does not have this resistance.",
+                        )
+
                     db.delete(old_advantage)
                 logger.debug(f"Changed advantages from race '{updated_race.name}'.")
+
         if race.disadvantages:
-            logger.debug(f"Changing disadvantages for race '{updated_race.name}'.")
+            logger.debug(
+                f"Trying to change disadvantages for race '{updated_race.name}'."
+            )
             for disadvantage in race.disadvantages:
-                attribute = (
-                    db.query(Attribute)
-                    .filter(Attribute.id == disadvantage.attribute_id)
-                    .first()
-                )
+                attribute = db.get(Attribute, disadvantage.attribute_id)
+
                 if not attribute:
                     logger.error(
                         f"No attribute with id '{disadvantage.attribute_id}' found."
@@ -845,24 +829,34 @@ def put_race(
                     logger.debug(
                         f"Removing disadvantage with name '{attribute.name}' from race."
                     )
-                    old_disadvantage = (
-                        db.query(RaceDisadvantages)
-                        .filter(
-                            and_(
-                                RaceDisadvantages.race_id == race_id,
-                                RaceDisadvantages.attribute_id == attribute.id,
-                            )
+                    stmt = select(RaceDisadvantages).where(
+                        and_(
+                            RaceDisadvantages.race_id == race_id,
+                            RaceDisadvantages.attribute_id == attribute.id,
                         )
-                        .first()
                     )
+                    old_disadvantage = db.execute(stmt).scalar_one_or_none()
+
+                    if not old_disadvantage:
+                        logger.error(
+                            f"The race '{race_id}' does not have disadvantage with id '{attribute.id}'."
+                        )
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"The race '{updated_race.name}' does not have this disadvantage.",
+                        )
+
                     db.delete(old_disadvantage)
                 logger.debug(f"Changed disadvantages from race '{updated_race.name}'.")
+
         db.commit()
         logger.info(f"Updated information of race with id '{race_id}'.")
+
         return RaceResponse(
             message=f"Race '{updated_race.name}' has been updated.",
             race=updated_race,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name that is trying to be used already exists in the table. Error: {str(e)}"
@@ -884,7 +878,7 @@ def delete_race(race_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     **Response Example**:
     ```json
     {
-        "message": "Attribute has been deleted.",
+        "message": "Race has been deleted.",
     }
     ```
     """
@@ -892,7 +886,7 @@ def delete_race(race_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     race = db.get(Race, race_id)
 
     if not race:
-        logger.error(f"Attribute with id '{race_id}' not found.")
+        logger.error(f"Race with id '{race_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The race you are trying to delete does not exist.",
@@ -900,6 +894,6 @@ def delete_race(race_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
 
     db.delete(race)
     db.commit()
-    logger.info(f"Attribute with id '{race_id}' deleted.")
 
+    logger.info(f"Race with id '{race_id}' deleted.")
     return DeleteResponse(message="Race has been deleted.")

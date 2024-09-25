@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.characteristics import Size
 
@@ -70,7 +71,8 @@ def test_size_name_put(create_size, db_session):
         f"/api/sizes/{create_size.id}",
         json={"size_name": "Medium"},
     )
-    size = db_session.query(Size).first()
+    stmt = select(Size)
+    size = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert size.name == "Medium"
     assert response.json() == {
@@ -106,7 +108,7 @@ def test_size_fake_size_put(create_race, create_size, db_session):
 
 def test_size_delete(create_size, db_session):
     response = client.delete(f"/api/sizes/{create_size.id}")
-    size = db_session.query(Size).filter(Size.id == create_size.id).first()
+    size = db_session.get(Size, create_size.id)
     assert response.status_code == 200
     assert response.json() == {"message": f"Size has been deleted."}
     assert size == None

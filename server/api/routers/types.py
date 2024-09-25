@@ -136,7 +136,7 @@ def post_type(type: TypePostBase, db: Session = Depends(get_db)) -> TypeResponse
     **Request Body Example**:
     ```json
     {
-        "type_name": "example_type"
+        "type_name": "example_type",
     }
     ```
     - `type_name`: A string between 1 and 50 characters long (inclusive).
@@ -147,7 +147,7 @@ def post_type(type: TypePostBase, db: Session = Depends(get_db)) -> TypeResponse
         "message": "New type 'example_type' has been added to the database.",
         "type": {
             "id": 1,
-            "name": "example_type"
+            "name": "example_type",
         }
     }
     ```
@@ -157,14 +157,16 @@ def post_type(type: TypePostBase, db: Session = Depends(get_db)) -> TypeResponse
 
         new_type = Type(name=type.type_name)
         db.add(new_type)
+
         db.commit()
-        logger.debug(f"Committed type with name '{new_type.name}' to the database.")
         db.refresh(new_type)
+        logger.debug(f"Committed type with name '{new_type.name}' to the database.")
 
         return TypeResponse(
             message=f"New type '{new_type.name}' has been added to the database.",
             type=new_type,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Type with the name '{type.type_name}' already exists. Error: {str(e)}"
@@ -177,7 +179,7 @@ def put_type(
     type_id: int, type: TypePutBase, db: Session = Depends(get_db)
 ) -> TypeResponse:
     """
-    Updates an type in the database by its unique id.
+    Updates a type in the database by its unique id.
 
     - **Returns** TypeResponse: A message and the updated type.
 
@@ -205,15 +207,18 @@ def put_type(
     """
     try:
         logger.info(f"Updating type with id '{type_id}'.")
-        updated_type = db.query(Type).filter(Type.id == type_id).first()
+
+        updated_type = db.get(Type, type_id)
         if not updated_type:
             logger.error(f"Type with id '{type_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The type you are trying to update does not exist.",
             )
+
         logger.debug(f"Changing type with id '{type_id}' name to '{type.type_name}'.")
         updated_type.name = type.type_name
+
         db.commit()
         logger.info(f"Committed changes to type with id '{type_id}'.")
 
@@ -221,6 +226,7 @@ def put_type(
             message=f"type '{updated_type.name}' has been updated.",
             type=updated_type,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{type.type_name}' already exists in the database. Error: {str(e)}"
@@ -233,7 +239,7 @@ def put_type(
 @router.delete("/{type_id}", response_model=DeleteResponse)
 def delete_type(type_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
-    Deletes an type from the database.
+    Deletes a type from the database.
 
     - **Returns** DeleteResponse: A dictionary holding the confirmation message.
 
@@ -248,14 +254,16 @@ def delete_type(type_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     logger.info(f"Deleting type with the id '{type_id}'.")
     type = db.get(Type, type_id)
+
     if not type:
         logger.error(f"Type with id '{type_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The type you are trying to delete does not exist.",
         )
+
     db.delete(type)
     db.commit()
-    logger.info(f"Type with id '{type_id}' deleted.")
 
+    logger.info(f"Type with id '{type_id}' deleted.")
     return DeleteResponse(message="Type has been deleted.")

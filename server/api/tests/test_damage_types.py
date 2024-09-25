@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.damage_types import DamageType
 
@@ -62,12 +63,13 @@ def test_post_duplicate_damage_type(db_session):
     assert response.json() == {"detail": "Damage type already exists."}
 
 
-def test_damage_type_name_put(create_damage_type, db_session):
+def test_damage_type_put(create_damage_type, db_session):
     response = client.put(
         f"/api/damage_types/{create_damage_type.id}",
         json={"damage_type_name": "Slashing"},
     )
-    damage_type = db_session.query(DamageType).first()
+    stmt = select(DamageType)
+    damage_type = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert damage_type.name == "Slashing"
     assert response.json() == {
@@ -103,11 +105,8 @@ def test_damage_type_fake_damage_type_put(create_race, create_damage_type, db_se
 
 def test_damage_type_delete(create_damage_type, db_session):
     response = client.delete(f"/api/damage_types/{create_damage_type.id}")
-    damage_type = (
-        db_session.query(DamageType)
-        .filter(DamageType.id == create_damage_type.id)
-        .first()
-    )
+    damage_type = db_session.get(DamageType, create_damage_type.id)
+
     assert response.status_code == 200
     assert response.json() == {"message": f"Damage type has been deleted."}
     assert damage_type == None

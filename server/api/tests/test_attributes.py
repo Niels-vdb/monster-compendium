@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.attributes import Attribute
 
@@ -67,7 +68,8 @@ def test_attribute_name_put(create_attribute, db_session):
         f"/api/attributes/{create_attribute.id}",
         json={"attribute_name": "Slashing"},
     )
-    attribute = db_session.query(Attribute).first()
+    stmt = select(Attribute)
+    attribute = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert attribute.name == "Slashing"
     assert response.json() == {
@@ -103,9 +105,8 @@ def test_attribute_fake_attribute_put(create_race, create_attribute, db_session)
 
 def test_attribute_delete(create_attribute, db_session):
     response = client.delete(f"/api/attributes/{create_attribute.id}")
-    attribute = (
-        db_session.query(Attribute).filter(Attribute.id == create_attribute.id).first()
-    )
+    attribute = db_session.get(Attribute, create_attribute.id)
+
     assert response.status_code == 200
     assert response.json() == {"message": f"Attribute has been deleted."}
     assert attribute == None

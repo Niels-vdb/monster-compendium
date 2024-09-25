@@ -170,7 +170,8 @@ def test_user_put(create_user, db_session):
             "characters": [{"character_id": character.id, "add_character": True}],
         },
     )
-    user = db_session.get(User, 1)
+    stmt = select(User)
+    user = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert user.name == "Dungeon Master"
     assert user.username == "DM"
@@ -203,10 +204,10 @@ def test_user_put(create_user, db_session):
                     "flying_speed": None,
                     "climbing_speed": None,
                     "image": None,
-                    "race_id": None,
-                    "subrace_id": None,
-                    "size_id": None,
-                    "type_id": None,
+                    "race": None,
+                    "subrace": None,
+                    "size": None,
+                    "creature_type": None,
                     "classes": [],
                     "subclasses": [],
                     "immunities": [],
@@ -270,8 +271,7 @@ def test_user_fake_user_put(create_race, create_user, db_session):
 
 def test_user_delete(create_user, db_session):
     response = client.delete(f"/api/users/{create_user.id}")
-    stmt = select(User).where(User.id == create_user.id)
-    user = db_session.execute(stmt).scalars().first()
+    user = db_session.get(User, create_user.id)
     assert response.status_code == 200
     assert response.json() == {"message": f"User has been deleted."}
     assert user == None

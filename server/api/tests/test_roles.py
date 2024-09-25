@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.users import Role
 
@@ -68,7 +69,8 @@ def test_role_name_put(create_role, db_session):
         f"/api/roles/{create_role.id}",
         json={"role_name": "Admin"},
     )
-    role = db_session.query(Role).first()
+    stmt = select(Role)
+    role = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert role.name == "Admin"
     print("response.json(): ", response.json())
@@ -105,7 +107,7 @@ def test_role_fake_role_put(create_race, create_role, db_session):
 
 def test_role_delete(create_role, db_session):
     response = client.delete(f"/api/roles/{create_role.id}")
-    role = db_session.query(Role).filter(Role.id == create_role.id).first()
+    role = db_session.get(Role, create_role.id)
     assert response.status_code == 200
     assert response.json() == {"message": f"Role has been deleted."}
     assert role == None

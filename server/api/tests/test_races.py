@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.races import Race
 
@@ -10,7 +11,6 @@ client = TestClient(app)
 
 def test_get_races(create_race, db_session):
     response = client.get("/api/races")
-
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -205,7 +205,8 @@ def test_race_put(
             ],
         },
     )
-    race = db_session.query(Race).first()
+    stmt = select(Race)
+    race = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert race.name == "Elf"
     assert race.sizes[0].id == 1
@@ -351,7 +352,7 @@ def test_fake_race_put(create_race, db_session):
 
 def test_race_delete(create_race, db_session):
     response = client.delete(f"/api/races/{create_race.id}")
-    race = db_session.query(Race).filter(Race.id == create_race.id).first()
+    race = db_session.get(Race, create_race.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Race has been deleted."}
     assert race == None

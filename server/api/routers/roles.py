@@ -27,7 +27,7 @@ class RoleModel(RoleBase):
     - `users`: List of all users that have this role.
     """
 
-    users: list[UserModel]
+    users: list[UserModel] | None
 
 
 class RolePostBase(BaseModel):
@@ -76,11 +76,13 @@ def get_roles(db: Session = Depends(get_db)) -> list[RoleModel]:
     [
         {
             "id": 1,
-            "name": "Admin"
+            "name": "Admin",
+            "users": [],
         },
         {
             "id": 2,
-            "name": "Player"
+            "name": "Player",
+            "users": [],
         },
     ]
     """
@@ -105,7 +107,8 @@ def get_role(role_id: int, db: Session = Depends(get_db)) -> RoleModel:
     ```json
     {
         "id": 1,
-        "name": "Admin"
+        "name": "Admin",
+        "users": [],
     }
     ```
     """
@@ -144,22 +147,27 @@ def post_role(role: RolePostBase, db: Session = Depends(get_db)) -> RoleResponse
         "message": "New role 'example_role' has been added to the database.",
         "role": {
             "id": 1,
-            "name": "example_role"
+            "name": "example_role",
+            "users": [],
         }
     }
     ```
     """
     try:
         logger.info(f"Creating new role with name '{role.role_name}'.")
+
         new_role = Role(name=role.role_name)
         db.add(new_role)
-        db.commit()
+
         logger.debug(f"Committed role with name '{new_role.name}' to the database.")
+        db.commit()
         db.refresh(new_role)
+
         return RoleResponse(
             message=f"New role '{new_role.name}' has been added to the database.",
             role=new_role,
         )
+
     except IntegrityError as e:
         logger.error(
             f"Role with the name '{role.role_name}' already exists. Error: {str(e)}"
@@ -190,10 +198,11 @@ def put_role(
     **Response Example**:
     ```json
     {
-        "message": "Attribute 'updated_role' has been updated.",
+        "message": "Role 'updated_role' has been updated.",
         "role": {
             "id": 1,
-            "name": "updated_role"
+            "name": "updated_role",
+            "users": [],
         }
     }
     ```
@@ -201,14 +210,17 @@ def put_role(
     try:
         logger.info(f"Updating role with id '{role_id}'.")
         updated_role = db.get(Role, role_id)
+
         if not updated_role:
             logger.error(f"Role with id '{role_id}' not found.")
             raise HTTPException(
                 status_code=404,
                 detail="The role you are trying to update does not exist.",
             )
+
         logger.debug(f"Changing role with id '{role_id}' name to '{role.role_name}'.")
         updated_role.name = role.role_name
+
         db.commit()
         logger.info(f"Committed changes to role with id '{role_id}'.")
 
@@ -216,6 +228,7 @@ def put_role(
             message=f"Role '{updated_role.name}' has been updated.",
             role=updated_role,
         )
+
     except IntegrityError as e:
         logger.error(
             f"The name '{role.role_name}' already exists in the database. Error: {str(e)}"
@@ -243,14 +256,16 @@ def delete_role(role_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     logger.info(f"Deleting role with the id '{role_id}'.")
     role = db.get(Role, role_id)
+
     if not role:
-        logger.error(f"Attribute with id '{role_id}' not found.")
+        logger.error(f"Role with id '{role_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The role you are trying to delete does not exist.",
         )
+
     db.delete(role)
     db.commit()
-    logger.info(f"Attribute with id '{role_id}' deleted.")
 
+    logger.info(f"Role with id '{role_id}' deleted.")
     return DeleteResponse(message=f"Role has been deleted.")
