@@ -7,10 +7,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
+from server.logger.logger import logger
 from server.api.models.base_response import BaseResponse
 from server.api.models.class_subclass_bases import ClassBase, SubclassBase
 from server.api.models.delete_response import DeleteResponse
-from server.logger.logger import logger
 from server.database.models.classes import Class
 
 
@@ -274,7 +274,7 @@ def put_class(
 @router.delete("/{class_id}", response_model=DeleteResponse)
 def delete_race(class_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
     """
-    Deletes an class from the database.
+    Deletes a class from the database.
 
     - **Returns** DeleteResponse: A dictionary holding the confirmation message.
 

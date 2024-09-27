@@ -2,14 +2,13 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
 from server.api.models.attributes import PostAttribute, PutAttribute
+from server.api.models.class_subclass_bases import ClassBase, SubclassBase
 from server.api.models.damage_types import PostDamageType, PutDamageType
 from server.api.models.race_subrace_bases import SubraceBase
 from server.api.models.user_relations import RoleBase
 from server.api.routers.attributes import AttributeModel
-from server.api.routers.classes import ClassModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.routers.sizes import SizeModel
-from server.api.routers.subclasses import SubclassModel
 from server.api.routers.types import TypeModel
 
 
@@ -71,8 +70,8 @@ class CreatureModel(CreatureBase):
     size: SizeModel | None
     creature_type: TypeModel | None
 
-    classes: list[ClassModel] | None
-    subclasses: list[SubclassModel] | None
+    classes: list[ClassBase] | None
+    subclasses: list[SubclassBase] | None
     immunities: list[DamageTypeModel] | None
     resistances: list[DamageTypeModel] | None
     vulnerabilities: list[DamageTypeModel] | None
@@ -108,6 +107,21 @@ class CreaturePostBase(BaseModel):
     disadvantages: list[PostAttribute] | None = None
 
 
+class PutClass(BaseModel):
+    class_id: int
+    add_class: bool
+
+
+class PutSubclass(BaseModel):
+    subclass_id: int
+    add_subclass: bool
+
+
+class PutParty(BaseModel):
+    party_id: int
+    add_party: bool
+
+
 class CreaturePutBase(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=100)] | None = None
     description: str | None = None
@@ -126,12 +140,9 @@ class CreaturePutBase(BaseModel):
     size_id: int | None = None
     type_id: int | None = None
 
-    classes: list[int] | None = None
-    add_class: bool | None = None
-    subclasses: list[int] | None = None
-    add_subclass: bool | None = None
-    parties: list[int] | None = None
-    add_parties: bool | None = None
+    classes: list[PutClass] | None = None
+    subclasses: list[PutSubclass] | None = None
+    parties: list[PutParty] | None = None
     immunities: list[PutDamageType] | None = None
     resistances: list[PutDamageType] | None = None
     vulnerabilities: list[PutDamageType] | None = None
