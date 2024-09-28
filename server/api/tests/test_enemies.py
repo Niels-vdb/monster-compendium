@@ -128,8 +128,7 @@ def test_post_enemy(
             "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
-    assert response.status_code == 200
-    print("response.json(): ", response.json())
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New enemy 'Giff' has been added to the database.",
         "enemy": {

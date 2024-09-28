@@ -45,7 +45,7 @@ class EnemyResponse(BaseResponse):
 @router.get("/", response_model=list[CreatureModel])
 def get_enemies(db: Session = Depends(get_db)) -> list[CreatureModel]:
     """
-    Queries the class database table for all rows.
+    Queries the enemies database table for all rows.
 
     - **Returns** list[CreatureModel]: All class instances in the database.
 
@@ -160,7 +160,7 @@ def get_enemy(enemy_id: int, db: Session = Depends(get_db)) -> CreatureModel:
     return enemy
 
 
-@router.post("/", response_model=EnemyResponse)
+@router.post("/", response_model=EnemyResponse, status_code=201)
 def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)) -> EnemyResponse:
     """
     Creates a new row in the enemies table.
@@ -187,9 +187,9 @@ def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)) -> EnemyR
         "subrace_id": int,
         "size_id": int,
         "type_id": int,
-        "classes": [PostClass,],
-        "subclasses": [PostSubclass,],
-        "parties": [PostParty,],
+        "classes": [int],
+        "subclasses": [int],
+        "parties": [int],
         "resistances": [PostDamageType,],
         "immunities": [PostDamageType,],
         "vulnerabilities": [PostDamageType,],
@@ -212,9 +212,9 @@ def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)) -> EnemyR
     - `subrace_id`: An integer representing the subrace id of the enemy (optional).
     - `size_id`: An integer representing the size id of the enemy (optional).
     - `type_id`: An integer representing the type id of the enemy (optional).
-    - `classes`: A dictionary with the structure of PostClass to add a class (optional).
-    - `subclasses`: A dictionary with the structure of PostSubclass to add a subclass (optional).
-    - `parties`: A dictionary with the structure of PostParty to add a party (optional).
+    - `classes`: A list holding the id integers to add a class (optional).
+    - `subclasses`: A list holding the id integers to add a subclass (optional).
+    - `parties`: A list holding the id integers to add a party (optional).
     - `resistances`: A dictionary with the structure of PostDamageType to add a resistance (optional).
     - `immunities`: A dictionary with the structure of PostDamageType to add a immunities (optional).
     - `vulnerabilities`: A dictionary with the structure of PostDamageType to add a vulnerabilities (optional).
@@ -242,6 +242,7 @@ def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)) -> EnemyR
             "subrace": SubraceBase,
             "size": SizeBase,
             "creature_type": TypeBase,
+            "parties": [PartyBase,],
             "classes": [ClassBase,],
             "subclasses": [SubclassBase,],
             "immunities": [DamageTypeBase,],
@@ -370,11 +371,12 @@ def put_enemy(
     enemy_id: str, enemy: CreaturePutBase, db: Session = Depends(get_db)
 ) -> EnemyResponse:
     """
-    Updates an class in the database by its unique id.
+    Updates an enemy in the database by its unique id.
 
-    - **Returns** ClassResponse: A message and the updated class.
+    - **Returns** ClassResponse: A message and the updated enemy.
 
-    - **HTTPException**: When the class id does not exist or the name of the class already exists in the database.
+    - **HTTPException**: When the enemy id does not exist.
+    - **HTTPException**: When the updated .
 
     **Request Body Example**:
     ```json
