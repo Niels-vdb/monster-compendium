@@ -1,5 +1,5 @@
 import re
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
@@ -105,7 +106,7 @@ class SubracePutBase(BaseModel):
     disadvantages: list[PutAttribute] | None = None
 
 
-class SubraceResponse(BaseModel):
+class SubraceResponse(BaseResponse):
     """
     Response model for creating or retrieving a subrace.
     Inherits from BaseResponse
