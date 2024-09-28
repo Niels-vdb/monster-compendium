@@ -1,28 +1,19 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.api.models.delete_response import DeleteResponse
+from server.logger.logger import logger
 from server.api.utils.creature_utilities import CreatureUtilities
 from server.api.utils.utilities import Utilities
-from server.logger.logger import logger
+from server.api.models.delete_response import DeleteResponse
 from server.api.models.base_response import BaseResponse
 from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
-from server.database.models.attributes import Attribute
 from server.database.models.characteristics import Size, Type
 from server.database.models.classes import Class, Subclass
-from server.database.models.creatures import (
-    CreatureAdvantages,
-    CreatureDisadvantages,
-    CreatureImmunities,
-    CreatureResistances,
-    CreatureVulnerabilities,
-)
-from server.database.models.damage_types import DamageType
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
@@ -37,7 +28,7 @@ router = APIRouter(
 
 class NPCResponse(BaseResponse):
     """
-    Response model for creating or retrieving a npc.
+    Response model for creating or retrieving an npc.
     Inherits from BaseResponse
 
     - `message`: A descriptive message about the action performed.
@@ -120,11 +111,11 @@ def get_npcs(db: Session = Depends(get_db)) -> list[CreatureModel]:
 @router.get("/{npc_id}", response_model=CreatureModel)
 def get_npc(npc_id: int, db: Session = Depends(get_db)) -> CreatureModel:
     """
-    Queries the npc's table in the database table for a specific row with the id of enemy_id.
+    Queries the npc's table in the database table for a specific row with the id of npc_id.
 
-    - **Returns** CreatureModel: The enemy instance queried for, otherwise 404 HTTPException.
+    - **Returns** CreatureModel: The non player character instance queried for, otherwise 404 HTTPException.
 
-    - **HTTPException**: If the queried enemy does not exist.
+    - **HTTPException**: If the queried non player character does not exist.
 
     **Response Example**:
     {
@@ -229,7 +220,7 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)) -> NPCRespons
     **Response Example**:
     ```json
     {
-        "message": "Enemy 'example_name' has been created.",
+        "message": "NPC 'example_name' has been created.",
         "npc": {
             "id": 1,
             "name": "example_name",
@@ -261,11 +252,10 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)) -> NPCRespons
 
     utils = Utilities(db)
 
-    attributes: dict[str, Any] = {}
+    attributes: dict[str, Any] = {
+        "name": npc.name,
+    }
 
-    if npc.name:
-        logger.debug(f"Trying to add name to new npc '{npc.name}'.")
-        attributes["name"] = npc.name
     if npc.description:
         logger.debug(f"Trying to add description to new npc '{npc.name}'.")
         attributes["description"] = npc.description
@@ -434,7 +424,7 @@ def put_npc(
     **Response Example**:
     ```json
     {
-        "message": "Enemy 'example_name' has been updated.",
+        "message": "NPC 'example_name' has been updated.",
         "npc": {
             "id": 1,
             "name": "example_name",
@@ -577,7 +567,7 @@ def put_npc(
         logger.info(f"Committed changes to npc with id '{npc_id}'.")
 
         return NPCResponse(
-            message=f"Enemy '{updated_npc.name}' has been updated.",
+            message=f"NPC '{updated_npc.name}' has been updated.",
             npc=updated_npc,
         )
 

@@ -16,36 +16,40 @@ client = TestClient(app)
 def test_get_pcs(create_pc, db_session):
     response = client.get("/api/player_characters")
     assert response.status_code == 200
-    assert response.json() == {
-        "player_characters": [
-            {
-                "name": "Rhoetus",
-                "image": None,
-                "description": "A centaur barbarian.",
-                "alive": True,
-                "race_id": 1,
-                "active": True,
-                "subrace_id": 1,
-                "armour_class": 17,
-                "type_id": 1,
-                "walking_speed": 40,
-                "size_id": 1,
-                "swimming_speed": 10,
-                "creature": "player_characters",
-                "id": 1,
-                "information": "Some information about Rhoetus.",
-                "flying_speed": 0,
-                "climbing_speed": None,
-                "user_id": 1,
-            }
-        ]
-    }
+    assert response.json() == [
+        {
+            "id": 1,
+            "name": "Rhoetus",
+            "description": "A centaur barbarian.",
+            "information": "Some information about Rhoetus.",
+            "alive": True,
+            "active": True,
+            "armour_class": 17,
+            "walking_speed": 40,
+            "swimming_speed": 10,
+            "flying_speed": 0,
+            "climbing_speed": None,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
+            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+        }
+    ]
 
 
 def test_get_no_pcs(db_session):
     response = client.get("/api/player_characters")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No player characters found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_pc(create_pc, db_session):
@@ -64,23 +68,18 @@ def test_get_pc(create_pc, db_session):
         "flying_speed": 0,
         "climbing_speed": None,
         "image": None,
-        "race": {"name": "Dwarf", "id": 1},
-        "subrace": {"name": "Duergar", "id": 1, "race_id": 1},
+        "race": {"id": 1, "name": "Dwarf"},
+        "subrace": {"id": 1, "name": "Duergar"},
         "size": {"id": 1, "name": "Tiny"},
-        "creature_type": {"name": "Aberration", "id": 1},
-        "user": {
-            "username": "Test",
-            "name": "test",
-            "image": None,
-        },
-        "parties": [{"name": "Murder Hobo Party", "id": 1}],
-        "classes": [{"name": "Artificer", "id": 1}],
-        "subclasses": [{"name": "Alchemist", "class_id": 1, "id": 1}],
-        "resistances": [{"name": "Fire", "id": 1}],
-        "immunities": [{"name": "Fire", "id": 1}],
-        "vulnerabilities": [{"name": "Fire", "id": 1}],
+        "creature_type": {"id": 1, "name": "Aberration"},
+        "classes": [{"id": 1, "name": "Artificer"}],
+        "subclasses": [{"id": 1, "name": "Alchemist"}],
+        "immunities": [{"id": 1, "name": "Fire"}],
+        "resistances": [{"id": 1, "name": "Fire"}],
+        "vulnerabilities": [{"id": 1, "name": "Fire"}],
         "advantages": [{"id": 1, "name": "Charmed"}],
         "disadvantages": [{"id": 1, "name": "Charmed"}],
+        "user": {"id": 1, "name": "test", "username": "Test", "image": None},
     }
 
 
@@ -131,28 +130,34 @@ def test_post_pc(
             "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
-        "message": "New player character 'Gobby' has been added to the database.",
-        "player_character": {
-            "name": "Gobby",
-            "user_id": 1,
-            "image": None,
-            "description": "A gemstone obsessed goblin.",
-            "alive": True,
-            "race_id": 1,
-            "active": True,
-            "subrace_id": 1,
-            "type_id": 1,
-            "armour_class": 22,
-            "size_id": 1,
-            "walking_speed": 35,
+        "message": "New pc 'Gobby' has been added to the database.",
+        "pc": {
             "id": 1,
-            "creature": "player_characters",
+            "name": "Gobby",
+            "description": "A gemstone obsessed goblin.",
+            "information": "This guy reeeealy loves finding and sharing gemstones.",
+            "alive": True,
+            "active": True,
+            "armour_class": 22,
+            "walking_speed": 35,
             "swimming_speed": 30,
             "flying_speed": 5,
-            "information": "This guy reeeealy loves finding and sharing gemstones.",
             "climbing_speed": 5,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
+            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
         },
     }
 
@@ -171,7 +176,7 @@ def test_post_pc_fake_class(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This class does not exist."}
+    assert response.json() == {"detail": "Class not found."}
 
 
 def test_post_pc_fake_subclass(
@@ -188,7 +193,7 @@ def test_post_pc_fake_subclass(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subclass does not exist."}
+    assert response.json() == {"detail": "Subclass not found."}
 
 
 def test_post_pc_fake_race(
@@ -205,7 +210,7 @@ def test_post_pc_fake_race(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This race does not exist."}
+    assert response.json() == {"detail": "Race not found."}
 
 
 def test_post_pc_fake_subrace(
@@ -222,7 +227,7 @@ def test_post_pc_fake_subrace(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subrace does not exist."}
+    assert response.json() == {"detail": "Subrace not found."}
 
 
 def test_post_pc_fake_size(
@@ -239,7 +244,7 @@ def test_post_pc_fake_size(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This size does not exist."}
+    assert response.json() == {"detail": "Size not found."}
 
 
 def test_post_pc_fake_type(
@@ -256,7 +261,7 @@ def test_post_pc_fake_type(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This type does not exist."}
+    assert response.json() == {"detail": "Type not found."}
 
 
 def test_post_pc_fake_party(
@@ -273,7 +278,7 @@ def test_post_pc_fake_party(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This party does not exist."}
+    assert response.json() == {"detail": "Party not found."}
 
 
 def test_post_pc_fake_resistance(
@@ -290,7 +295,7 @@ def test_post_pc_fake_resistance(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_pc_fake_immunity(
@@ -307,7 +312,7 @@ def test_post_pc_fake_immunity(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_pc_fake_vulnerabilities(
@@ -324,7 +329,7 @@ def test_post_pc_fake_vulnerabilities(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_pc_fake_advantages(
@@ -341,7 +346,7 @@ def test_post_pc_fake_advantages(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_post_pc_fake_disadvantages(
@@ -358,7 +363,7 @@ def test_post_pc_fake_disadvantages(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_pc_add_put(
@@ -418,12 +423,9 @@ def test_pc_add_put(
             "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
-            "classes": [2],
-            "add_class": True,
-            "subclasses": [2],
-            "add_subclass": True,
-            "parties": [2],
-            "add_parties": True,
+            "classes": [{"class_id": 2, "add_class": True}],
+            "subclasses": [{"subclass_id": 2, "add_subclass": True}],
+            "parties": [{"party_id": 2, "add_party": True}],
             "resistances": [
                 {
                     "damage_type_id": 2,
@@ -486,25 +488,40 @@ def test_pc_add_put(
     assert len(pc.disadvantages) == 2
     assert response.json() == {
         "message": "Player character 'Electra' has been updated.",
-        "player_character": {
-            "name": "Electra",
-            "user_id": 1,
-            "image": None,
-            "description": "Something else about the Electra.",
-            "alive": False,
-            "race_id": 1,
-            "active": False,
-            "subrace_id": 1,
-            "type_id": 2,
-            "armour_class": 20,
-            "size_id": 2,
-            "walking_speed": 35,
+        "pc": {
             "id": 1,
-            "creature": "player_characters",
+            "name": "Electra",
+            "description": "Something else about the Electra.",
+            "information": "Some new information about Electra.",
+            "alive": False,
+            "active": False,
+            "armour_class": 20,
+            "walking_speed": 35,
             "swimming_speed": 30,
             "flying_speed": 5,
-            "information": "Some new information about Electra.",
             "climbing_speed": 5,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 2, "name": "Medium"},
+            "creature_type": {"id": 2, "name": "Celestial"},
+            "classes": [{"id": 1, "name": "Artificer"}, {"id": 2, "name": "Barbarian"}],
+            "subclasses": [
+                {"id": 1, "name": "Alchemist"},
+                {"id": 2, "name": "Armourer"},
+            ],
+            "immunities": [{"id": 1, "name": "Fire"}, {"id": 2, "name": "Slashing"}],
+            "resistances": [{"id": 1, "name": "Fire"}, {"id": 2, "name": "Slashing"}],
+            "vulnerabilities": [
+                {"id": 1, "name": "Fire"},
+                {"id": 2, "name": "Slashing"},
+            ],
+            "advantages": [{"id": 1, "name": "Charmed"}, {"id": 2, "name": "Poisoned"}],
+            "disadvantages": [
+                {"id": 1, "name": "Charmed"},
+                {"id": 2, "name": "Poisoned"},
+            ],
+            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
         },
     }
 
@@ -549,11 +566,9 @@ def test_pc_remove_put(
             "size_id": size_id,
             "type_id": type_id,
             "classes": [1],
-            "add_class": False,
-            "subclasses": [1],
-            "add_subclass": False,
-            "parties": [1],
-            "add_parties": False,
+            "classes": [{"class_id": 1, "add_class": False}],
+            "subclasses": [{"subclass_id": 1, "add_subclass": False}],
+            "parties": [{"party_id": 1, "add_party": False}],
             "resistances": [
                 {
                     "damage_type_id": 1,
@@ -586,7 +601,6 @@ def test_pc_remove_put(
             ],
         },
     )
-
     pc = db_session.query(PlayerCharacter).first()
     assert response.status_code == 200
     assert pc.name == "Electra"
@@ -612,25 +626,31 @@ def test_pc_remove_put(
     assert len(pc.disadvantages) == 0
     assert response.json() == {
         "message": "Player character 'Electra' has been updated.",
-        "player_character": {
-            "name": "Electra",
-            "user_id": 1,
-            "image": None,
-            "description": "Something else about the Electra.",
-            "alive": False,
-            "race_id": 1,
-            "active": False,
-            "subrace_id": 1,
-            "type_id": 2,
-            "armour_class": 20,
-            "size_id": 2,
-            "walking_speed": 35,
+        "pc": {
             "id": 1,
-            "creature": "player_characters",
+            "name": "Electra",
+            "description": "Something else about the Electra.",
+            "information": "Some new information about Electra.",
+            "alive": False,
+            "active": False,
+            "armour_class": 20,
+            "walking_speed": 35,
             "swimming_speed": 30,
             "flying_speed": 5,
-            "information": "Some new information about Electra.",
             "climbing_speed": 5,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 2, "name": "Medium"},
+            "creature_type": {"id": 2, "name": "Celestial"},
+            "classes": [],
+            "subclasses": [],
+            "immunities": [],
+            "resistances": [],
+            "vulnerabilities": [],
+            "advantages": [],
+            "disadvantages": [],
+            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
         },
     }
 
@@ -638,7 +658,7 @@ def test_pc_remove_put(
 def test_pc_fake_race_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"race_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This race does not exist."}
+    assert response.json() == {"detail": "Race not found."}
 
 
 def test_pc_fake_subrace_put(create_pc, db_session):
@@ -646,46 +666,52 @@ def test_pc_fake_subrace_put(create_pc, db_session):
         f"/api/player_characters/{create_pc.id}", json={"subrace_id": 3}
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subrace does not exist."}
+    assert response.json() == {"detail": "Subrace not found."}
 
 
 def test_pc_fake_size_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"size_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This size does not exist."}
+    assert response.json() == {"detail": "Size not found."}
 
 
 def test_pc_fake_type_put(create_pc, db_session):
     response = client.put(f"/api/player_characters/{create_pc.id}", json={"type_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This type does not exist."}
+    assert response.json() == {"detail": "Type not found."}
 
 
 def test_pc_fake_class_put(create_pc, db_session):
     response = client.put(
         f"/api/player_characters/{create_pc.id}",
-        json={"classes": [3], "add_classes": False},
+        json={
+            "classes": [{"class_id": 3, "add_class": True}],
+        },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This class does not exist."}
+    assert response.json() == {"detail": "Class not found."}
 
 
 def test_pc_fake_subclass_put(create_pc, db_session):
     response = client.put(
         f"/api/player_characters/{create_pc.id}",
-        json={"subclasses": [3], "add_subclasses": False},
+        json={
+            "subclasses": [{"subclass_id": 3, "add_subclass": True}],
+        },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subclass does not exist."}
+    assert response.json() == {"detail": "Subclass not found."}
 
 
 def test_pc_fake_party_put(create_pc, db_session):
     response = client.put(
         f"/api/player_characters/{create_pc.id}",
-        json={"parties": [3], "add_parties": False},
+        json={
+            "parties": [{"party_id": 3, "add_party": True}],
+        },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This party does not exist."}
+    assert response.json() == {"detail": "Party not found."}
 
 
 def test_pc_fake_resistance_put(create_pc, db_session):
@@ -701,7 +727,7 @@ def test_pc_fake_resistance_put(create_pc, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_pc_fake_vulnerability_put(create_pc, db_session):
@@ -717,7 +743,7 @@ def test_pc_fake_vulnerability_put(create_pc, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_pc_fake_immunity_put(create_pc, db_session):
@@ -733,7 +759,7 @@ def test_pc_fake_immunity_put(create_pc, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_pc_fake_advantage_put(create_pc, db_session):
@@ -749,7 +775,7 @@ def test_pc_fake_advantage_put(create_pc, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_pc_fake_disadvantage_put(create_pc, db_session):
@@ -765,7 +791,7 @@ def test_pc_fake_disadvantage_put(create_pc, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_pc_delete(create_pc, db_session):

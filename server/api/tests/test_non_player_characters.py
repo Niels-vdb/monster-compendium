@@ -460,7 +460,7 @@ def test_npc_add_put(
     assert len(npc.advantages) == 2
     assert len(npc.disadvantages) == 2
     assert response.json() == {
-        "message": "Enemy 'Endofyre' has been updated.",
+        "message": "NPC 'Endofyre' has been updated.",
         "npc": {
             "id": 1,
             "name": "Endofyre",
@@ -591,7 +591,7 @@ def test_npc_remove_put(
     assert len(npc.advantages) == 0
     assert len(npc.disadvantages) == 0
     assert response.json() == {
-        "message": "Enemy 'Endofyre' has been updated.",
+        "message": "NPC 'Endofyre' has been updated.",
         "npc": {
             "id": 1,
             "name": "Endofyre",

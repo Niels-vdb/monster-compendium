@@ -47,7 +47,7 @@ def get_enemies(db: Session = Depends(get_db)) -> list[CreatureModel]:
     """
     Queries the enemies database table for all rows.
 
-    - **Returns** list[CreatureModel]: All class instances in the database.
+    - **Returns** list[CreatureModel]: All enemy instances in the database.
 
     **Response Example**:
     ```json
