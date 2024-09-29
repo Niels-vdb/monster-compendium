@@ -1,11 +1,10 @@
-from typing import Any
 from sqlalchemy import BLOB, Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import CustomBase
 
 
-class Creature(Base):
+class Creature(CustomBase):
     """
     Base table all creature types inherit from.
 
@@ -91,65 +90,38 @@ class Creature(Base):
 
     def __repr__(self) -> str:
         """
-        This method provides a readable string of the instance including all
+        This method provides a readable string of the Enemy instance including all
         its attributes.
 
-        :returns: A string representation of the enemy instance.
+        :returns: A string representation of the Enemy instance.
         :rtype: str
         """
 
-        return (
-            f"{self.__class__.__name__}("
-            f"id={self.id}, name={self.name!r}, "
-            f"description={self.description!r}, information={self.information!r}, "
-            f"alive={self.alive}, active={self.active}, "
-            f"armour_class={self.armour_class}, image={self.image}, "
-            # f"race={self.race.name if self.race else 'None'}, "
-            # f"subrace={self.subrace.name if self.subrace else 'None'}, "
-            # f"size={self.size.name if self.size else 'None'}, "
-            # f"type={self.creature_type.name if self.creature_type else 'None'}, "
-            f"parties={[party.name for party in self.parties]}, "
-            f"classes={[cls.name for cls in self.classes]}, "
-            f"subclasses={[subclass.name for subclass in self.subclasses]}, "
-            f"immunities={[immunity.name for immunity in self.immunities]}, "
-            f"resistances={[resistance.name for resistance in self.resistances]}, "
-            f"vulnerabilities={[vul.name for vul in self.vulnerabilities]}"
-            ")"
-        )
-
-    def to_dict(self) -> dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the enemy instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "information": self.information,
-            "alive": self.alive,
-            "active": self.active,
-            "armour_class": self.armour_class,
-            "image": self.image,
-            "race": self.race,
-            "subrace": self.subrace,
-            "size": self.size,
-            "type": self.type_id,
-            "parties": self.parties,
-            "classes": [cls.to_dict() for cls in self.classes],
-            "subclasses": [subcls.to_dict() for subcls in self.subclasses],
-            "immunities": [imm.to_dict() for imm in self.immunities],
-            "resistances": [res.to_dict() for res in self.resistances],
-            "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
-        }
+        return f"""{self.__class__.__name__}(id={self.id}, name={self.name!r}, 
+            description={self.description!r}, information={self.information!r}, 
+            alive={self.alive}, active={self.active}, 
+            armour_class={self.armour_class}, image={self.image}, 
+            race={self.race.name if self.race else 'None'}, 
+            subrace={self.subrace.name if self.subrace else 'None'}, 
+            size={self.size.name if self.size else 'None'}, 
+            type={self.creature_type.name if self.creature_type else 'None'}, 
+            parties={[party.name for party in self.parties]}, 
+            classes={[cls.name for cls in self.classes]}, 
+            subclasses={[subclass.name for subclass in self.subclasses]}, 
+            immunities={[immunity.name for immunity in self.immunities]}, 
+            resistances={[resistance.name for resistance in self.resistances]}, 
+            vulnerabilities={[vul.name for vul in self.vulnerabilities]}
+            )"""
 
 
-class CreatureClasses(Base):
+class CreatureClasses(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature, class and subclass.
+
+    Parameters:
+        - creature_id: The creature itself.
+        - class_id: The class of the creature.
+        - subclass_id: The subclass of the creature (optional).
     """
 
     __tablename__ = "creature_classes"
@@ -159,10 +131,25 @@ class CreatureClasses(Base):
     class_id = Column(Integer, ForeignKey("classes.id"))
     subclass_id = Column(Integer, ForeignKey("subclasses.id"))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureClasses instance including all
+        its attributes.
 
-class CreatureParties(Base):
+        :returns: A string representation of the CreatureClasses instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id},
+            class_id={self.class_id}, subclass_id={self.subclass_id})"""
+
+
+class CreatureParties(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creatures and parties.
+
+    Parameters:
+        - creature_id: The id of the creature.
+        - party_id: The id of the party this creature encountered.
     """
 
     __tablename__ = "creature_parties"
@@ -171,8 +158,19 @@ class CreatureParties(Base):
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
     party_id = Column("party_id", Integer, ForeignKey("parties.id"))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureParties instance including all
+        its attributes.
 
-class CreatureResistances(Base):
+        :returns: A string representation of the CreatureParties instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id},
+            party_id={self.party_id})"""
+
+
+class CreatureResistances(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature and its resistances.
 
@@ -189,8 +187,19 @@ class CreatureResistances(Base):
     damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
     condition = Column("condition", String(100))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureResistances instance including all
+        its attributes.
 
-class CreatureImmunities(Base):
+        :returns: A string representation of the CreatureResistances instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id},
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
+
+
+class CreatureImmunities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature and its immunities.
 
@@ -207,8 +216,19 @@ class CreatureImmunities(Base):
     damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
     condition = Column("condition", String(100))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureImmunities instance including all
+        its attributes.
 
-class CreatureVulnerabilities(Base):
+        :returns: A string representation of the CreatureImmunities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id}, 
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
+
+
+class CreatureVulnerabilities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature and its vulnerabilities.
 
@@ -225,8 +245,19 @@ class CreatureVulnerabilities(Base):
     damage_type_id = Column("damage_type_id", Integer, ForeignKey("damage_types.id"))
     condition = Column("condition", String(100))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureVulnerabilities instance including all
+        its attributes.
 
-class CreatureAdvantages(Base):
+        :returns: A string representation of the CreatureVulnerabilities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id}, 
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
+
+
+class CreatureAdvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature and its advantages.
 
@@ -243,8 +274,19 @@ class CreatureAdvantages(Base):
     attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
     condition = Column("condition", String(100))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureAdvantages instance including all
+        its attributes.
 
-class CreatureDisadvantages(Base):
+        :returns: A string representation of the CreatureAdvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id}, 
+            attribute_id={self.attribute_id}, condition={self.condition})"""
+
+
+class CreatureDisadvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between creature and its disadvantages.
 
@@ -260,3 +302,14 @@ class CreatureDisadvantages(Base):
     creature_id = Column("creature_id", Integer, ForeignKey("creatures.id"))
     attribute_id = Column("attribute_id", Integer, ForeignKey("attributes.id"))
     condition = Column("condition", String(100))
+
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the CreatureDisadvantages instance including all
+        its attributes.
+
+        :returns: A string representation of the CreatureDisadvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, creature_id={self.creature_id}, 
+            attribute_id={self.attribute_id}, condition={self.condition})"""

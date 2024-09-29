@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,12 +7,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
+from server.logger.logger import logger
 from server.api.models.base_response import BaseResponse
 from server.api.models.class_subclass_bases import ClassBase, SubclassBase
 from server.api.models.delete_response import DeleteResponse
-from server.logger.logger import logger
 from server.database.models.classes import Class
-from server.database.models.classes import Subclass
+from server.database.models.subclasses import Subclass
 
 
 router = APIRouter(
@@ -38,11 +38,11 @@ class SubclassPostBase(BaseModel):
     """
     Schema for creating a new subclass.
 
-    - `subclass_name`: Name of the subclass to be created, must be between 1 and 50 characters.
+    - `subclass_name`: Name of the subclass to be created, must be between 1 and 100 characters.
     - `class_id`: Id of the parent class.
     """
 
-    subclass_name: Annotated[str, Field(min_length=1, max_length=50)]
+    subclass_name: Annotated[str, Field(min_length=1, max_length=100)]
     class_id: int
 
 
@@ -50,11 +50,11 @@ class SubclassPutBase(BaseModel):
     """
     Schema for updating a subclass.
 
-    - `subclass_name`: New name of the subclass, must be between 1 and 50 characters.
+    - `subclass_name`: New name of the subclass, must be between 1 and 100 characters.
     - `class_id`: New id of the parent class.
     """
 
-    subclass_name: Annotated[str, Field(min_length=1, max_length=50)] | None = None
+    subclass_name: Annotated[str, Field(min_length=1, max_length=100)] | None = None
     class_id: int | None = None
 
 
@@ -149,7 +149,7 @@ def post_subclass(
         "class_id": id_int,
     }
     ```
-    - `subclass_name`: A string between 1 and 50 characters long (inclusive).
+    - `subclass_name`: A string between 1 and 100 characters long (inclusive).
     - `class_id`: An id linked to a class (inclusive).
 
     **Response Example**:
@@ -214,7 +214,7 @@ def put_subclass(
         "class_id": id_int,
     }
     ```
-    - `subclass_name`: A string between 1 and 50 characters long (inclusive).
+    - `subclass_name`: A string between 1 and 100 characters long (inclusive).
     - `class_id`: An id linked to a class (inclusive).
 
     **Response Example**:

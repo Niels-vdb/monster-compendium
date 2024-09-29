@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.api.models.base_response import BaseResponse
 from server.logger.logger import logger
+from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.characteristics import Type
+from server.database.models.types import Type
 
 
 router = APIRouter(

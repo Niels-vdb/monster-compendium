@@ -13,10 +13,14 @@ from server.database.models.subraces import (
     SubraceAdvantages,
     SubraceDisadvantages,
 )
-from server.database.models.classes import Class, Subclass
-from server.database.models.characteristics import Size, Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
+from server.database.models.sizes import Size
+from server.database.models.types import Type
 from server.database.models.damage_types import DamageType
-from server.database.models.users import User, Party, Role
+from server.database.models.users import User
+from server.database.models.parties import Party
+from server.database.models.roles import Role
 
 
 def initialize_party() -> None:

@@ -22,11 +22,11 @@ class Enemy(Creature):
         - size_id (int): The size of the creature, FK to id of the sizes table.
         - type_id (int): The type of the creature, FK to id of the types table (optional).
 
-        - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
-        - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
-        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
-        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
-        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
+        - parties (list[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
+        - classes (list[Class]): The classes the creature belongs to, can be multiple (optional).
+        - immunities (list[Effect]): The effects the creature is immune to, can be multiple (optional).
+        - resistances (list[Effect]): The effects the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (list[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
     __tablename__ = "enemies"

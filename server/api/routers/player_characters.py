@@ -7,19 +7,21 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.api.models.delete_response import DeleteResponse
+from server.logger.logger import logger
 from server.api.utils.creature_utilities import CreatureUtilities
 from server.api.utils.utilities import Utilities
-from server.logger.logger import logger
+from server.api.models.delete_response import DeleteResponse
 from server.api.models.base_response import BaseResponse
 from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
 from server.api.models.user_relations import UserBase
-from server.database.models.characteristics import Size, Type
-from server.database.models.classes import Class, Subclass
+from server.database.models.sizes import Size
+from server.database.models.types import Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
-from server.database.models.users import Party
+from server.database.models.parties import Party
 
 router = APIRouter(
     prefix="/api/player_characters",

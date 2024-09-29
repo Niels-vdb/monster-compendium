@@ -1,8 +1,12 @@
 from typing import Any
 import pytest
+
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from server.api.main import app
+from server.api import get_db
+from server.database.models.base import Base
 from server.database.models.creatures import (
     CreatureAdvantages,
     CreatureDisadvantages,
@@ -10,21 +14,20 @@ from server.database.models.creatures import (
     CreatureResistances,
     CreatureVulnerabilities,
 )
-
-from ..main import app
-from .. import get_db
-
-from server.database.models.base import Base
 from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
-from server.database.models.classes import Class, Subclass
-from server.database.models.characteristics import Size, Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
+from server.database.models.sizes import Size
+from server.database.models.types import Type
 from server.database.models.damage_types import DamageType
 from server.database.models.attributes import Attribute
-from server.database.models.users import User, Party, Role
+from server.database.models.users import User
+from server.database.models.parties import Party
+from server.database.models.roles import Role
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"

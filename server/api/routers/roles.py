@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,12 +7,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.logger.logger import logger
 from server.api.models.base_response import BaseResponse
 from server.api.models.user_relations import RoleBase
-from server.logger.logger import logger
-from server.api.routers.users import UserModel
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.users import Role
+from server.api.routers.users import UserModel
+from server.database.models.roles import Role
 
 router = APIRouter(
     prefix="/api/roles",

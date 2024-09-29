@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,12 +7,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
+from server.logger.logger import logger
 from server.api.models.base_response import BaseResponse
 from server.api.models.creatures import CreatureModel
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.user_relations import PartyBase, UserBase
-from server.logger.logger import logger
-from server.database.models.users import Party
+from server.database.models.parties import Party
 
 router = APIRouter(
     prefix="/api/parties",
@@ -37,20 +37,20 @@ class PartyPostBase(BaseModel):
     """
     Schema for creating a new party.
 
-    - `party_name`: Name of the party to be created, must be between 1 and 50 characters.
+    - `party_name`: Name of the party to be created, must be between 1 and 100 characters.
     """
 
-    party_name: Annotated[str, Field(min_length=1, max_length=50)]
+    party_name: Annotated[str, Field(min_length=1, max_length=100)]
 
 
 class PartyPutBase(BaseModel):
     """
     Schema for updating an party.
 
-    - `party_name`: Name of the party to be created, must be between 1 and 50 characters.
+    - `party_name`: Name of the party to be created, must be between 1 and 100 characters.
     """
 
-    party_name: Annotated[str, Field(min_length=1, max_length=50)]
+    party_name: Annotated[str, Field(min_length=1, max_length=100)]
 
 
 class PartyResponse(BaseResponse):
@@ -143,7 +143,7 @@ def post_party(party: PartyPostBase, db: Session = Depends(get_db)) -> PartyResp
         "party_name": "example_party"
     }
     ```
-    - `party_name`: A string between 1 and 50 characters long (inclusive).
+    - `party_name`: A string between 1 and 100 characters long (inclusive).
 
     **Response Example**:
     ```json
@@ -197,7 +197,7 @@ def put_party(
         "party_name": "updated_party"
     }
     ```
-    - `party_name`: A string between 1 and 50 characters long (inclusive).
+    - `party_name`: A string between 1 and 100 characters long (inclusive).
 
     **Response Example**:
     ```json

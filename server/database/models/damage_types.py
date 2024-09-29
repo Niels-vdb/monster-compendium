@@ -1,18 +1,16 @@
-from typing import Any, Dict
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import CustomBase
 
 
-class DamageType(Base):
+class DamageType(CustomBase):
     """
-    Table that holds all the damage types a character can have a venerability, immunity or resistance to.
+    Table that holds all the damage types a character can have a vulnerability, immunity or resistance to.
     Like a melee attack type such as slashing or a damage type like fire.
 
     Parameters:
-        - name (str): The name of the damage type.
+        - name (str): The name of the damage type (max 50 chars).
     """
 
     __tablename__ = "damage_types"
@@ -20,7 +18,7 @@ class DamageType(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
 
-    # Relationship references
+    # n-n relationships
     race_resistances = relationship(
         "Race",
         secondary="race_resistances",
@@ -72,17 +70,7 @@ class DamageType(Base):
         This method provides a readable string of the instance including all
         its attributes.
 
-        :returns: A string representation of the Condition instance.
+        :returns: A string representation of the DamageType instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.id}', '{self.name}')"
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Condition instance.
-        :rtype: Dict[str, Any]
-        """
-        return {"condition_id": self.id, "condition": self.name}
+        return f"{self.__class__.__name__}(id={self.id}, name={self.name!r})"

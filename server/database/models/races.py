@@ -1,12 +1,10 @@
-from typing import Any, Dict
-
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import CustomBase
 
 
-class Race(Base):
+class Race(CustomBase):
     """
     Table that holds all races a character can have.
 
@@ -60,34 +58,24 @@ class Race(Base):
 
     def __repr__(self) -> str:
         """
-        This method provides a readable string of the instance including all
+        This method provides a readable string of the Race instance including all
         its attributes.
 
         :returns: A string representation of the Race instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.id}',
-                '{self.name}', '{self.sizes}', '{self.resistances}')"""
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Race instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "race_id": self.id,
-            "name": self.name,
-            "size": self.sizes,
-            "resistances": self.resistances,
-        }
+        return f"""{self.__class__.__name__}(id={self.id}, name={self.name!r}
+            sizes={self.sizes}, resistances={self.resistances},
+            immunities={self.immunities}, vulnerabilities={self.vulnerabilities})"""
 
 
-class RaceSizes(Base):
+class RaceSizes(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a race and it's sizes.
+
+    Parameters:
+        - race_id: The id of the race.
+        - size_id: The id of the size.
     """
 
     __tablename__ = "race_sizes"
@@ -96,14 +84,25 @@ class RaceSizes(Base):
     race_id = Column("race_id", Integer, ForeignKey("races.id"))
     size_id = Column("size_id", Integer, ForeignKey("sizes.id"))
 
+    def __repr__(self) -> str:
+        """
+        This method provides a readable string of the RaceSizes instance including all
+        its attributes.
 
-class RaceResistances(Base):
+        :returns: A string representation of the RaceSizes instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id},
+            size_id={self.size_id})"""
+
+
+class RaceResistances(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a race and it's resistances.
 
     Parameters:
         - race_id: The id of the race.
-        - damage_type_id: The id of the damage type
+        - damage_type_id: The id of the damage type.
         - condition: The condition when this vulnerability is active (optional).
     """
 
@@ -118,10 +117,18 @@ class RaceResistances(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""RaceResistances('{self.race_id}', '{self.damage_type_id}')"""
+        """
+        This method provides a readable string of the RaceResistances instance including all
+        its attributes.
+
+        :returns: A string representation of the RaceResistances instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id},
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class RaceVulnerabilities(Base):
+class RaceVulnerabilities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a race and it's vulnerabilities.
 
@@ -142,10 +149,18 @@ class RaceVulnerabilities(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""RaceVulnerabilities('{self.race_id}', '{self.damage_type_id}')"""
+        """
+        This method provides a readable string of the RaceVulnerabilities instance including all
+        its attributes.
+
+        :returns: A string representation of the RaceVulnerabilities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id}, 
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class RaceImmunities(Base):
+class RaceImmunities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a race and it's immunities.
 
@@ -166,10 +181,18 @@ class RaceImmunities(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""RaceImmunities('{self.race_id}', '{self.damage_type_id}')"""
+        """
+        This method provides a readable string of the RaceImmunities instance including all
+        its attributes.
+
+        :returns: A string representation of the RaceImmunities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id}, 
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class RaceAdvantages(Base):
+class RaceAdvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between race and its advantages.
 
@@ -190,11 +213,18 @@ class RaceAdvantages(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""RaceAdvantages('{self.race_id}', '{self.attribute_id}', 
-        '{self.condition}')"""
+        """
+        This method provides a readable string of the RaceAdvantages instance including all
+        its attributes.
+
+        :returns: A string representation of the RaceAdvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id}, 
+            attribute_id={self.attribute_id}, condition={self.condition})"""
 
 
-class RaceDisadvantages(Base):
+class RaceDisadvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between race and its disadvantages.
 
@@ -215,5 +245,12 @@ class RaceDisadvantages(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""RaceDisadvantages('{self.race_id}', '{self.attribute_id}', 
-        '{self.condition}')"""
+        """
+        This method provides a readable string of the RaceDisadvantages instance including all
+        its attributes.
+
+        :returns: A string representation of the RaceDisadvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, race_id={self.race_id}, 
+            attribute_id={self.attribute_id}, condition={self.condition})"""

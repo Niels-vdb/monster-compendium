@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.characteristics import Size
+from server.database.models.sizes import Size
 
 from .conftest import app
 
