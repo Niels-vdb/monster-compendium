@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
-from server.database.models.characteristics import Size
+from server.database.models.sizes import Size
 
 from .conftest import app
 
@@ -11,23 +12,21 @@ client = TestClient(app)
 def test_get_sizes(create_size, db_session):
     response = client.get("/api/sizes")
     assert response.status_code == 200
-    assert response.json() == {
-        "sizes": [
-            {"name": "Tiny", "id": 1},
-        ]
-    }
+    assert response.json() == [
+        {"name": "Tiny", "id": 1},
+    ]
 
 
 def test_get_no_sizes(db_session):
     response = client.get("/api/sizes")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No sizes found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_size(create_size, db_session):
     response = client.get("/api/sizes/1")
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "name": "Tiny", "creatures": [], "races": []}
+    assert response.json() == {"id": 1, "name": "Tiny"}
 
 
 def test_get_no_size(create_size, db_session):
@@ -43,7 +42,7 @@ def test_post_size(db_session):
             "size_name": "Medium",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New size 'Medium' has been added to the database.",
         "size": {"id": 1, "name": "Medium"},
@@ -72,7 +71,8 @@ def test_size_name_put(create_size, db_session):
         f"/api/sizes/{create_size.id}",
         json={"size_name": "Medium"},
     )
-    size = db_session.query(Size).first()
+    stmt = select(Size)
+    size = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert size.name == "Medium"
     assert response.json() == {
@@ -108,7 +108,7 @@ def test_size_fake_size_put(create_race, create_size, db_session):
 
 def test_size_delete(create_size, db_session):
     response = client.delete(f"/api/sizes/{create_size.id}")
-    size = db_session.query(Size).filter(Size.id == create_size.id).first()
+    size = db_session.get(Size, create_size.id)
     assert response.status_code == 200
     assert response.json() == {"message": f"Size has been deleted."}
     assert size == None

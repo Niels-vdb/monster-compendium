@@ -1,12 +1,10 @@
-from typing import Any, Dict
-
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import CustomBase
 
 
-class Subrace(Base):
+class Subrace(CustomBase):
     """
     Table that holds all subraces that a race can have.
 
@@ -19,11 +17,9 @@ class Subrace(Base):
     __table_args__ = (UniqueConstraint("name", "race_id", name="_name_race_id_uc"),)
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(30), nullable=False)
-    race_id = Column(
-        Integer,
-        ForeignKey("races.id", ondelete="CASCADE"),
-    )
+    name = Column(String(50), nullable=False)
+    race_id = Column(Integer, ForeignKey("races.id", ondelete="CASCADE"))
+
     # 1-n relationships
     creatures = relationship("Creature", back_populates="subrace")
 
@@ -65,26 +61,12 @@ class Subrace(Base):
         :returns: A string representation of the Subrace instance.
         :rtype: str
         """
-        return f"""{self.__class__.__tablename__}('{self.id}',
-                '{self.name}', '{self.race}', '{self.resistances}')"""
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Subrace instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "subrace_id": self.id,
-            "name": self.name,
-            "race_id": self.race,
-            "resistances": self.resistances,
-        }
+        return f"""{self.__class__.__name__}(id={self.id}, name={self.name!r}
+            parent_race={self.race!r}, resistances={self.resistances},
+            immunities={self.immunities}, vulnerabilities={self.vulnerabilities})"""
 
 
-class SubraceResistances(Base):
+class SubraceResistances(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a subrace and it's resistances.
     """
@@ -102,11 +84,18 @@ class SubraceResistances(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""SubraceVulnerabilities('{self.subrace_id}', '{self.damage_type_id}', 
-                '{self.condition}')"""
+        """
+        This method provides a readable string of the SubraceResistances instance including all
+        its attributes.
+
+        :returns: A string representation of the SubraceResistances instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, subrace_id={self.subrace_id},
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class SubraceVulnerabilities(Base):
+class SubraceVulnerabilities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a subrace and it's vulnerabilities.
 
@@ -127,11 +116,18 @@ class SubraceVulnerabilities(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""SubraceVulnerabilities('{self.subrace_id}', '{self.damage_type_id}', 
-                '{self.condition}')"""
+        """
+        This method provides a readable string of the SubraceVulnerabilities instance including all
+        its attributes.
+
+        :returns: A string representation of the SubraceVulnerabilities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, subrace_id={self.subrace_id},
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class SubraceImmunities(Base):
+class SubraceImmunities(CustomBase):
     """
     Cross-reference table for many-to-many relationship between a subrace and it's immunities.
 
@@ -152,11 +148,18 @@ class SubraceImmunities(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""SubraceImmunities('{self.subrace_id}', '{self.damage_type_id}', 
-                '{self.condition}')"""
+        """
+        This method provides a readable string of the SubraceImmunities instance including all
+        its attributes.
+
+        :returns: A string representation of the SubraceImmunities instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, subrace_id={self.subrace_id},
+            damage_type_id={self.damage_type_id}, condition={self.condition})"""
 
 
-class SubraceAdvantages(Base):
+class SubraceAdvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between subrace and its advantages.
 
@@ -177,11 +180,18 @@ class SubraceAdvantages(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""SubraceAdvantages('{self.subrace_id}', '{self.attribute_id}', 
-                '{self.condition}')"""
+        """
+        This method provides a readable string of the SubraceAdvantages instance including all
+        its attributes.
+
+        :returns: A string representation of the SubraceAdvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, subrace_id={self.subrace_id},
+            attribute_id={self.attribute_id}, condition={self.condition})"""
 
 
-class SubraceDisadvantages(Base):
+class SubraceDisadvantages(CustomBase):
     """
     Cross-reference table for many-to-many relationship between subrace and its disadvantages.
 
@@ -202,5 +212,12 @@ class SubraceDisadvantages(Base):
     condition = Column("condition", String(100))
 
     def __repr__(self) -> str:
-        return f"""SubraceDisadvantages('{self.subrace_id}', '{self.attribute_id}', 
-                '{self.condition}')"""
+        """
+        This method provides a readable string of the SubraceDisadvantages instance including all
+        its attributes.
+
+        :returns: A string representation of the SubraceDisadvantages instance.
+        :rtype: str
+        """
+        return f"""{self.__class__.__name__}(id={self.id}, subrace_id={self.subrace_id},
+            attribute_id={self.attribute_id}, condition={self.condition})"""

@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from server.database.models.classes import Class
 
@@ -11,17 +12,13 @@ client = TestClient(app)
 def test_get_classes(create_class, db_session):
     response = client.get("/api/classes")
     assert response.status_code == 200
-    assert response.json() == {
-        "classes": [
-            {"id": 1, "name": "Artificer"},
-        ]
-    }
+    assert response.json() == [{"id": 1, "name": "Artificer", "subclasses": []}]
 
 
 def test_get_no_classes(db_session):
     response = client.get("/api/classes")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No classes found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_class(create_class, db_session):
@@ -42,10 +39,14 @@ def test_get_no_class(db_session):
 
 def test_post_class(db_session):
     response = client.post("/api/classes", json={"class_name": "Test"})
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New class 'Test' has been added to the database.",
-        "class": {"name": "Test", "id": 1},
+        "cls": {
+            "name": "Test",
+            "id": 1,
+            "subclasses": [],
+        },
     }
 
 
@@ -61,12 +62,13 @@ def test_class_name_put(create_class, db_session):
         f"/api/classes/{create_class.id}",
         json={"class_name": "Barbarian"},
     )
-    cls = db_session.query(Class).first()
+    stmt = select(Class)
+    cls = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert cls.name == "Barbarian"
     assert response.json() == {
         "message": "Class 'Barbarian' has been updated.",
-        "class": {"id": 1, "name": "Barbarian"},
+        "cls": {"id": 1, "name": "Barbarian", "subclasses": []},
     }
 
 
@@ -97,7 +99,7 @@ def test_fake_class_put(create_class, db_session):
 
 def test_class_delete(create_class, db_session):
     response = client.delete(f"/api/classes/{create_class.id}")
-    cls = db_session.query(Class).filter(Class.id == create_class.id).first()
+    cls = db_session.get(Class, create_class.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Class has been deleted."}
     assert cls == None

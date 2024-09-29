@@ -1,4 +1,5 @@
 *.erd
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -163,3 +164,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+server/.DS_Store
+.DS_Store
+server/database/.DS_Store

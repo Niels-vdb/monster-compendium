@@ -1,12 +1,15 @@
 from typing import Any
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
-from server.database.models.characteristics import Size, Type
-from server.database.models.classes import Class, Subclass
+from server.database.models.sizes import Size
+from server.database.models.types import Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
 from server.database.models.damage_types import DamageType
 from server.database.models.attributes import Attribute
 from server.database.models.enemies import Enemy
-from server.database.models.users import Party
+from server.database.models.parties import Party
 
 from .conftest import app
 
@@ -17,35 +20,39 @@ client = TestClient(app)
 def test_get_enemies(create_enemy, db_session):
     response = client.get("/api/enemies")
     assert response.status_code == 200
-    assert response.json() == {
-        "enemies": [
-            {
-                "name": "Giff",
-                "image": None,
-                "description": "A large hippo like creature",
-                "alive": True,
-                "race_id": None,
-                "active": True,
-                "subrace_id": None,
-                "armour_class": 16,
-                "type_id": 1,
-                "walking_speed": 30,
-                "size_id": 1,
-                "swimming_speed": 20,
-                "creature": "enemies",
-                "information": "Some information about this big hippo, like his knowledge about firearms.",
-                "flying_speed": 0,
-                "id": 1,
-                "climbing_speed": None,
-            }
-        ]
-    }
+    assert response.json() == [
+        {
+            "id": 1,
+            "name": "Giff",
+            "description": "A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
+            "alive": True,
+            "active": True,
+            "armour_class": 16,
+            "walking_speed": 30,
+            "swimming_speed": 20,
+            "flying_speed": 0,
+            "climbing_speed": None,
+            "image": None,
+            "race": None,
+            "subrace": None,
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
+        }
+    ]
 
 
 def test_get_no_enemies(db_session):
     response = client.get("/api/enemies")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No enemies found."}
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_enemy(create_enemy, db_session):
@@ -68,14 +75,13 @@ def test_get_enemy(create_enemy, db_session):
         "subrace": None,
         "size": {"id": 1, "name": "Tiny"},
         "creature_type": {"id": 1, "name": "Aberration"},
-        "parties": [{"name": "Murder Hobo Party", "id": 1}],
-        "classes": [{"name": "Artificer", "id": 1}],
-        "subclasses": [{"id": 1, "name": "Alchemist", "class_id": 1}],
-        "resistances": [{"id": 1, "name": "Fire"}],
+        "classes": [{"id": 1, "name": "Artificer"}],
+        "subclasses": [{"id": 1, "name": "Alchemist"}],
         "immunities": [{"id": 1, "name": "Fire"}],
+        "resistances": [{"id": 1, "name": "Fire"}],
         "vulnerabilities": [{"id": 1, "name": "Fire"}],
-        "advantages": [{"name": "Charmed", "id": 1}],
-        "disadvantages": [{"name": "Charmed", "id": 1}],
+        "advantages": [{"id": 1, "name": "Charmed"}],
+        "disadvantages": [{"id": 1, "name": "Charmed"}],
     }
 
 
@@ -124,27 +130,33 @@ def test_post_enemy(
             "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New enemy 'Giff' has been added to the database.",
         "enemy": {
+            "id": 1,
             "name": "Giff",
-            "image": None,
-            "alive": True,
             "description": " A large hippo like creature",
-            "race_id": 1,
-            "subrace_id": 1,
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
+            "alive": True,
             "active": True,
-            "type_id": 1,
             "armour_class": 22,
             "walking_speed": 35,
-            "size_id": 1,
-            "creature": "enemies",
             "swimming_speed": 35,
-            "information": "Some information about this big hippo, like his knowledge about firearms.",
             "flying_speed": 35,
             "climbing_speed": 35,
-            "id": 1,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
         },
     }
 
@@ -161,7 +173,7 @@ def test_post_enemy_fake_class(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This class does not exist."}
+    assert response.json() == {"detail": "Class not found."}
 
 
 def test_post_enemy_fake_subclass(
@@ -176,7 +188,7 @@ def test_post_enemy_fake_subclass(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subclass does not exist."}
+    assert response.json() == {"detail": "Subclass not found."}
 
 
 def test_post_enemy_fake_race(
@@ -191,7 +203,7 @@ def test_post_enemy_fake_race(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This race does not exist."}
+    assert response.json() == {"detail": "Race not found."}
 
 
 def test_post_enemy_fake_subrace(
@@ -206,7 +218,7 @@ def test_post_enemy_fake_subrace(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subrace does not exist."}
+    assert response.json() == {"detail": "Subrace not found."}
 
 
 def test_post_enemy_fake_size(
@@ -221,7 +233,7 @@ def test_post_enemy_fake_size(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This size does not exist."}
+    assert response.json() == {"detail": "Size not found."}
 
 
 def test_post_enemy_fake_type(
@@ -236,7 +248,7 @@ def test_post_enemy_fake_type(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This type does not exist."}
+    assert response.json() == {"detail": "Type not found."}
 
 
 def test_post_enemy_fake_party(
@@ -251,7 +263,7 @@ def test_post_enemy_fake_party(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This party does not exist."}
+    assert response.json() == {"detail": "Party not found."}
 
 
 def test_post_enemy_fake_resistance(
@@ -266,7 +278,7 @@ def test_post_enemy_fake_resistance(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_enemy_fake_immunity(
@@ -281,7 +293,7 @@ def test_post_enemy_fake_immunity(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_enemy_fake_vulnerabilities(
@@ -296,7 +308,7 @@ def test_post_enemy_fake_vulnerabilities(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_post_enemy_fake_advantages(
@@ -313,7 +325,7 @@ def test_post_enemy_fake_advantages(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_post_enemy_fake_disadvantages(
@@ -330,7 +342,7 @@ def test_post_enemy_fake_disadvantages(
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_enemy_add_put(
@@ -354,7 +366,7 @@ def test_enemy_add_put(
     new_class = Class(name="Barbarian")
     db_session.add(new_class)
 
-    new_subclass = Subclass(name="Armourer")
+    new_subclass = Subclass(name="Armourer", class_id=2)
     db_session.add(new_subclass)
 
     new_party = Party(name="Hobo Helping Party")
@@ -387,12 +399,9 @@ def test_enemy_add_put(
             "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
-            "classes": [2],
-            "add_class": True,
-            "subclasses": [2],
-            "add_subclass": True,
-            "parties": [2],
-            "add_parties": True,
+            "classes": [{"class_id": 2, "add_class": True}],
+            "subclasses": [{"subclass_id": 2, "add_subclass": True}],
+            "parties": [{"party_id": 2, "add_party": True}],
             "resistances": [
                 {
                     "damage_type_id": 2,
@@ -430,7 +439,8 @@ def test_enemy_add_put(
             ],
         },
     )
-    enemy = db_session.query(Enemy).first()
+    stmt = select(Enemy)
+    enemy = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert enemy.name == "Froghemoth"
     assert enemy.information == "Some new information about Froghemoth."
@@ -457,23 +467,41 @@ def test_enemy_add_put(
     assert response.json() == {
         "message": "Enemy 'Froghemoth' has been updated.",
         "enemy": {
-            "image": None,
+            "id": 1,
             "name": "Froghemoth",
             "description": "Something else about the Froghemoth.",
+            "information": "Some new information about Froghemoth.",
             "alive": False,
-            "race_id": 1,
             "active": False,
-            "subrace_id": 1,
-            "type_id": 2,
             "armour_class": 20,
             "walking_speed": 40,
-            "size_id": 2,
             "swimming_speed": 40,
-            "creature": "enemies",
             "flying_speed": 5,
-            "information": "Some new information about Froghemoth.",
             "climbing_speed": 40,
-            "id": 1,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 2, "name": "Medium"},
+            "creature_type": {"id": 2, "name": "Celestial"},
+            "classes": [
+                {"id": 1, "name": "Artificer"},
+                {"id": 2, "name": "Barbarian"},
+            ],
+            "subclasses": [
+                {"id": 1, "name": "Alchemist"},
+                {"id": 2, "name": "Armourer"},
+            ],
+            "immunities": [{"id": 1, "name": "Fire"}, {"id": 2, "name": "Slashing"}],
+            "resistances": [{"id": 1, "name": "Fire"}, {"id": 2, "name": "Slashing"}],
+            "vulnerabilities": [
+                {"id": 1, "name": "Fire"},
+                {"id": 2, "name": "Slashing"},
+            ],
+            "advantages": [{"id": 1, "name": "Charmed"}, {"id": 2, "name": "Poisoned"}],
+            "disadvantages": [
+                {"id": 1, "name": "Charmed"},
+                {"id": 2, "name": "Poisoned"},
+            ],
         },
     }
 
@@ -514,12 +542,24 @@ def test_enemy_remove_put(
             "subrace_id": subrace_id,
             "size_id": size_id,
             "type_id": type_id,
-            "classes": [1],
-            "add_class": False,
-            "subclasses": [1],
-            "add_subclass": False,
-            "parties": [1],
-            "add_parties": False,
+            "classes": [
+                {
+                    "class_id": 1,
+                    "add_class": False,
+                }
+            ],
+            "subclasses": [
+                {
+                    "subclass_id": 1,
+                    "add_subclass": False,
+                }
+            ],
+            "parties": [
+                {
+                    "party_id": 1,
+                    "add_party": False,
+                }
+            ],
             "resistances": [
                 {
                     "damage_type_id": 1,
@@ -552,7 +592,8 @@ def test_enemy_remove_put(
             ],
         },
     )
-    enemy = db_session.query(Enemy).first()
+    stmt = select(Enemy)
+    enemy = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
     assert enemy.name == "Froghemoth"
     assert enemy.information == "Some new information about Froghemoth."
@@ -579,23 +620,29 @@ def test_enemy_remove_put(
     assert response.json() == {
         "message": "Enemy 'Froghemoth' has been updated.",
         "enemy": {
-            "image": None,
+            "id": 1,
             "name": "Froghemoth",
             "description": "Something else about the Froghemoth.",
+            "information": "Some new information about Froghemoth.",
             "alive": False,
-            "race_id": 1,
             "active": False,
-            "subrace_id": 1,
-            "type_id": 2,
             "armour_class": 20,
             "walking_speed": 35,
-            "size_id": 2,
             "swimming_speed": 30,
-            "creature": "enemies",
             "flying_speed": 5,
-            "information": "Some new information about Froghemoth.",
             "climbing_speed": 30,
-            "id": 1,
+            "image": None,
+            "race": {"id": 1, "name": "Dwarf"},
+            "subrace": {"id": 1, "name": "Duergar"},
+            "size": {"id": 2, "name": "Medium"},
+            "creature_type": {"id": 2, "name": "Celestial"},
+            "classes": [],
+            "subclasses": [],
+            "immunities": [],
+            "resistances": [],
+            "vulnerabilities": [],
+            "advantages": [],
+            "disadvantages": [],
         },
     }
 
@@ -603,52 +650,52 @@ def test_enemy_remove_put(
 def test_enemy_fake_race_put(create_enemy, db_session):
     response = client.put(f"/api/enemies/{create_enemy.id}", json={"race_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This race does not exist."}
+    assert response.json() == {"detail": "Race not found."}
 
 
 def test_enemy_fake_subrace_put(create_enemy, db_session):
     response = client.put(f"/api/enemies/{create_enemy.id}", json={"subrace_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subrace does not exist."}
+    assert response.json() == {"detail": "Subrace not found."}
 
 
 def test_enemy_fake_size_put(create_enemy, db_session):
     response = client.put(f"/api/enemies/{create_enemy.id}", json={"size_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This size does not exist."}
+    assert response.json() == {"detail": "Size not found."}
 
 
 def test_enemy_fake_type_put(create_enemy, db_session):
     response = client.put(f"/api/enemies/{create_enemy.id}", json={"type_id": 3})
     assert response.status_code == 404
-    assert response.json() == {"detail": "This type does not exist."}
+    assert response.json() == {"detail": "Type not found."}
 
 
 def test_enemy_fake_class_put(create_enemy, db_session):
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
-        json={"classes": [3], "add_classes": False},
+        json={"classes": [{"class_id": 3, "add_class": False}]},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This class does not exist."}
+    assert response.json() == {"detail": "Class not found."}
 
 
 def test_enemy_fake_subclass_put(create_enemy, db_session):
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
-        json={"subclasses": [3], "add_subclasses": False},
+        json={"subclasses": [{"subclass_id": 3, "add_subclass": False}]},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This subclass does not exist."}
+    assert response.json() == {"detail": "Subclass not found."}
 
 
 def test_enemy_fake_party_put(create_enemy, db_session):
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
-        json={"parties": [3], "add_parties": False},
+        json={"parties": [{"party_id": 3, "add_party": False}]},
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This party does not exist."}
+    assert response.json() == {"detail": "Party not found."}
 
 
 def test_enemy_fake_resistance_put(create_enemy, db_session):
@@ -664,7 +711,7 @@ def test_enemy_fake_resistance_put(create_enemy, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_enemy_fake_vulnerability_put(create_enemy, db_session):
@@ -680,7 +727,7 @@ def test_enemy_fake_vulnerability_put(create_enemy, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_enemy_fake_immunity_put(create_enemy, db_session):
@@ -696,7 +743,7 @@ def test_enemy_fake_immunity_put(create_enemy, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This damage type does not exist."}
+    assert response.json() == {"detail": "Damage type not found."}
 
 
 def test_enemy_fake_advantage_put(create_enemy, db_session):
@@ -712,7 +759,7 @@ def test_enemy_fake_advantage_put(create_enemy, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_enemy_fake_disadvantage_put(create_enemy, db_session):
@@ -728,12 +775,12 @@ def test_enemy_fake_disadvantage_put(create_enemy, db_session):
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "This attribute does not exist."}
+    assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_enemy_delete(create_enemy, db_session):
     response = client.delete(f"/api/enemies/{create_enemy.id}")
-    enemy = db_session.query(Enemy).filter(Enemy.id == create_enemy.id).first()
+    enemy = db_session.get(Enemy, create_enemy.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Enemy has been deleted."}
     assert enemy == None

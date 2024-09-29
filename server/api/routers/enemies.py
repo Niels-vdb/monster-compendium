@@ -1,28 +1,29 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import and_
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-
-from server.api.models.creatures import CreaturePostBase, CreaturePutBase
-from server.database.models.attributes import Attribute
-from server.database.models.characteristics import Size, Type
-from server.database.models.classes import Class, Subclass
-from server.database.models.creatures import (
-    CreatureAdvantages,
-    CreatureDisadvantages,
-    CreatureImmunities,
-    CreatureResistances,
-    CreatureVulnerabilities,
+from server.logger.logger import logger
+from server.api.utils.utilities import Utilities
+from server.api.utils.creature_utilities import CreatureUtilities
+from server.api.models.base_response import BaseResponse
+from server.api.models.creatures import (
+    CreatureModel,
+    CreaturePostBase,
+    CreaturePutBase,
 )
-from server.database.models.damage_types import DamageType
+from server.api.models.delete_response import DeleteResponse
+from server.database.models.sizes import Size
+from server.database.models.types import Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
 from server.database.models.enemies import Enemy
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
-from server.database.models.users import Party
+from server.database.models.parties import Party
 
 router = APIRouter(
     prefix="/api/enemies",
@@ -31,499 +32,594 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-def get_enemies(db: Session = Depends(get_db)):
-    enemies = db.query(Enemy).all()
-    if not enemies:
-        raise HTTPException(status_code=404, detail="No enemies found.")
-    return {"enemies": enemies}
+class EnemyResponse(BaseResponse):
+    """
+    Response model for creating or retrieving a enemy.
+    Inherits from BaseResponse
+
+    - `message`: A descriptive message about the action performed.
+    - `enemy`: The actual enemy data, represented by the `CreatureModel`.
+    """
+
+    enemy: CreatureModel
 
 
-@router.get("/{enemy_id}")
-def get_enemy(enemy_id: int, db: Session = Depends(get_db)):
-    enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
-    if not enemy:
-        raise HTTPException(status_code=404, detail="Enemy not found.")
-    return {
-        "id": enemy.id,
-        "name": enemy.name,
-        "description": enemy.description,
-        "information": enemy.information,
-        "alive": enemy.alive,
-        "active": enemy.active,
-        "armour_class": enemy.armour_class,
-        "walking_speed": enemy.walking_speed,
-        "swimming_speed": enemy.swimming_speed,
-        "flying_speed": enemy.flying_speed,
-        "climbing_speed": enemy.climbing_speed,
-        "image": enemy.image,
-        "race": enemy.race,
-        "subrace": enemy.subrace,
-        "size": enemy.size,
-        "creature_type": enemy.creature_type,
-        "parties": enemy.parties,
-        "classes": enemy.classes,
-        "subclasses": enemy.subclasses,
-        "resistances": enemy.resistances,
-        "immunities": enemy.immunities,
-        "vulnerabilities": enemy.vulnerabilities,
-        "advantages": enemy.advantages,
-        "disadvantages": enemy.disadvantages,
+@router.get("/", response_model=list[CreatureModel])
+def get_enemies(db: Session = Depends(get_db)) -> list[CreatureModel]:
+    """
+    Queries the enemies database table for all rows.
+
+    - **Returns** list[CreatureModel]: All enemy instances in the database.
+
+    **Response Example**:
+    ```json
+    [
+        {
+            "id": 1,
+            "name": "Giff",
+            "description": "A large hippo like creature",
+            "information": "Some information about this big hippo, like his knowledge about firearms.",
+            "alive": True,
+            "active": True,
+            "armour_class": 16,
+            "walking_speed": 30,
+            "swimming_speed": 20,
+            "flying_speed": 0,
+            "climbing_speed": None,
+            "image": None,
+            "race": None,
+            "subrace": None,
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
+        },
+        {
+            "id": 2,
+            "name": "Frogemoth",
+            "description": "A large Frog like creature",
+            "information": "Some information about this big Frog.",
+            "alive": True,
+            "active": True,
+            "armour_class": 16,
+            "walking_speed": 30,
+            "swimming_speed": 20,
+            "flying_speed": 0,
+            "climbing_speed": None,
+            "image": None,
+            "race": None,
+            "subrace": None,
+            "size": {"id": 1, "name": "Tiny"},
+            "creature_type": {"id": 1, "name": "Aberration"},
+            "classes": [{"id": 1, "name": "Artificer"}],
+            "subclasses": [{"id": 1, "name": "Alchemist"}],
+            "immunities": [{"id": 1, "name": "Fire"}],
+            "resistances": [{"id": 1, "name": "Fire"}],
+            "vulnerabilities": [{"id": 1, "name": "Fire"}],
+            "advantages": [{"id": 1, "name": "Charmed"}],
+            "disadvantages": [{"id": 1, "name": "Charmed"}],
+        },
+    ]
+    """
+    logger.info("Querying enemies table for all results.")
+    stmt = select(Enemy)
+    enemies = db.execute(stmt).scalars().all()
+
+    logger.info(f"Returned {len(enemies)} from the enemies table.")
+    return enemies
+
+
+@router.get("/{enemy_id}", response_model=CreatureModel)
+def get_enemy(enemy_id: int, db: Session = Depends(get_db)) -> CreatureModel:
+    """
+    Queries the enemies table in the database table for a specific row with the id of enemy_id.
+
+    - **Returns** CreatureModel: The enemy instance queried for, otherwise 404 HTTPException.
+
+    - **HTTPException**: If the queried enemy does not exist.
+
+    **Response Example**:
+    {
+        "id": 1,
+        "name": "Giff",
+        "description": "A large hippo like creature",
+        "information": "Some information about this big hippo, like his knowledge about firearms.",
+        "alive": True,
+        "active": True,
+        "armour_class": 16,
+        "walking_speed": 30,
+        "swimming_speed": 20,
+        "flying_speed": 0,
+        "climbing_speed": None,
+        "image": None,
+        "race": None,
+        "subrace": None,
+        "size": {"id": 1, "name": "Tiny"},
+        "creature_type": {"id": 1, "name": "Aberration"},
+        "classes": [{"id": 1, "name": "Artificer"}],
+        "subclasses": [{"id": 1, "name": "Alchemist"}],
+        "immunities": [{"id": 1, "name": "Fire"}],
+        "resistances": [{"id": 1, "name": "Fire"}],
+        "vulnerabilities": [{"id": 1, "name": "Fire"}],
+        "advantages": [{"id": 1, "name": "Charmed"}],
+        "disadvantages": [{"id": 1, "name": "Charmed"}],
     }
+    """
+    logger.info(f"Querying enemy table for row with id '{enemy_id}'.")
+    stmt = select(Enemy).where(Enemy.id == enemy_id)
+    enemy = db.execute(stmt).scalar_one_or_none()
+
+    if not enemy:
+        logger.error(f"No enemy with the id of '{enemy_id}'.")
+        raise HTTPException(status_code=404, detail="Enemy not found.")
+
+    logger.info(f"Returning enemy info with id of {enemy_id}.")
+    return enemy
 
 
-@router.post("/")
-def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)):
+@router.post("/", response_model=EnemyResponse, status_code=201)
+def post_enemy(enemy: CreaturePostBase, db: Session = Depends(get_db)) -> EnemyResponse:
+    """
+    Creates a new row in the enemies table.
+
+    - **Returns** EnemyResponse: A dictionary holding a message and the new enemy.
+
+    - **HTTPException**: If an enemy with this name already exists.
+
+    **Request Body Example**:
+    ```json
+    {
+        "name": "example_name",
+        "information": "example_information.",
+        "description": "example_description.",
+        "image": bytes,
+        "alive": boolean,
+        "active": boolean,
+        "armour_class": in,
+        "walking_speed": int,
+        "swimming_speed": int,
+        "climbing_speed": int,
+        "flying_speed": int,
+        "race_id": int,
+        "subrace_id": int,
+        "size_id": int,
+        "type_id": int,
+        "classes": [int],
+        "subclasses": [int],
+        "parties": [int],
+        "resistances": [PostDamageType,],
+        "immunities": [PostDamageType,],
+        "vulnerabilities": [PostDamageType,],
+        "advantages": [PostAttribute,],
+        "disadvantages": [PostAttribute,],
+    }
+    ```
+    - `name`: A string between 1 and 50 characters long (inclusive).
+    - `information"`: A string with information about the enemy (optional).
+    - `description`: A string with a description of the enemy (optional).
+    - `image`: An image representing the enemy (optional). NOT YET IMPLEMENTED!!!!
+    - `alive`: A boolean representing if the enemy is alive (optional).
+    - `active`: A boolean representing if the enemy is active (optional).
+    - `armour_class`: An integer representing the armour class of the enemy (optional).
+    - `walking_speed`: An integer representing the walking speed of the enemy (optional).
+    - `swimming_speed`: An integer representing the swimming speed of the enemy (optional).
+    - `climbing_speed`: An integer representing the climbing speed of the enemy (optional).
+    - `flying_speed`: An integer representing the flying speed of the enemy (optional).
+    - `race_id`: An integer representing the race id of the enemy (optional).
+    - `subrace_id`: An integer representing the subrace id of the enemy (optional).
+    - `size_id`: An integer representing the size id of the enemy (optional).
+    - `type_id`: An integer representing the type id of the enemy (optional).
+    - `classes`: A list holding the id integers to add a class (optional).
+    - `subclasses`: A list holding the id integers to add a subclass (optional).
+    - `parties`: A list holding the id integers to add a party (optional).
+    - `resistances`: A dictionary with the structure of PostDamageType to add a resistance (optional).
+    - `immunities`: A dictionary with the structure of PostDamageType to add a immunities (optional).
+    - `vulnerabilities`: A dictionary with the structure of PostDamageType to add a vulnerabilities (optional).
+    - `advantages`: A dictionary with the structure of PostAttribute to add a advantages (optional).
+    - `disadvantages`: A dictionary with the structure of PostAttribute to add a disadvantages (optional).
+
+    **Response Example**:
+    ```json
+    {
+        "message": "Enemy 'example_name' has been created.",
+        "enemy": {
+            "id": 1,
+            "name": "example_name",
+            "description": "example_description",
+            "information": "example_information",
+            "alive": boolean,
+            "active": boolean,
+            "armour_class": int,
+            "walking_speed": int,
+            "swimming_speed": int,
+            "flying_speed":int,
+            "climbing_speed": int,
+            "image": None,
+            "race": RaceBase,
+            "subrace": SubraceBase,
+            "size": SizeBase,
+            "creature_type": TypeBase,
+            "parties": [PartyBase,],
+            "classes": [ClassBase,],
+            "subclasses": [SubclassBase,],
+            "immunities": [DamageTypeBase,],
+            "resistances": [DamageTypeBase,],
+            "vulnerabilities": [DamageTypeBase,],
+            "advantages": [AttributeBase,],
+            "disadvantages": [AttributeBase,],
+    }
+    ```
+    """
+    logger.info(f"Creating new enemy with name '{enemy.name}'.")
+
+    utils = Utilities(db)
+
     attributes: dict[str, Any] = {}
 
+    if enemy.name:
+        logger.debug(f"Trying to add name to new enemy '{enemy.name}'.")
+        attributes["name"] = enemy.name
     if enemy.description:
+        logger.debug(f"Trying to add description to new enemy '{enemy.name}'.")
         attributes["description"] = enemy.description
     if enemy.information:
+        logger.debug(f"Trying to add information to new enemy '{enemy.name}'.")
         attributes["information"] = enemy.information
-    if enemy.alive:
+    if enemy.alive != None:
+        logger.debug(f"Trying to add alive status to new enemy '{enemy.name}'.")
         attributes["alive"] = enemy.alive
-    if enemy.active:
+    if enemy.active != None:
+        logger.debug(f"Trying to add active status to new enemy '{enemy.name}'.")
         attributes["active"] = enemy.active
     if enemy.armour_class:
+        logger.debug(f"Trying to add armour class to new enemy '{enemy.name}'.")
         attributes["armour_class"] = enemy.armour_class
     if enemy.walking_speed:
+        logger.debug(f"Trying to add walking speed to new enemy '{enemy.name}'.")
         attributes["walking_speed"] = enemy.walking_speed
     if enemy.swimming_speed:
+        logger.debug(f"Trying to add swimming speed to new enemy '{enemy.name}'.")
         attributes["swimming_speed"] = enemy.swimming_speed
     if enemy.flying_speed:
+        logger.debug(f"Trying to add flying speed to new enemy '{enemy.name}'.")
         attributes["flying_speed"] = enemy.flying_speed
     if enemy.climbing_speed:
+        logger.debug(f"Trying to add climbing speed to new enemy '{enemy.name}'.")
         attributes["climbing_speed"] = enemy.climbing_speed
     if enemy.image:
+        logger.debug(f"Trying to add image to new enemy '{enemy.name}'.")
         attributes["image"] = enemy.image
     if enemy.race_id:
-        race = db.query(Race).filter(Race.id == enemy.race_id).first()
-        if not race:
-            raise HTTPException(status_code=404, detail="This race does not exist.")
-        attributes["race_id"] = race.id
+        logger.debug(f"Trying to add race id to new enemy '{enemy.name}'.")
+        attributes["race_id"] = utils.get_by_id(Race, enemy.race_id).id
     if enemy.subrace_id:
-        subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace_id).first()
-        if not subrace:
-            raise HTTPException(status_code=404, detail="This subrace does not exist.")
-        attributes["subrace_id"] = subrace.id
+        logger.debug(f"Trying to add subrace id to new enemy '{enemy.name}'.")
+        attributes["subrace_id"] = utils.get_by_id(Subrace, enemy.subrace_id).id
     if enemy.size_id:
-        size = db.query(Size).filter(Size.id == enemy.size_id).first()
-        if not size:
-            raise HTTPException(status_code=404, detail="This size does not exist.")
-        attributes["size_id"] = size.id
+        logger.debug(f"Trying to add size id to new enemy '{enemy.name}'.")
+        attributes["size_id"] = utils.get_by_id(Size, enemy.size_id).id
     if enemy.type_id:
-        creature_type = db.query(Type).filter(Type.id == enemy.type_id).first()
-        if not creature_type:
-            raise HTTPException(status_code=404, detail="This type does not exist.")
-        attributes["type_id"] = creature_type.id
+        logger.debug(f"Trying to add type id to new enemy '{enemy.name}'.")
+        attributes["type_id"] = utils.get_by_id(Type, enemy.type_id).id
     if enemy.parties:
+        logger.debug(f"Trying to add parties to new enemy '{enemy.name}'.")
         attributes["parties"] = [
-            db.query(Party).filter(Party.id == party).first() for party in enemy.parties
+            utils.get_by_id(Party, party) for party in enemy.parties
         ]
-        for party in attributes["parties"]:
-            if not party:
-                raise HTTPException(
-                    status_code=404, detail="This party does not exist."
-                )
     if enemy.classes:
-        attributes["classes"] = [
-            db.query(Class).filter(Class.id == cls).first() for cls in enemy.classes
-        ]
-        for cls in attributes["classes"]:
-            if not cls:
-                raise HTTPException(
-                    status_code=404, detail="This class does not exist."
-                )
+        logger.debug(f"Trying to add classes to new enemy '{enemy.name}'.")
+        attributes["classes"] = [utils.get_by_id(Class, cls) for cls in enemy.classes]
     if enemy.subclasses:
+        logger.debug(f"Trying to add subclasses to new enemy '{enemy.name}'.")
         attributes["subclasses"] = [
-            db.query(Subclass).filter(Subclass.id == subclass).first()
-            for subclass in enemy.subclasses
+            utils.get_by_id(Subclass, subclass) for subclass in enemy.subclasses
         ]
-        for subclass in attributes["subclasses"]:
-            if not subclass:
-                raise HTTPException(
-                    status_code=404, detail="This subclass does not exist."
-                )
+
+    logger.debug(f"Added all initial information to new enemy '{enemy.name}'.")
     try:
-        new_enemy = Enemy(name=enemy.name, **attributes)
+        new_enemy = Enemy(**attributes)
         db.add(new_enemy)
+
         db.commit()
         db.refresh(new_enemy)
+        logger.info(f"Committed enemy '{enemy.name}' to the database.")
     except Exception as e:
+        logger.error(
+            f"An error occurred while trying to create the enemy. Error: {str(e)}"
+        )
         raise HTTPException(
             status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
         )
+
+    logger.debug(f"Adding additional data to enemy '{enemy.name}'.")
+    creature_utils = CreatureUtilities(db, new_enemy)
 
     if enemy.immunities:
-        for immunity in enemy.immunities:
-            damage_type = (
-                db.query(DamageType)
-                .filter(DamageType.id == immunity.damage_type_id)
-                .first()
-            )
-            if not damage_type:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"This damage type does not exist.",
-                )
-            enemy_immunity = CreatureImmunities(
-                creature_id=new_enemy.id,
-                damage_type_id=damage_type.id,
-                condition=immunity.condition,
-            )
-            db.add(enemy_immunity)
+        creature_utils.add_immunities(enemy.immunities)
     if enemy.resistances:
-        for resistance in enemy.resistances:
-            damage_type = (
-                db.query(DamageType)
-                .filter(DamageType.id == resistance.damage_type_id)
-                .first()
-            )
-            if not damage_type:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"This damage type does not exist.",
-                )
-            enemy_resistance = CreatureResistances(
-                creature_id=new_enemy.id,
-                damage_type_id=damage_type.id,
-                condition=resistance.condition,
-            )
-            db.add(enemy_resistance)
+        creature_utils.add_resistances(enemy.resistances)
     if enemy.vulnerabilities:
-        for vulnerability in enemy.vulnerabilities:
-            damage_type = (
-                db.query(DamageType)
-                .filter(DamageType.id == vulnerability.damage_type_id)
-                .first()
-            )
-            if not damage_type:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"This damage type does not exist.",
-                )
-            enemy_vulnerability = CreatureVulnerabilities(
-                creature_id=new_enemy.id,
-                damage_type_id=damage_type.id,
-                condition=vulnerability.condition,
-            )
-            db.add(enemy_vulnerability)
+        creature_utils.add_vulnerabilities(enemy.vulnerabilities)
     if enemy.advantages:
-        for advantage in enemy.advantages:
-            attribute = (
-                db.query(Attribute)
-                .filter(Attribute.id == advantage.attribute_id)
-                .first()
-            )
-            if not attribute:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"This attribute does not exist.",
-                )
-            enemy_advantage = CreatureAdvantages(
-                creature_id=new_enemy.id, attribute_id=attribute.id
-            )
-            db.add(enemy_advantage)
+        creature_utils.add_advantages(enemy.advantages)
     if enemy.disadvantages:
-        for disadvantage in enemy.disadvantages:
-            attribute = (
-                db.query(Attribute)
-                .filter(Attribute.id == disadvantage.attribute_id)
-                .first()
-            )
-            if not attribute:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"This attribute does not exist.",
-                )
-            enemy_disadvantage = CreatureDisadvantages(
-                creature_id=new_enemy.id, attribute_id=attribute.id
-            )
-            db.add(enemy_disadvantage)
+        creature_utils.add_disadvantages(enemy.disadvantages)
 
     try:
         db.commit()
-        return {
-            "message": f"New enemy '{new_enemy.name}' has been added to the database.",
-            "enemy": new_enemy,
-        }
+        logger.info(
+            f"Committed additional data for '{new_enemy.name}' to the many to many tables."
+        )
+        return EnemyResponse(
+            message=f"New enemy '{new_enemy.name}' has been added to the database.",
+            enemy=new_enemy,
+        )
     except Exception as e:
+        logger.error(
+            f"When trying to add additional data to '{new_enemy.name}' the following error occurred: {str(e)}"
+        )
         raise HTTPException(
             status_code=400, detail=f"An unexpected error occurred. Error: {str(e)}"
         )
 
 
-@router.put("/{enemy_id}")
-def put_enemy(enemy_id: str, enemy: CreaturePutBase, db: Session = Depends(get_db)):
+@router.put("/{enemy_id}", response_model=EnemyResponse)
+def put_enemy(
+    enemy_id: str, enemy: CreaturePutBase, db: Session = Depends(get_db)
+) -> EnemyResponse:
+    """
+    Updates an enemy in the database by its unique id.
+
+    - **Returns** ClassResponse: A message and the updated enemy.
+
+    - **HTTPException**: When the enemy id does not exist.
+    - **HTTPException**: When the updated .
+
+    **Request Body Example**:
+    ```json
+    {
+        "name": "example_name",
+        "information": "example_information.",
+        "description": "example_description.",
+        "image": bytes,
+        "alive": boolean,
+        "active": boolean,
+        "armour_class": in,
+        "walking_speed": int,
+        "swimming_speed": int,
+        "climbing_speed": int,
+        "flying_speed": int,
+        "race_id": int,
+        "subrace_id": int,
+        "size_id": int,
+        "type_id": int,
+        "classes": [PutClass,],
+        "subclasses": [PutSubclass,],
+        "parties": [PutParty,],
+        "resistances": [PutDamageType,],
+        "immunities": [PutDamageType,],
+        "vulnerabilities": [PutDamageType,],
+        "advantages": [PutAttribute,],
+        "disadvantages": [PutAttribute,],
+    }
+    ```
+    - `name`: A new string between 1 and 50 characters long (optional).
+    - `information"`: A new string with information about the enemy (optional).
+    - `description`: A new string with a description of the enemy (optional).
+    - `image`: An image representing the enemy (optional). NOT YET IMPLEMENTED!!!!
+    - `alive`: A boolean representing if the enemy is alive (optional).
+    - `active`: A boolean representing if the enemy is active (optional).
+    - `armour_class`: An integer representing the new armour class of the enemy (optional).
+    - `walking_speed`: An integer representing the new walking speed of the enemy (optional).
+    - `swimming_speed`: An integer representing the new swimming speed of the enemy (optional).
+    - `climbing_speed`: An integer representing the new climbing speed of the enemy (optional).
+    - `flying_speed`: An integer representing the new flying speed of the enemy (optional).
+    - `race_id`: An integer representing the new race id of the enemy (optional).
+    - `subrace_id`: An integer representing the new subrace id of the enemy (optional).
+    - `size_id`: An integer representing the new size id of the enemy (optional).
+    - `type_id`: An integer representing the new type id of the enemy (optional).
+    - `classes`: A dictionary with the structure of PutClass to add or delete a class (optional).
+    - `subclasses`: A dictionary with the structure of PutSubclass to add or delete a subclass (optional).
+    - `parties`: A dictionary with the structure of PutParty to add or delete a party (optional).
+    - `resistances`: A dictionary with the structure of PutDamageType to add or delete a resistance (optional).
+    - `immunities`: A dictionary with the structure of PutDamageType to add or delete a immunities (optional).
+    - `vulnerabilities`: A dictionary with the structure of PutDamageType to add or delete a vulnerabilities (optional).
+    - `advantages`: A dictionary with the structure of PutAttribute to add or delete a advantages (optional).
+    - `disadvantages`: A dictionary with the structure of PutAttribute to add or delete a disadvantages (optional).
+
+    **Response Example**:
+    ```json
+    {
+        "message": "Enemy 'example_name' has been updated.",
+        "enemy": {
+            "id": 1,
+            "name": "example_name",
+            "description": "example_description",
+            "information": "example_information",
+            "alive": boolean,
+            "active": boolean,
+            "armour_class": int,
+            "walking_speed": int,
+            "swimming_speed": int,
+            "flying_speed":int,
+            "climbing_speed": int,
+            "image": None,
+            "race": RaceBase,
+            "subrace": SubraceBase,
+            "size": SizeBase,
+            "creature_type": TypeBase,
+            "classes": [ClassBase,],
+            "subclasses": [SubclassBase,],
+            "immunities": [DamageTypeBase,],
+            "resistances": [DamageTypeBase,],
+            "vulnerabilities": [DamageTypeBase,],
+            "advantages": [AttributeBase,],
+            "disadvantages": [AttributeBase,],
+    }
+    ```
+    """
     try:
-        updated_enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
+        logger.info(f"Updating enemy with id '{enemy_id}'.")
+        updated_enemy = db.get(Enemy, enemy_id)
+
+        if not updated_enemy:
+            logger.error(f"Class with id '{enemy_id}' not found.")
+            raise HTTPException(
+                status_code=404,
+                detail="The enemy you are trying to update does not exist.",
+            )
+
+        utils = CreatureUtilities(db, updated_enemy)
+
         if enemy.name:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' name to '{enemy.name}'."
+            )
             updated_enemy.name = enemy.name
         if enemy.description:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' description to '{enemy.description}'."
+            )
             updated_enemy.description = enemy.description
         if enemy.information:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' information to '{enemy.information}'."
+            )
             updated_enemy.information = enemy.information
         if enemy.alive != None:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' alive status to '{enemy.alive}'."
+            )
             updated_enemy.alive = enemy.alive
         if enemy.active != None:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' active status to '{enemy.active}'."
+            )
             updated_enemy.active = enemy.active
         if enemy.armour_class:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' armour class to '{enemy.armour_class}'."
+            )
             updated_enemy.armour_class = enemy.armour_class
         if enemy.walking_speed:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' walking speed to '{enemy.walking_speed}'."
+            )
             updated_enemy.walking_speed = enemy.walking_speed
         if enemy.swimming_speed:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' swimming speed to '{enemy.swimming_speed}'."
+            )
             updated_enemy.swimming_speed = enemy.swimming_speed
         if enemy.flying_speed:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' flying speed to '{enemy.flying_speed}'."
+            )
             updated_enemy.flying_speed = enemy.flying_speed
         if enemy.climbing_speed:
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' climbing speed to '{enemy.climbing_speed}'."
+            )
             updated_enemy.climbing_speed = enemy.climbing_speed
         if enemy.image:
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' image.")
             updated_enemy.image = enemy.image
         if enemy.race_id:
-            race = db.query(Race).filter(Race.id == enemy.race_id).first()
-            if not race:
-                raise HTTPException(status_code=404, detail="This race does not exist.")
-            updated_enemy.race_id = race.id
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' race_id to '{enemy.race_id}'."
+            )
+            utils.update_race(enemy.race_id)
         if enemy.subrace_id:
-            subrace = db.query(Subrace).filter(Subrace.id == enemy.subrace_id).first()
-            if not subrace:
-                raise HTTPException(
-                    status_code=404, detail="This subrace does not exist."
-                )
-            updated_enemy.subrace_id = subrace.id
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' subrace_id to '{enemy.subrace_id}'."
+            )
+            utils.update_subrace(enemy.subrace_id)
         if enemy.size_id:
-            size = db.query(Size).filter(Size.id == enemy.size_id).first()
-            if not size:
-                raise HTTPException(status_code=404, detail="This size does not exist.")
-            updated_enemy.size_id = size.id
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' size_id to '{enemy.size_id}'."
+            )
+            utils.update_size(enemy.size_id)
         if enemy.type_id:
-            creature_type = db.query(Type).filter(Type.id == enemy.type_id).first()
-            if not creature_type:
-                raise HTTPException(status_code=404, detail="This type does not exist.")
-            updated_enemy.type_id = creature_type.id
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' type_id to '{enemy.type_id}'."
+            )
+            utils.update_type(enemy.type_id)
         if enemy.classes:
-            classes = [
-                db.query(Class).filter(Class.id == cls).first() for cls in enemy.classes
-            ]
-            for cls in classes:
-                if cls == None:
-                    raise HTTPException(
-                        status_code=404, detail="This class does not exist."
-                    )
-            if enemy.add_class:
-                updated_enemy.classes += classes
-            else:
-                for cls in classes:
-                    if cls in updated_enemy.classes:
-                        updated_enemy.classes.remove(cls)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' classes .")
+            utils.update_classes(enemy.classes)
         if enemy.subclasses:
-            subclasses = [
-                db.query(Subclass).filter(Subclass.id == subclass).first()
-                for subclass in enemy.subclasses
-            ]
-            for subclass in subclasses:
-                if subclass == None:
-                    raise HTTPException(
-                        status_code=404, detail="This subclass does not exist."
-                    )
-            if enemy.add_subclass:
-                updated_enemy.subclasses += subclasses
-            else:
-                for subclass in subclasses:
-                    if subclass in updated_enemy.subclasses:
-                        updated_enemy.subclasses.remove(subclass)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' subclasses.")
+            utils.update_subclasses(enemy.subclasses)
         if enemy.parties:
-            parties = [
-                db.query(Party).filter(Party.id == party).first()
-                for party in enemy.parties
-            ]
-            for party in parties:
-                if party == None:
-                    raise HTTPException(
-                        status_code=404, detail="This party does not exist."
-                    )
-            if enemy.add_parties:
-                updated_enemy.parties += parties
-            else:
-                for party in parties:
-                    if party in updated_enemy.parties:
-                        updated_enemy.parties.remove(party)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' parties.")
+            utils.update_parties(enemy.parties)
         if enemy.immunities:
-            for immunity in enemy.immunities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == immunity.damage_type_id)
-                    .first()
-                )
-                if not damage_type:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="This damage type does not exist.",
-                    )
-                elif immunity.add_damage_type:
-                    new_immunity = CreatureImmunities(
-                        creature_id=enemy_id,
-                        damage_type_id=damage_type.id,
-                        condition=immunity.condition,
-                    )
-                    db.add(new_immunity)
-                else:
-                    old_immunity = (
-                        db.query(CreatureImmunities)
-                        .filter(
-                            and_(
-                                CreatureImmunities.creature_id == enemy_id,
-                                CreatureImmunities.damage_type_id == damage_type.id,
-                            )
-                        )
-                        .first()
-                    )
-                    db.delete(old_immunity)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' immunities.")
+            utils.update_immunities(enemy.immunities)
         if enemy.resistances:
-            for resistance in enemy.resistances:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == resistance.damage_type_id)
-                    .first()
-                )
-                if not damage_type:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="This damage type does not exist.",
-                    )
-                elif resistance.add_damage_type:
-                    new_resistance = CreatureResistances(
-                        creature_id=enemy_id,
-                        damage_type_id=damage_type.id,
-                        condition=immunity.condition,
-                    )
-                    db.add(new_resistance)
-                else:
-                    old_resistance = (
-                        db.query(CreatureResistances)
-                        .filter(
-                            and_(
-                                CreatureResistances.creature_id == enemy_id,
-                                CreatureResistances.damage_type_id == damage_type.id,
-                            )
-                        )
-                        .first()
-                    )
-                    db.delete(old_resistance)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' resistances.")
+            utils.update_resistances(enemy.resistances)
         if enemy.vulnerabilities:
-            for vulnerability in enemy.vulnerabilities:
-                damage_type = (
-                    db.query(DamageType)
-                    .filter(DamageType.id == vulnerability.damage_type_id)
-                    .first()
-                )
-                if not damage_type:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="This damage type does not exist.",
-                    )
-                elif vulnerability.add_damage_type:
-                    new_vulnerability = CreatureVulnerabilities(
-                        creature_id=enemy_id,
-                        damage_type_id=damage_type.id,
-                        condition=immunity.condition,
-                    )
-                    db.add(new_vulnerability)
-                else:
-                    old_vulnerability = (
-                        db.query(CreatureVulnerabilities)
-                        .filter(
-                            and_(
-                                CreatureVulnerabilities.creature_id == enemy_id,
-                                CreatureVulnerabilities.damage_type_id
-                                == damage_type.id,
-                            )
-                        )
-                        .first()
-                    )
-                    db.delete(old_vulnerability)
+            logger.debug(
+                f"Trying to change enemy with id '{enemy_id}' vulnerabilities."
+            )
+            utils.update_vulnerabilities(enemy.vulnerabilities)
         if enemy.advantages:
-            for advantage in enemy.advantages:
-                attribute = (
-                    db.query(Attribute)
-                    .filter(Attribute.id == advantage.attribute_id)
-                    .first()
-                )
-                if not attribute:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="This attribute does not exist.",
-                    )
-                elif advantage.add_attribute:
-                    new_advantage = CreatureAdvantages(
-                        creature_id=enemy_id,
-                        attribute_id=attribute.id,
-                        condition=advantage.condition,
-                    )
-                    db.add(new_advantage)
-                else:
-                    old_advantage = (
-                        db.query(CreatureAdvantages)
-                        .filter(
-                            and_(
-                                CreatureAdvantages.creature_id == enemy_id,
-                                CreatureAdvantages.attribute_id == attribute.id,
-                            )
-                        )
-                        .first()
-                    )
-                    db.delete(old_advantage)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' advantages.")
+            utils.update_advantages(enemy.advantages)
         if enemy.disadvantages:
-            for disadvantage in enemy.disadvantages:
-                attribute = (
-                    db.query(Attribute)
-                    .filter(Attribute.id == disadvantage.attribute_id)
-                    .first()
-                )
-                if not attribute:
-                    raise HTTPException(
-                        status_code=404,
-                        detail="This attribute does not exist.",
-                    )
-                elif disadvantage.add_attribute:
-                    new_disadvantage = CreatureDisadvantages(
-                        creature_id=enemy_id,
-                        attribute_id=attribute.id,
-                        condition=disadvantage.condition,
-                    )
-                    db.add(new_disadvantage)
-                else:
-                    old_disadvantage = (
-                        db.query(CreatureDisadvantages)
-                        .filter(
-                            and_(
-                                CreatureDisadvantages.creature_id == enemy_id,
-                                CreatureDisadvantages.attribute_id == attribute.id,
-                            )
-                        )
-                        .first()
-                    )
-                    db.delete(old_disadvantage)
+            logger.debug(f"Trying to change enemy with id '{enemy_id}' disadvantages.")
+            utils.update_disadvantages(enemy.disadvantages)
 
         db.commit()
-        return {
-            "message": f"Enemy '{updated_enemy.name}' has been updated.",
-            "enemy": updated_enemy,
-        }
+        logger.info(f"Committed changes to enemy with id '{enemy_id}'.")
+
+        return EnemyResponse(
+            message=f"Enemy '{updated_enemy.name}' has been updated.",
+            enemy=updated_enemy,
+        )
+
     except IntegrityError as e:
+        logger.error(
+            f"The name '{enemy.name}' already exists in the database. Error: {str(e)}"
+        )
         raise HTTPException(
             status_code=400, detail="The name you are trying to use already exists."
         )
 
 
-@router.delete("/{enemy_id}")
-def delete_enemy(enemy_id: int, db: Session = Depends(get_db)):
-    enemy = db.query(Enemy).filter(Enemy.id == enemy_id).first()
+@router.delete("/{enemy_id}", response_model=DeleteResponse)
+def delete_enemy(enemy_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
+    """
+    Deletes an enemy from the database.
+
+    - **Returns** DeleteResponse: A dictionary holding the confirmation message.
+
+    - **HTTPException**: Raised when the id does not exist in the database.
+
+    **Response Example**:
+    ```json
+    {
+        "message": "Enemy has been deleted.",
+    }
+    ```
+    """
+    logger.info(f"Deleting enemy with the id '{enemy_id}'.")
+    enemy = db.get(Enemy, enemy_id)
+
     if not enemy:
+        logger.error(f"Enemy with id '{enemy_id}' not found.")
         raise HTTPException(
             status_code=404,
             detail="The enemy you are trying to delete does not exist.",
         )
     db.delete(enemy)
     db.commit()
-    return {"message": f"Enemy has been deleted."}
+
+    logger.info(f"Enemy with id '{enemy_id}' deleted.")
+    return DeleteResponse(message=f"Enemy has been deleted.")

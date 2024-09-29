@@ -52,39 +52,18 @@ class PlayerCharacter(Creature):
         :returns: A string representation of the PCCharacter instance.
         :rtype: str
         """
-        return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
-            '{self.description}', '{self.information}', '{self.alive}',
-            '{self.active}', '{self.armour_class}', '{self.image}', 
-            '{self.race}', '{self.subrace}', '{self.size}', '{self.type_id}', 
-            '{self.parties}', '{self.classes}', '{self.subclasses}', '{self.user}',
-            '{self.immunities}', '{self.resistances}', '{self.vulnerabilities}')"""
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the PCCharacter instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "information": self.information,
-            "alive": self.alive,
-            "active": self.active,
-            "armour_class": self.armour_class,
-            "image": self.image,
-            "race": self.race,
-            "subrace": self.subrace,
-            "size": self.size,
-            "type": self.type_id,
-            "user_id": self.user_id,
-            "parties": self.parties,
-            "classes": [cls.to_dict() for cls in self.classes],
-            "subclasses": [subclass.to_dict() for subclass in self.subclasses],
-            "immunities": [imm.to_dict() for imm in self.immunities],
-            "resistances": [res.to_dict() for res in self.resistances],
-            "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
-        }
+        return f"""{self.__class__.__name__}(id={self.id}, name={self.name!r}, 
+            description={self.description!r}, information={self.information!r}, 
+            user={self.user}, alive={self.alive}, active={self.active}, 
+            armour_class={self.armour_class}, image={self.image}, 
+            race={self.race.name if self.race else 'None'}, 
+            subrace={self.subrace.name if self.subrace else 'None'}, 
+            size={self.size.name if self.size else 'None'}, 
+            type={self.creature_type.name if self.creature_type else 'None'}, 
+            parties={[party.name for party in self.parties]}, 
+            classes={[cls.name for cls in self.classes]}, 
+            subclasses={[subclass.name for subclass in self.subclasses]}, 
+            immunities={[immunity.name for immunity in self.immunities]}, 
+            resistances={[resistance.name for resistance in self.resistances]}, 
+            vulnerabilities={[vul.name for vul in self.vulnerabilities]}
+            )"""

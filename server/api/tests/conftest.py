@@ -1,8 +1,12 @@
 from typing import Any
 import pytest
+
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from server.api.main import app
+from server.api import get_db
+from server.database.models.base import Base
 from server.database.models.creatures import (
     CreatureAdvantages,
     CreatureDisadvantages,
@@ -10,21 +14,20 @@ from server.database.models.creatures import (
     CreatureResistances,
     CreatureVulnerabilities,
 )
-
-from ..main import app
-from .. import get_db
-
-from server.database.models.base import Base
 from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
-from server.database.models.classes import Class, Subclass
-from server.database.models.characteristics import Size, Type
+from server.database.models.classes import Class
+from server.database.models.subclasses import Subclass
+from server.database.models.sizes import Size
+from server.database.models.types import Type
 from server.database.models.damage_types import DamageType
 from server.database.models.attributes import Attribute
-from server.database.models.users import User, Party, Role
+from server.database.models.users import User
+from server.database.models.parties import Party
+from server.database.models.roles import Role
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
@@ -75,6 +78,7 @@ def create_party(db_session):
     new_party = Party(name="Murder Hobo Party")
     db_session.add(new_party)
     db_session.commit()
+    db_session.refresh(new_party)
     return new_party
 
 
@@ -83,6 +87,7 @@ def create_role(db_session):
     new_role = Role(name="Player")
     db_session.add(new_role)
     db_session.commit()
+    db_session.refresh(new_role)
     return new_role
 
 
@@ -95,7 +100,7 @@ def create_user(db_session, create_role, create_party):
     )
     db_session.add(new_user)
     db_session.commit()
-
+    db_session.refresh(new_user)
     return new_user
 
 
@@ -104,6 +109,7 @@ def create_damage_type(db_session):
     new_damage_type = DamageType(name="Fire")
     db_session.add(new_damage_type)
     db_session.commit()
+    db_session.refresh(new_damage_type)
     return new_damage_type
 
 
@@ -112,6 +118,7 @@ def create_attribute(db_session):
     new_attribute = Attribute(name="Charmed")
     db_session.add(new_attribute)
     db_session.commit()
+    db_session.refresh(new_attribute)
     return new_attribute
 
 
@@ -120,6 +127,7 @@ def create_size(db_session):
     new_type = Size(name="Tiny")
     db_session.add(new_type)
     db_session.commit()
+    db_session.refresh(new_type)
     return new_type
 
 
@@ -128,6 +136,7 @@ def create_class(db_session):
     new_class = Class(name="Artificer")
     db_session.add(new_class)
     db_session.commit()
+    db_session.refresh(new_class)
     return new_class
 
 
@@ -136,6 +145,7 @@ def create_subclass(create_class, db_session):
     new_subclass = Subclass(name="Alchemist", class_id=create_class.id)
     db_session.add(new_subclass)
     db_session.commit()
+    db_session.refresh(new_subclass)
     return new_subclass
 
 
@@ -144,6 +154,7 @@ def create_race(create_size, db_session):
     new_race = Race(name="Dwarf", sizes=[create_size])
     db_session.add(new_race)
     db_session.commit()
+    db_session.refresh(new_race)
     return new_race
 
 
@@ -152,6 +163,7 @@ def create_subrace(create_race, db_session):
     new_subrace = Subrace(name="Duergar", race_id=create_race.id)
     db_session.add(new_subrace)
     db_session.commit()
+    db_session.refresh(new_subrace)
     return new_subrace
 
 
@@ -160,6 +172,7 @@ def create_type(db_session):
     new_type = Type(name="Aberration")
     db_session.add(new_type)
     db_session.commit()
+    db_session.refresh(new_type)
     return new_type
 
 
@@ -193,6 +206,7 @@ def create_npc(
     new_npc = NonPlayerCharacter(name=npc, **attributes)
     db_session.add(new_npc)
     db_session.commit()
+    db_session.refresh(new_npc)
 
     immunity = CreatureImmunities(
         creature_id=new_npc.id,
@@ -229,7 +243,7 @@ def create_npc(
         ]
     )
     db_session.commit()
-
+    db_session.refresh(new_npc)
     return new_npc
 
 
@@ -267,6 +281,7 @@ def create_pc(
     new_pc = PlayerCharacter(name=pc, **attributes)
     db_session.add(new_pc)
     db_session.commit()
+    db_session.refresh(new_pc)
 
     immunity = CreatureImmunities(
         creature_id=new_pc.id,
@@ -303,7 +318,7 @@ def create_pc(
         ]
     )
     db_session.commit()
-
+    db_session.refresh(new_pc)
     return new_pc
 
 
@@ -337,6 +352,8 @@ def create_enemy(
     new_enemy = Enemy(name=enemy, **attributes)
     db_session.add(new_enemy)
     db_session.commit()
+    db_session.refresh(new_enemy)
+
     immunity = CreatureImmunities(
         creature_id=new_enemy.id,
         damage_type_id=create_damage_type.id,
@@ -372,4 +389,5 @@ def create_enemy(
         ]
     )
     db_session.commit()
+    db_session.refresh(new_enemy)
     return new_enemy

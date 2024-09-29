@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
-from server.database.models.users import Party
+from server.database.models.parties import Party
 
 from .conftest import app
 
@@ -11,7 +12,20 @@ client = TestClient(app)
 def test_get_parties(create_party, db_session):
     response = client.get("/api/parties")
     assert response.status_code == 200
-    assert response.json() == {"parties": [{"name": "Murder Hobo Party", "id": 1}]}
+    assert response.json() == [
+        {
+            "name": "Murder Hobo Party",
+            "id": 1,
+            "users": [],
+            "creatures": [],
+        }
+    ]
+
+
+def test_get_no_parties(db_session):
+    response = client.get("/api/parties")
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_get_party(create_party, db_session):
@@ -38,31 +52,42 @@ def test_post_party(db_session):
             "party_name": "Murder Hobo Party",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "message": "New party 'Murder Hobo Party' has been added to the database.",
-        "party": {"name": "Murder Hobo Party", "id": 1},
+        "party": {
+            "name": "Murder Hobo Party",
+            "id": 1,
+            "users": [],
+            "creatures": [],
+        },
     }
 
 
 def test_party_name_put(create_party, db_session):
     response = client.put(
         f"/api/parties/{create_party.id}",
-        json={"party_name": "Helping Hobo Party"},
+        json={"party_name": "Children of Truth"},
     )
-    cls = db_session.query(Party).first()
+    stmt = select(Party)
+    party = db_session.execute(stmt).scalar_one_or_none()
     assert response.status_code == 200
-    assert cls.name == "Helping Hobo Party"
+    assert party.name == "Children of Truth"
     assert response.json() == {
-        "message": "Party 'Helping Hobo Party' has been updated.",
-        "party": {"id": 1, "name": "Helping Hobo Party"},
+        "message": "Party 'Children of Truth' has been updated.",
+        "party": {
+            "id": 1,
+            "name": "Children of Truth",
+            "users": [],
+            "creatures": [],
+        },
     }
 
 
 def test_fake_party_put(create_party, db_session):
     response = client.put(
         "/api/parties/2",
-        json={"party_name": "Helping Hobo Party"},
+        json={"party_name": "Children of Truth"},
     )
     assert response.status_code == 404
     assert response.json() == {
@@ -72,7 +97,7 @@ def test_fake_party_put(create_party, db_session):
 
 def test_party_delete(create_party, db_session):
     response = client.delete(f"/api/parties/{create_party.id}")
-    cls = db_session.query(Party).filter(Party.id == create_party.id).first()
+    cls = db_session.get(Party, create_party.id)
     assert response.status_code == 200
     assert response.json() == {"message": "Party has been deleted."}
     assert cls == None

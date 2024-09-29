@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 from sqlalchemy import Column, Integer, ForeignKey
 
 from .creatures import Creature
@@ -24,58 +22,14 @@ class Enemy(Creature):
         - size_id (int): The size of the creature, FK to id of the sizes table.
         - type_id (int): The type of the creature, FK to id of the types table (optional).
 
-        - parties (List[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
-        - classes (List[Class]): The classes the creature belongs to, can be multiple (optional).
-        - immunities (List[Effect]): The effects the creature is immune to, can be multiple (optional).
-        - resistances (List[Effect]): The effects the creature is resistance to, can be multiple (optional).
-        - vulnerabilities (List[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
+        - parties (list[Party]): The party(s) this creature belongs to. Linked to actual model, can be multiple (optional).
+        - classes (list[Class]): The classes the creature belongs to, can be multiple (optional).
+        - immunities (list[Effect]): The effects the creature is immune to, can be multiple (optional).
+        - resistances (list[Effect]): The effects the creature is resistance to, can be multiple (optional).
+        - vulnerabilities (list[Effect]): The effects the creature is vulnerable to, can be multiple (optional).
     """
 
     __tablename__ = "enemies"
     __mapper_args__ = {"polymorphic_identity": "enemies"}
 
     id = Column(Integer, ForeignKey("creatures.id"), primary_key=True)
-
-    def __repr__(self) -> str:
-        """
-        This method provides a readable string of the instance including all
-        its attributes.
-
-        :returns: A string representation of the enemy instance.
-        :rtype: str
-        """
-        return f"""{self.__class__.__name__}('{self.id}', '{self.name}',
-            '{self.description}', '{self.information}', '{self.alive}',
-            '{self.active}', '{self.armour_class}', '{self.image}', 
-            '{self.race}', '{self.subrace}', '{self.size}', '{self.type_id}', 
-            '{self.parties}', '{self.classes}', '{self.subclasses}', 
-            '{self.immunities}', '{self.resistances}', '{self.vulnerabilities}')"""
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the enemy instance.
-        :rtype: Dict[str, Any]
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "information": self.information,
-            "alive": self.alive,
-            "active": self.active,
-            "armour_class": self.armour_class,
-            "image": self.image,
-            "race": self.race,
-            "subrace": self.subrace,
-            "size": self.size,
-            "type": self.type_id,
-            "parties": self.parties,
-            "classes": [cls.to_dict() for cls in self.classes],
-            "subclasses": [subcls.to_dict() for subcls in self.subclasses],
-            "immunities": [imm.to_dict() for imm in self.immunities],
-            "resistances": [res.to_dict() for res in self.resistances],
-            "vulnerabilities": [vul.to_dict() for vul in self.vulnerabilities],
-        }

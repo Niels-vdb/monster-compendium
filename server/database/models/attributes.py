@@ -1,18 +1,16 @@
-from typing import Any, Dict
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import CustomBase
 
 
-class Attribute(Base):
+class Attribute(CustomBase):
     """
     Table that holds all the attributes a character can have a advantage or disadvantage on.
     Like a dexterity check or a magic type.
 
     Parameters:
-        - name (str): The name of the attribute.
+        - name (str): The name of the attribute (max 50 chars).
     """
 
     __tablename__ = "attributes"
@@ -20,7 +18,7 @@ class Attribute(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
 
-    # Relationship references
+    # n-n relationships
     race_advantages = relationship(
         "Race",
         secondary="race_advantages",
@@ -60,14 +58,4 @@ class Attribute(Base):
         :returns: A string representation of the Attribute instance.
         :rtype: str
         """
-        return f"{self.__class__.__tablename__}('{self.id}', '{self.name}')"
-
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        This method creates a dictionary where the keys are attribute names and
-        the values are the attribute values, facilitating data serialization.
-
-        :returns: A dictionary representation of the Attribute instance.
-        :rtype: Dict[str, Any]
-        """
-        return {"effect_id": self.id, "effect": self.name}
+        return f"{self.__class__.__name__}(id={self.id}, name={self.name!r})"
