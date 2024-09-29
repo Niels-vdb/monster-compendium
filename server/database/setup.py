@@ -1,28 +1,18 @@
-from typing import Dict, List
+from sqlalchemy import select
 
 from server.database.create import session
+from server.logger.logger import logger
 from server.database.models.attributes import Attribute
 from server.database.models.creatures import CreatureClasses
 from server.database.models.enemies import Enemy
 from server.database.models.player_characters import PlayerCharacter
 from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import (
-    Race,
-    RaceAdvantages,
-    RaceDisadvantages,
-    RaceImmunities,
-    RaceResistances,
-    RaceVulnerabilities,
-)
+from server.database.models.races import Race, RaceAdvantages, RaceDisadvantages
 from server.database.models.subraces import (
     Subrace,
     SubraceAdvantages,
     SubraceDisadvantages,
-    SubraceImmunities,
-    SubraceResistances,
-    SubraceVulnerabilities,
 )
-
 from server.database.models.classes import Class, Subclass
 from server.database.models.characteristics import Size, Type
 from server.database.models.damage_types import DamageType
@@ -34,11 +24,13 @@ def initialize_party() -> None:
     Creates initial "Murder Hobo Party" party in the parties table
     """
     party = "Murder Hobo Party"
+    stmt = select(Party).where(Party.name == party)
 
-    if not session.query(Party).filter(Party.name == party).first():
-        print(f"Adding '{party}' to parties table in database.")
+    if not session.execute(stmt).scalar_one_or_none():
+        logger.info(f"Adding '{party}' to parties table in database.")
         new_party = Party(name=party)
         session.add(new_party)
+
     session.commit()
 
 
@@ -46,13 +38,16 @@ def initialize_roles() -> None:
     """
     Creates the roles and add them to the roles table.
     """
-    roles: List[str] = ["Admin", "Dungeon Master", "Player"]
+    roles: list[str] = ["Admin", "Dungeon Master", "Player"]
 
     for role in roles:
-        if not session.query(Role).filter(Role.name == role).first():
-            print(f"Adding '{role}' to roles table in database.")
+        stmt = select(Role).where(Role.name == role)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{role}' to roles table in database.")
             new_role = Role(name=role)
             session.add(new_role)
+
     session.commit()
 
 
@@ -60,7 +55,7 @@ def initialize_users() -> None:
     """
     Create the initial user accounts and adds them to the users table.
     """
-    users: Dict[str, Dict[str, str]] = {
+    users: dict[str, dict[str, str]] = {
         "admin": {
             "name": "Admin",
             "username": "admin",
@@ -82,19 +77,27 @@ def initialize_users() -> None:
     }
 
     for user, info in users.items():
-        if not session.query(User).filter(User.username == info["username"]).first():
-            print(f"Adding '{user}' to users table in database.")
+        stmt = select(User).where(User.username == info["username"])
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{user}' to users table in database.")
+
             info["roles"] = [
-                session.query(Role).filter(Role.name == role).first()
+                session.execute(
+                    select(Role).where(Role.name == role)
+                ).scalar_one_or_none()
                 for role in info["roles"]
             ]
             info["parties"] = [
-                session.query(Party).filter(Party.name == party).first()
+                session.execute(
+                    select(Party).where(Party.name == party)
+                ).scalar_one_or_none()
                 for party in info["parties"]
             ]
 
             new_user = User(**info)
             session.add(new_user)
+
     session.commit()
 
 
@@ -102,7 +105,7 @@ def initialize_sizes() -> None:
     """
     All initial sizes to be added to the sizes table.
     """
-    sizes: List[str] = [
+    sizes: list[str] = [
         "Tiny",
         "Small",
         "Medium",
@@ -112,18 +115,21 @@ def initialize_sizes() -> None:
     ]
 
     for size in sizes:
-        if not session.query(Size).filter(Size.name == size).first():
-            print(f"Adding {size} to the sizes table in the database.")
+        stmt = select(Size).where(Size.name == size)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{size}' to the sizes table.")
             new_size = Size(name=size)
             session.add(new_size)
+
         session.commit()
 
 
 def initialize_damage_types() -> None:
     """
-    All initial damage_types and damage types to be added to the damage_types table.
+    All initial damage types and damage types to be added to the damage_types table.
     """
-    damage_types: List[str] = [
+    damage_types: list[str] = [
         "Acid",
         "Bludgeoning",
         "Cold",
@@ -140,10 +146,13 @@ def initialize_damage_types() -> None:
     ]
 
     for damage_type in damage_types:
-        if not session.query(DamageType).filter(DamageType.name == damage_type).first():
-            print(f"Adding '{damage_type}' to the damage_types table in the database.")
+        stmt = select(DamageType).where(DamageType.name == damage_type)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{damage_type}' to the damage types table.")
             new_damage_type = DamageType(name=damage_type)
             session.add(new_damage_type)
+
     session.commit()
 
 
@@ -151,11 +160,12 @@ def initialize_attributes() -> None:
     """
     All initial attributes to be added to the attributes table.
     """
-    attributes: List[str] = [
+    attributes: list[str] = [
         "Acrobatics",
         "Animal Handling",
         "Arcana",
         "Athletics",
+        "Attack rolls",
         "Blinded",
         "Charmed",
         "Charisma",
@@ -194,10 +204,13 @@ def initialize_attributes() -> None:
     ]
 
     for attribute in attributes:
-        if not session.query(Attribute).filter(Attribute.name == attribute).first():
-            print(f"Adding '{attribute}' to the conditions table in the database.")
+        stmt = select(Attribute).where(Attribute.name == attribute)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{attribute}' to the attributes table.")
             new_attribute = Attribute(name=attribute)
             session.add(new_attribute)
+
     session.commit()
 
 
@@ -205,7 +218,7 @@ def initialize_classes() -> None:
     """
     All initial classes to be added to the classes table.
     """
-    classes: List[str] = [
+    classes: list[str] = [
         "Artificer",
         "Barbarian",
         "Bard",
@@ -221,10 +234,13 @@ def initialize_classes() -> None:
         "Wizard",
     ]
     for cls in classes:
-        if not session.query(Class).filter(Class.name == cls).first():
-            print(f"Adding {cls} to the classes table.")
+        stmt = select(Class).where(Class.name == cls)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{cls}' to the classes table.")
             new_class = Class(name=cls)
             session.add(new_class)
+
         session.commit()
 
 
@@ -232,7 +248,7 @@ def initialize_subclasses() -> None:
     """
     All initial subclasses to be added to the subclasses database and linked to classes.
     """
-    subclasses: Dict[str, str] = {
+    new_subclasses: dict[str, list[str]] = {
         "Artificer": [
             "Alchemist",
             "Armourer",
@@ -392,15 +408,20 @@ def initialize_subclasses() -> None:
             "War Magic",
         ],
     }
-    for parent_class in subclasses.keys():
-        cls = session.query(Class).filter(Class.name == parent_class).first()
-        for subclass in subclasses[parent_class]:
-            if not session.query(Subclass).filter(Subclass.name == subclass).first():
-                print(
+    for parent_class, subclasses in new_subclasses.items():
+        cls = session.execute(
+            select(Class).where(Class.name == parent_class)
+        ).scalar_one_or_none()
+
+        for subclass in subclasses:
+            stmt = select(Subclass).where(Subclass.name == subclass)
+            if not session.execute(stmt).scalar_one_or_none():
+                logger.info(
                     f"Adding '{subclass}' to the subclasses table with '{parent_class}' as parent class."
                 )
                 new_subclass = Subclass(name=subclass, class_id=cls.id)
                 session.add(new_subclass)
+
     session.commit()
 
 
@@ -408,57 +429,57 @@ def initialize_races() -> None:
     """
     All initial races to be added to the races table
     """
-    races: Dict[str, Dict[str, List[str]]] = {
+    races: dict[str, dict[str, list[str | dict[str, str] | None]]] = {
         "Aarakocra": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Aasimar": {
-            "size": ["medium", "small"],
-            "resistance": ["necrotic", "radiant"],
+            "size": ["Medium", "Small"],
+            "resistance": ["Necrotic", "Radiant"],
             "advantages": [],
             "disadvantages": [],
         },
         "Bugbear": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
-            "advantages": [{"attribute": "Charmed", "attribute": ""}],
+            "advantages": [{"attribute": "Charmed", "condition": None}],
             "disadvantages": [],
         },
         "Centaur": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Changeling": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Dragonborn": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Dwarf": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
-            "advantages": [{"attribute": "Poisoned", "condition": ""}],
+            "advantages": [{"attribute": "Poisoned", "condition": None}],
             "disadvantages": [],
         },
         "Elf": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
-            "advantages": [{"attribute": "Charmed", "condition": ""}],
+            "advantages": [{"attribute": "Charmed", "condition": None}],
             "disadvantages": [],
         },
         "Gnome": {
-            "size": ["small"],
+            "size": ["Small"],
             "resistance": [],
             "advantages": [
                 {"attribute": "Intelligence", "condition": "Against magic"},
@@ -468,155 +489,155 @@ def initialize_races() -> None:
             "disadvantages": [],
         },
         "Fairy": {
-            "size": ["small"],
+            "size": ["Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Firbolg": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Genasi": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Githyanki": {
-            "size": ["medium"],
-            "resistance": ["psychic"],
+            "size": ["Medium"],
+            "resistance": ["Psychic"],
             "advantages": [],
             "disadvantages": [],
         },
         "Githzerai": {
-            "size": ["medium"],
-            "resistance": ["psychic"],
+            "size": ["Medium"],
+            "resistance": ["Psychic"],
             "advantages": [
-                {"attribute": "Charmed", "condition": ""},
+                {"attribute": "Charmed", "condition": None},
             ],
             "disadvantages": [],
         },
         "Goblin": {
-            "size": ["small"],
+            "size": ["Small"],
             "resistance": [],
             "advantages": [
-                {"attribute": "Charmed", "condition": ""},
+                {"attribute": "Charmed", "condition": None},
             ],
             "disadvantages": [],
         },
         "Goliath": {
-            "size": ["medium"],
-            "resistance": ["cold"],
+            "size": ["Medium"],
+            "resistance": ["Cold"],
             "advantages": [],
             "disadvantages": [],
         },
         "Half-Elf": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Half-Orc": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Halfling": {
-            "size": ["small"],
+            "size": ["Small"],
             "resistance": [],
             "advantages": [
-                {"attribute": "Frightened", "condition": ""},
+                {"attribute": "Frightened", "condition": None},
             ],
             "disadvantages": [],
         },
         "Harengon": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Hobgoblin": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
-                {"attribute": "Charmed", "condition": ""},
+                {"attribute": "Charmed", "condition": None},
             ],
             "disadvantages": [],
         },
         "Human": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Kenku": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Kobold": {
-            "size": ["small"],
+            "size": ["Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Lizard folk": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Minotaur": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Orc": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Satyr": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
-                {"attribute": "Magic", "condition": ""},
+                {"attribute": "Magic", "condition": None},
             ],
             "disadvantages": [],
         },
         "Shifter": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Tabaxi": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Tiefling": {
-            "size": ["medium"],
-            "resistance": ["fire"],
+            "size": ["Medium"],
+            "resistance": ["Fire"],
             "advantages": [],
             "disadvantages": [],
         },
         "Thylean Centaur": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Thylean Medusa": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
                 {"attribute": "Poisoned", "condition": "Against spells and abilities"},
@@ -624,7 +645,7 @@ def initialize_races() -> None:
             "disadvantages": [],
         },
         "Thylean Minotaur": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
                 {"attribute": "Perception", "condition": "On smells"},
@@ -633,21 +654,21 @@ def initialize_races() -> None:
             "disadvantages": [],
         },
         "Thylean Nymph": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [],
             "disadvantages": [],
         },
         "Thylean Satyr": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
-                {"attribute": "Charmed", "condition": ""},
+                {"attribute": "Charmed", "condition": None},
             ],
             "disadvantages": [],
         },
         "Thylean Siren": {
-            "size": ["medium"],
+            "size": ["Medium"],
             "resistance": [],
             "advantages": [
                 {"attribute": "Performance", "condition": "When using your voice"},
@@ -656,7 +677,7 @@ def initialize_races() -> None:
             "disadvantages": [],
         },
         "Tortle": {
-            "size": ["medium", "small"],
+            "size": ["Medium", "Small"],
             "resistance": [],
             "advantages": [
                 {"attribute": "Strength", "condition": "When in shell"},
@@ -667,50 +688,59 @@ def initialize_races() -> None:
             ],
         },
         "Triton": {
-            "size": ["medium"],
-            "resistance": ["cold"],
+            "size": ["Medium"],
+            "resistance": ["Cold"],
             "advantages": [],
             "disadvantages": [],
         },
         "Yuan-ti": {
-            "size": ["medium", "small"],
-            "resistance": ["poison"],
+            "size": ["Medium", "Small"],
+            "resistance": ["Poison"],
             "advantages": [
-                {"attribute": "Magic", "condition": ""},
-                {"attribute": "Poisoned", "condition": ""},
+                {"attribute": "Magic", "condition": None},
+                {"attribute": "Poisoned", "condition": None},
             ],
             "disadvantages": [],
         },
     }
     for race, values in races.items():
-        if not session.query(Race).filter(Race.name == race).first():
-            print(f"Adding '{race}' to the races table in the database.")
+        stmt = select(Race).where(Race.name == race)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{race}' to the races table.")
+
             size_list = [
-                session.query(Size).filter(Size.name == size.capitalize()).first()
+                session.execute(
+                    select(Size).where(Size.name == size)
+                ).scalar_one_or_none()
                 for size in values["size"]
             ]
             resistance_list = [
-                session.query(DamageType)
-                .filter(DamageType.name == resistance.capitalize())
-                .first()
+                session.execute(
+                    select(DamageType).where(DamageType.name == resistance)
+                ).scalar_one_or_none()
                 for resistance in values["resistance"]
             ]
             resistance_list = [
                 resistance for resistance in resistance_list if resistance is not None
             ]
+
             new_race = Race(name=race, sizes=size_list, resistances=resistance_list)
             session.add(new_race)
+
             session.commit()
             session.refresh(new_race)
+
             # Adding of optional (dis)advantages to the race
             for advantage in values["advantages"]:
-                attribute = (
-                    session.query(Attribute)
-                    .filter(Attribute.name == advantage["attribute"].capitalize())
-                    .first()
-                )
+                attribute = session.execute(
+                    select(Attribute).where(Attribute.name == advantage["attribute"])
+                ).scalar_one_or_none()
+
                 if not attribute:
-                    print(f"Attribute not found for race '{new_race}', continuing.")
+                    logger.info(
+                        f"Attribute not found for race '{new_race}', continuing."
+                    )
                 else:
                     advantage = RaceAdvantages(
                         race_id=new_race.id,
@@ -718,14 +748,16 @@ def initialize_races() -> None:
                         condition=advantage["condition"],
                     )
                     session.add(advantage)
+
             for disadvantage in values["disadvantages"]:
-                attribute = (
-                    session.query(Attribute)
-                    .filter(Attribute.name == disadvantage["attribute"].capitalize())
-                    .first()
-                )
+                attribute = session.execute(
+                    select(Attribute).where(Attribute.name == disadvantage["attribute"])
+                ).scalar_one_or_none()
+
                 if not attribute:
-                    print(f"Attribute not found for race '{new_race}', continuing.")
+                    logger.info(
+                        f"Attribute not found for race '{new_race}', continuing."
+                    )
                 else:
                     disadvantage = RaceDisadvantages(
                         race_id=new_race.id,
@@ -733,6 +765,7 @@ def initialize_races() -> None:
                         condition=disadvantage["condition"],
                     )
                     session.add(disadvantage)
+
             session.commit()
 
 
@@ -740,55 +773,55 @@ def initialize_subraces() -> None:
     """
     All initial subraces to be added to the subraces table and linked to a race.
     """
-    subraces: dict[str, dict[str, list[str | dict[str, str]]]] = {
+    new_subraces: dict[str, dict[str, list[str | dict[str, str]]]] = {
         "Dragonborn": {
             "Black": {
-                "resistances": ["acid"],
+                "resistances": ["Acid"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Blue": {
-                "resistances": ["lightning"],
+                "resistances": ["Lightning"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Brass": {
-                "resistances": ["fire"],
+                "resistances": ["Fire"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Bronze": {
-                "resistances": ["lightning"],
+                "resistances": ["Lightning"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Copper": {
-                "resistances": ["acid"],
+                "resistances": ["Acid"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Gold": {
-                "resistances": ["fire"],
+                "resistances": ["Fire"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Green": {
-                "resistances": ["poison"],
+                "resistances": ["Poison"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Red": {
-                "resistances": ["fire"],
+                "resistances": ["Fire"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Silver": {
-                "resistances": ["cold"],
+                "resistances": ["Cold"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "White": {
-                "resistances": ["cold"],
+                "resistances": ["Cold"],
                 "advantages": [],
                 "disadvantages": [],
             },
@@ -797,8 +830,8 @@ def initialize_subraces() -> None:
             "Duergar": {
                 "resistances": [],
                 "advantages": [
-                    {"attribute": "Charmed", "condition": ""},
-                    {"attribute": "Stunned", "condition": ""},
+                    {"attribute": "Charmed", "condition": None},
+                    {"attribute": "Stunned", "condition": None},
                 ],
                 "disadvantages": [],
             },
@@ -843,7 +876,7 @@ def initialize_subraces() -> None:
                 "disadvantages": [],
             },
             "Shadar-kai": {
-                "resistances": ["necrotic"],
+                "resistances": ["Necrotic"],
                 "advantages": [],
                 "disadvantages": [],
             },
@@ -855,7 +888,7 @@ def initialize_subraces() -> None:
         },
         "Genasi": {
             "Air": {
-                "resistances": ["lightning"],
+                "resistances": ["Lightning"],
                 "advantages": [],
                 "disadvantages": [],
             },
@@ -865,12 +898,12 @@ def initialize_subraces() -> None:
                 "disadvantages": [],
             },
             "Fire": {
-                "resistances": ["fire"],
+                "resistances": ["Fire"],
                 "advantages": [],
                 "disadvantages": [],
             },
             "Water": {
-                "resistances": ["acid"],
+                "resistances": ["Acid"],
                 "advantages": [],
                 "disadvantages": [],
             },
@@ -901,9 +934,9 @@ def initialize_subraces() -> None:
                 "disadvantages": [],
             },
             "Stout": {
-                "resistances": ["poison"],
+                "resistances": ["Poison"],
                 "advantages": [
-                    {"attribute": "Poison", "condition": ""},
+                    {"attribute": "Poisoned", "condition": None},
                 ],
                 "disadvantages": [],
             },
@@ -1013,40 +1046,49 @@ def initialize_subraces() -> None:
         },
     }
 
-    for race, subraces in subraces.items():
-        parent_race = session.query(Race).filter(Race.name == race.title()).first()
+    for race, subraces in new_subraces.items():
+        stmt = select(Race).where(Race.name == race)
+        parent_race = session.execute(stmt).scalar_one_or_none()
+
         if not parent_race:
-            print(f"Race '{race}' not found in database")
+            logger.info(f"Race '{race}' not found in database")
 
         for subrace in subraces:
-            if not session.query(Subrace).filter(Subrace.name == subrace).first():
-                print(
-                    f"Adding subrace '{subrace}' of race '{race}' to the subraces table in the database."
+
+            if not session.execute(
+                select(Subrace).where(Subrace.name == subrace)
+            ).scalar_one_or_none():
+                logger.info(
+                    f"Adding subrace '{subrace}' of race '{race}' to the subraces table."
                 )
+
                 resistances = list(subraces[subrace]["resistances"])
                 resistance_list = [
-                    session.query(DamageType)
-                    .filter(DamageType.name == resistance.capitalize())
-                    .first()
+                    session.execute(
+                        select(DamageType).where(DamageType.name == resistance)
+                    ).scalar_one_or_none()
                     for resistance in resistances
                 ]
+
                 new_subrace = Subrace(
                     name=subrace, race=parent_race, resistances=resistance_list
                 )
                 session.add(new_subrace)
+
                 session.commit()
                 session.refresh(new_subrace)
 
                 # Adding of optional (dis)advantages to the subrace
                 for advantage in subraces[subrace]["advantages"]:
-                    attribute = (
-                        session.query(Attribute)
-                        .filter(Attribute.name == advantage["attribute"].capitalize())
-                        .first()
-                    )
+                    attribute = session.execute(
+                        select(Attribute).where(
+                            Attribute.name == advantage["attribute"]
+                        )
+                    ).scalar_one_or_none()
+
                     if not attribute:
-                        print(
-                            f"Attribute not found for subrace '{new_subrace}', continuing."
+                        logger.info(
+                            f"Advantage attribute '{advantage}' not found for subrace '{new_subrace.name}', continuing."
                         )
                     else:
                         advantage = SubraceAdvantages(
@@ -1055,17 +1097,17 @@ def initialize_subraces() -> None:
                             condition=advantage["condition"],
                         )
                         session.add(advantage)
+
                 for disadvantage in subraces[subrace]["disadvantages"]:
-                    attribute = (
-                        session.query(Attribute)
-                        .filter(
-                            Attribute.name == disadvantage["attribute"].capitalize()
+                    attribute = session.execute(
+                        select(Attribute).where(
+                            Attribute.name == disadvantage["attribute"]
                         )
-                        .first()
-                    )
+                    ).scalar_one_or_none()
+
                     if not attribute:
-                        print(
-                            f"Attribute not found for subrace '{new_subrace}', continuing."
+                        logger.info(
+                            f"Disadvantage attribute '{disadvantage}' not found for subrace '{new_subrace.name}', continuing."
                         )
                     else:
                         disadvantage = SubraceDisadvantages(
@@ -1074,6 +1116,7 @@ def initialize_subraces() -> None:
                             condition=disadvantage["condition"],
                         )
                         session.add(disadvantage)
+
                 session.commit()
 
 
@@ -1081,7 +1124,7 @@ def initialize_types() -> None:
     """
     All initial creature types to be added to the types table.
     """
-    types: List[str] = [
+    types: list[str] = [
         "Aberration",
         "Beast",
         "Celestial",
@@ -1098,19 +1141,24 @@ def initialize_types() -> None:
         "Undead",
     ]
     for type in types:
-        if not session.query(Type).filter(Type.name == type).first():
-            print(f"Adding '{type}' to the types table in the database.")
+        stmt = select(Type).where(Type.name == type)
+
+        if not session.execute(stmt).scalar_one_or_none():
+            logger.info(f"Adding '{type}' to the types table.")
             new_type = Type(name=type)
             session.add(new_type)
+
     session.commit()
 
 
-def create_pcs() -> None:
+def create_creatures() -> None:
     """
-    Creates two player characters with attributes and adds them to the player_characters table.
+    Creates two player characters, 2 non player characters and two enemies with
+    attributes and adds them to their associated table.
     """
-    pcs: Dict[str, dict[str, str]] = {
+    creatures: dict[str, dict[str, str]] = {
         "Rhoetus": {
+            "creature_type": PlayerCharacter,
             "alive": True,
             "active": True,
             "size": "Medium",
@@ -1124,6 +1172,7 @@ def create_pcs() -> None:
             "parties": ["Murder Hobo Party"],
         },
         "Electra": {
+            "creature_type": PlayerCharacter,
             "alive": True,
             "active": True,
             "size": "Medium",
@@ -1137,161 +1186,23 @@ def create_pcs() -> None:
             "user": "admin",
             "parties": ["Murder Hobo Party"],
         },
-    }
-
-    for pc, attributes in pcs.items():
-        if (
-            not session.query(PlayerCharacter)
-            .filter(PlayerCharacter.name == pc)
-            .first()
-        ):
-            print(
-                f"Adding '{pc}' to player_characters table in the database with the following attributes: {attributes}."
-            )
-
-            attributes["size_id"] = (
-                session.query(Size).filter(Size.name == attributes["size"]).first().id
-            )
-            del attributes["size"]
-
-            if "type" in attributes.keys():
-                attributes["type_id"] = (
-                    session.query(Type)
-                    .filter(Type.name == attributes["type"])
-                    .first()
-                    .id
-                )
-                del attributes["type"]
-
-            classes: List[Class] = None
-            subclasses: List[Subclass] = None
-            if "classes" in attributes.keys():
-                classes = [
-                    session.query(Class).filter(Class.name == attribute).first()
-                    for attribute in attributes["classes"]
-                ]
-                del attributes["classes"]
-            if "subclasses" in attributes.keys():
-                subclasses = [
-                    session.query(Subclass).filter(Subclass.name == attribute).first()
-                    for attribute in attributes["subclasses"]
-                ]
-                del attributes["subclasses"]
-            if "race_id" in attributes.keys():
-                attributes["race_id"] = (
-                    session.query(Race)
-                    .filter(Race.name == attributes["race_id"])
-                    .first()
-                    .id
-                )
-            if "subrace_id" in attributes.keys():
-                attributes["subrace_id"] = (
-                    session.query(Subrace)
-                    .filter(Subrace.name == attributes["subrace_id"])
-                    .first()
-                    .id
-                )
-            if "parties" in attributes.keys():
-                attributes["parties"] = [
-                    session.query(Party).filter(Party.name == attribute).first()
-                    for attribute in attributes["parties"]
-                ]
-            if "user" in attributes.keys():
-                attributes["user_id"] = (
-                    session.query(User)
-                    .filter(User.username == attributes["user"])
-                    .first()
-                    .id
-                )
-                del attributes["user"]
-
-            # Create the new PlayerCharacter
-            new_pc = PlayerCharacter(name=pc, **attributes)
-            session.add(new_pc)
-            session.flush()
-
-            # Adds classes and subclasses to CreatureClasses cross-reference table
-            if classes:
-                for cls in classes:
-                    linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.id
-                    ]
-                    if linked_subclasses:
-                        for subclass in linked_subclasses:
-                            creature_class_entry = CreatureClasses(
-                                creature_id=new_pc.id,
-                                class_id=cls.id,
-                                subclass_id=subclass.id,
-                            )
-                            session.add(creature_class_entry)
-                    else:
-                        creature_class_entry = CreatureClasses(
-                            creature_id=new_pc.id, class_id=cls.id
-                        )
-                        session.add(creature_class_entry)
-
-    session.commit()
-
-
-def create_npcs() -> None:
-    """
-    Creates two non player characters with attributes and adds them to the non_player_characters table.
-    """
-    npcs: Dict[str, dict[str, str]] = {
         "Endofyre": {
+            "creature_type": NonPlayerCharacter,
             "alive": True,
             "active": True,
             "size": "Medium",
             "parties": ["Murder Hobo Party"],
         },
         "Fersi (Oracle)": {
+            "creature_type": NonPlayerCharacter,
             "alive": True,
             "active": True,
             "type": "Celestial",
             "size": "Medium",
             "parties": ["Murder Hobo Party"],
         },
-    }
-
-    for npc, attributes in npcs.items():
-        if (
-            not session.query(NonPlayerCharacter)
-            .filter(NonPlayerCharacter.name == npc)
-            .first()
-        ):
-            print(
-                f"Adding '{npc}' to npc_characters table in the database with the following attributes: {attributes}."
-            )
-            attributes["size_id"] = (
-                session.query(Size).filter(Size.name == attributes["size"]).first().id
-            )
-            del attributes["size"]
-
-            if "type" in attributes.keys():
-                attributes["type_id"] = (
-                    session.query(Type)
-                    .filter(Type.name == attributes["type"])
-                    .first()
-                    .id
-                )
-                del attributes["type"]
-            if "parties" in attributes.keys():
-                attributes["parties"] = [
-                    session.query(Party).filter(Party.name == attribute).first()
-                    for attribute in attributes["parties"]
-                ]
-
-            new_npc = NonPlayerCharacter(name=npc, **attributes)
-            session.add(new_npc)
-    session.commit()
-
-
-def create_enemies() -> None:
-    """
-    Creates two monster characters with attributes and adds them to the enemies table.
-    """
-    enemies: Dict[str, dict[str, str]] = {
         "Giff": {
+            "creature_type": Enemy,
             "alive": True,
             "active": True,
             "description": "A large hippo like creature",
@@ -1307,6 +1218,7 @@ def create_enemies() -> None:
             "parties": ["Murder Hobo Party"],
         },
         "Froghemoth": {
+            "creature_type": Enemy,
             "alive": True,
             "active": True,
             "description": "A huge frog like creature",
@@ -1318,89 +1230,139 @@ def create_enemies() -> None:
         },
     }
 
-    for enemy, attributes in enemies.items():
-        if not session.query(Enemy).filter(Enemy.name == enemy).first():
-            print(
-                f"Adding '{enemy}' to monsters table in the database with the following attributes: {attributes}."
+    for creature, attributes in creatures.items():
+        creature_type = attributes["creature_type"]
+        del attributes["creature_type"]
+
+        if not session.execute(
+            select(creature_type).where(creature_type.name == creature)
+        ).scalar_one_or_none():
+            logger.info(
+                f"Adding '{creature}' to the {creature_type.__tablename__} table."
             )
+
             attributes["size_id"] = (
-                session.query(Size).filter(Size.name == attributes["size"]).first().id
+                session.execute(select(Size).where(Size.name == attributes["size"]))
+                .scalar_one_or_none()
+                .id
             )
             del attributes["size"]
 
             if "type" in attributes.keys():
                 attributes["type_id"] = (
-                    session.query(Type)
-                    .filter(Type.name == attributes["type"])
-                    .first()
+                    session.execute(select(Type).where(Type.name == attributes["type"]))
+                    .scalar_one_or_none()
                     .id
                 )
                 del attributes["type"]
-            classes: List[Class] = None
-            subclasses: List[Subclass] = None
+
+            classes: list[Class] = None
             if "classes" in attributes.keys():
-                print("Classes")
                 classes = [
-                    session.query(Class).filter(Class.name == attribute).first()
+                    session.execute(
+                        select(Class).where(Class.name == attribute)
+                    ).scalar_one_or_none()
                     for attribute in attributes["classes"]
                 ]
                 del attributes["classes"]
+
+            subclasses: list[Subclass] = None
             if "subclasses" in attributes.keys():
                 subclasses = [
-                    session.query(Subclass).filter(Subclass.name == attribute).first()
+                    session.execute(
+                        select(Subclass).where(Subclass.name == attribute)
+                    ).scalar_one_or_none()
                     for attribute in attributes["subclasses"]
                 ]
                 del attributes["subclasses"]
-            if "resistances" in attributes.keys():
-                attributes["resistances"] = [
-                    session.query(DamageType)
-                    .filter(DamageType.name == attribute)
-                    .first()
-                    for attribute in attributes["resistances"]
-                ]
-            if "immunities" in attributes.keys():
-                attributes["immunities"] = [
-                    session.query(DamageType)
-                    .filter(DamageType.name == attribute)
-                    .first()
-                    for attribute in attributes["immunities"]
-                ]
-            if "vulnerabilities" in attributes.keys():
-                attributes["vulnerabilities"] = [
-                    session.query(DamageType)
-                    .filter(DamageType.name == attribute)
-                    .first()
-                    for attribute in attributes["vulnerabilities"]
-                ]
+
+            if "race_id" in attributes.keys():
+                attributes["race_id"] = (
+                    session.execute(
+                        select(Race).where(Race.name == attributes["race_id"])
+                    )
+                    .scalar_one_or_none()
+                    .id
+                )
+
+            if "subrace_id" in attributes.keys():
+                attributes["subrace_id"] = (
+                    session.execute(
+                        select(Subrace).where(Subrace.name == attributes["subrace_id"])
+                    )
+                    .scalar_one_or_none()
+                    .id
+                )
+
             if "parties" in attributes.keys():
                 attributes["parties"] = [
-                    session.query(Party).filter(Party.name == attribute).first()
+                    session.execute(
+                        select(Party).where(Party.name == attribute)
+                    ).scalar_one_or_none()
                     for attribute in attributes["parties"]
                 ]
 
-            new_enemy = Enemy(name=enemy, **attributes)
-            session.add(new_enemy)
+            if "user" in attributes.keys():
+                attributes["user_id"] = (
+                    session.execute(
+                        select(User).where(User.username == attributes["user"])
+                    )
+                    .scalar_one_or_none()
+                    .id
+                )
+                del attributes["user"]
+
+            if "resistances" in attributes.keys():
+                attributes["resistances"] = [
+                    session.execute(
+                        select(DamageType).where(DamageType.name == attribute)
+                    ).scalar_one_or_none()
+                    for attribute in attributes["resistances"]
+                ]
+
+            if "immunities" in attributes.keys():
+                attributes["immunities"] = [
+                    session.execute(
+                        select(DamageType).where(DamageType.name == attribute)
+                    ).scalar_one_or_none()
+                    for attribute in attributes["immunities"]
+                ]
+
+            if "vulnerabilities" in attributes.keys():
+                attributes["vulnerabilities"] = [
+                    session.execute(
+                        select(DamageType).where(DamageType.name == attribute)
+                    ).scalar_one_or_none()
+                    for attribute in attributes["vulnerabilities"]
+                ]
+
+            # Create the new PlayerCharacter
+            new_creature = creature_type(name=creature, **attributes)
+            session.add(new_creature)
             session.flush()
 
             # Adds classes and subclasses to CreatureClasses cross-reference table
             if classes:
                 for cls in classes:
                     linked_subclasses = [
-                        sc for sc in subclasses if sc.class_id == cls.id
+                        subclass
+                        for subclass in subclasses
+                        if subclass.class_id == cls.id
                     ]
                     if linked_subclasses:
                         for subclass in linked_subclasses:
                             creature_class_entry = CreatureClasses(
-                                creature_id=new_enemy.id,
+                                creature_id=new_creature.id,
                                 class_id=cls.id,
                                 subclass_id=subclass.id,
                             )
                             session.add(creature_class_entry)
                     else:
                         creature_class_entry = CreatureClasses(
-                            creature_id=new_enemy.id, class_id=cls.id
+                            creature_id=new_creature.id, class_id=cls.id
                         )
                         session.add(creature_class_entry)
+
     session.commit()
 
 
@@ -1408,20 +1370,23 @@ def main() -> None:
     """
     Main function that runs to add initial data to the database.
     """
-    initialize_party()
-    initialize_roles()
-    initialize_users()
-    initialize_sizes()
-    initialize_damage_types()
-    initialize_attributes()
-    initialize_classes()
-    initialize_subclasses()
-    initialize_races()
-    initialize_subraces()
-    initialize_types()
-    create_pcs()
-    create_npcs()
-    create_enemies()
+    try:
+        initialize_party()
+        initialize_roles()
+        initialize_users()
+        initialize_sizes()
+        initialize_damage_types()
+        initialize_attributes()
+        initialize_classes()
+        initialize_subclasses()
+        initialize_races()
+        initialize_subraces()
+        initialize_types()
+        create_creatures()
+    except Exception as e:
+        logger.error(
+            f"An error occurred while filling the database with initial data. Error: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
