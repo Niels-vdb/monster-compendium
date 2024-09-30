@@ -23,7 +23,7 @@ def login_user(
     user: LoginModel, response: Response, db: Session = Depends(get_db)
 ) -> BaseResponse:
     """
-    Endpoint used for logging in to the application.
+    Endpoint used for logging in to the application. When successful it set a cookie with the user id.
 
     - **Returns** BaseResponse: A dictionary holding a message.
 

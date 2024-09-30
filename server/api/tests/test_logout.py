@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 
 from .conftest import app
 
@@ -11,6 +12,9 @@ def test_logout_user(create_user, db_session):
     assert response.json() == {
         "message": "Your logged out of the application. Goodbye."
     }
+
+    with pytest.raises(KeyError):
+        response.cookies["user_id"]
 
 
 def test_logout_wrong_user(create_user, db_session):

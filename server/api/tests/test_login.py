@@ -14,6 +14,7 @@ def test_login_user(create_user, db_session):
     assert response.json() == {
         "message": "Your logged in with valid credentials. Welcome."
     }
+    assert response.cookies["user_id"] == str(create_user.id)
 
 
 def test_login_wrong_user(create_user, db_session):

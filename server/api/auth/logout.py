@@ -19,7 +19,7 @@ def logout_user(
     user_id: int, response: Response, db: Session = Depends(get_db)
 ) -> BaseResponse:
     """
-    Endpoint used for logging out to the application.
+    Endpoint used for logging out to the application. When successful removes the user id cookie.
 
     - `user_id`: An integer representing the user id (inclusive).
 
