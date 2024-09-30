@@ -1,4 +1,5 @@
 from typing import Any
+from argon2 import PasswordHasher
 import pytest
 
 from sqlalchemy import StaticPool, create_engine
@@ -93,10 +94,17 @@ def create_role(db_session):
 
 @pytest.fixture
 def create_user(db_session, create_role, create_party):
+    hasher = PasswordHasher()
+
     user = "test"
     username = "Test"
+    password = hasher.hash("password")
     new_user = User(
-        username=username, name=user, roles=[create_role], parties=[create_party]
+        username=username,
+        name=user,
+        password=password,
+        roles=[create_role],
+        parties=[create_party],
     )
     db_session.add(new_user)
     db_session.commit()

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from server.api.auth import logout
 from server.api.middleware import log_middleware
 
 from .routers import (
@@ -19,6 +20,7 @@ from .routers import (
     types,
     users,
 )
+from .auth import login
 
 tags_metadata = [
     {
@@ -73,6 +75,9 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata, title="DnD Creature Compendium")
 app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
+
+app.include_router(login.router)
+app.include_router(logout.router)
 
 app.include_router(attributes.router)
 app.include_router(classes.router)

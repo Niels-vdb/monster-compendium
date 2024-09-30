@@ -240,7 +240,7 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
             logger.debug("Adding password to new user.")
             hasher = PasswordHasher()
             psw_hash = hasher.hash(user.password)
-            attributes["parties"] = psw_hash
+            attributes["password"] = psw_hash
         if user.parties:
             logger.debug(f"Adding parties with ids '{user.parties}' to new user.")
 
