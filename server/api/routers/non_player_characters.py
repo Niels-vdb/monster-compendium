@@ -7,11 +7,6 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.logger.logger import logger
-from server.api.utils.creature_utilities import CreatureUtilities
-from server.api.utils.utilities import Utilities
-from server.api.models.delete_response import DeleteResponse
-from server.api.models.base_response import BaseResponse
-from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
 from server.database.models.sizes import Size
 from server.database.models.types import Type
 from server.database.models.classes import Class
@@ -20,24 +15,17 @@ from server.database.models.non_player_characters import NonPlayerCharacter
 from server.database.models.races import Race
 from server.database.models.subraces import Subrace
 from server.database.models.parties import Party
+from server.api.models.non_player_character import NPCResponse
+from server.api.models.delete_response import DeleteResponse
+from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
+from server.api.utils.creature_utilities import CreatureUtilities
+from server.api.utils.utilities import Utilities
 
 router = APIRouter(
     prefix="/api/non_player_characters",
     tags=["Non Player Characters"],
     responses={404: {"description": "Not found."}},
 )
-
-
-class NPCResponse(BaseResponse):
-    """
-    Response model for creating or retrieving an npc.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `npc`: The actual npc data, represented by the `CreatureModel`.
-    """
-
-    npc: CreatureModel
 
 
 @router.get("/", response_model=list[CreatureModel])

@@ -1,6 +1,3 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,61 +5,20 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
-from server.api.models.delete_response import DeleteResponse
 from server.database.models.attributes import Attribute
+from server.api.models.delete_response import DeleteResponse
+from server.api.models.attribute import (
+    AttributeModel,
+    AttributePostBase,
+    AttributePutBase,
+    AttributeResponse,
+)
 
 router = APIRouter(
     prefix="/api/attributes",
     tags=["Attributes"],
     responses={404: {"description": "Not found."}},
 )
-
-
-class AttributeModel(BaseModel):
-    """
-    Represents an attribute entity.
-
-    - `id`: Unique identifier of the attribute.
-    - `name`: Name of the attribute.
-    """
-
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AttributePostBase(BaseModel):
-    """
-    Schema for creating a new attribute.
-
-    - `attribute_name`: Name of the attribute to be created, must be between 1 and 50 characters.
-    """
-
-    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class AttributePutBase(BaseModel):
-    """
-    Schema for updating an attribute.
-
-    - `attribute_name`: Updated name of the attribute, must be between 1 and 50 characters.
-    """
-
-    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class AttributeResponse(BaseResponse):
-    """
-    Response model for creating or retrieving an attribute.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `attribute`: The actual attribute data, represented by the `AttributeModel`.
-    """
-
-    attribute: AttributeModel
 
 
 @router.get("/", response_model=list[AttributeModel])

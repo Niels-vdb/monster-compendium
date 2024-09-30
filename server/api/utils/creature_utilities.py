@@ -5,9 +5,9 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from server.logger.logger import logger
-from server.api.models.attributes import PostAttribute, PutAttribute
+from server.api.models.attribute import PostAttribute, PutAttribute
 from server.api.models.creatures import PutClass, PutParty, PutSubclass
-from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.models.damage_type import PostDamageType, PutDamageType
 from server.database.models.attributes import Attribute
 from server.database.models.creatures import (
     CreatureAdvantages,

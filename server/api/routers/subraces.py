@@ -13,8 +13,8 @@ from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
-from server.api.models.attributes import PostAttribute, PutAttribute
-from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.models.attribute import PostAttribute, PutAttribute
+from server.api.models.damage_type import PostDamageType, PutDamageType
 from server.api.models.race_subrace_bases import RaceBase, SubraceBase
 from server.database.models.attributes import Attribute
 from server.database.models.damage_types import DamageType

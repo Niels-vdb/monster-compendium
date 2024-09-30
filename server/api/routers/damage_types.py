@@ -1,6 +1,3 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,61 +5,20 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
-from server.api.models.delete_response import DeleteResponse
 from server.database.models.damage_types import DamageType
+from server.api.models.delete_response import DeleteResponse
+from server.api.models.damage_type import (
+    DamageTypeModel,
+    DamageTypePostBase,
+    DamageTypePutBase,
+    DamageTypeResponse,
+)
 
 router = APIRouter(
     prefix="/api/damage_types",
     tags=["Damage Types"],
     responses={404: {"description": "Not found."}},
 )
-
-
-class DamageTypeModel(BaseModel):
-    """
-    Represents an damage type entity.
-
-    - `id`: Unique identifier of the damage type.
-    - `name`: Name of the damage type.
-    """
-
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class DamageTypePostBase(BaseModel):
-    """
-    Schema for creating a new damage type.
-
-    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
-    """
-
-    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class DamageTypePutBase(BaseModel):
-    """
-    Schema for updating an damage type.
-
-    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
-    """
-
-    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class DamageTypeResponse(BaseResponse):
-    """
-    Response model for creating or retrieving an damage type.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `damage_type`: The actual damage type data, represented by the `AttributeModel`.
-    """
-
-    damage_type: DamageTypeModel
 
 
 @router.get("/", response_model=list[DamageTypeModel])
