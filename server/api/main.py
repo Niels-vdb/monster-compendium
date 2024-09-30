@@ -24,6 +24,10 @@ from .auth import login
 
 tags_metadata = [
     {
+        "name": "Authentication",
+        "description": "All log in and log out operation can be done here.",
+    },
+    {
         "name": "Attributes",
         "description": "All operations with attributes can be done here.",
     },

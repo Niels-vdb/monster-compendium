@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
@@ -6,9 +6,9 @@ from argon2.exceptions import VerifyMismatchError
 
 from server.api import get_db
 from server.logger.logger import logger
+from server.database.models.users import User
 from server.api.models.login import LoginModel
 from server.api.models.base_response import BaseResponse
-from server.database.models.users import User
 
 
 router = APIRouter(
@@ -19,7 +19,9 @@ router = APIRouter(
 
 
 @router.post("/", response_model=BaseResponse)
-def login_user(user: LoginModel, db: Session = Depends(get_db)) -> BaseResponse:
+def login_user(
+    user: LoginModel, response: Response, db: Session = Depends(get_db)
+) -> BaseResponse:
     """
     Endpoint used for logging in to the application.
 
@@ -59,8 +61,10 @@ def login_user(user: LoginModel, db: Session = Depends(get_db)) -> BaseResponse:
 
         if user.password:
             ph = PasswordHasher()
-
             ph.verify(login_user.password, user.password)
+
+        logger.info(f"Setting user_id cookie of user '{login_user.id}'")
+        response.set_cookie(key="user_id", value=login_user.id)
 
         return BaseResponse(
             message="Your logged in with valid credentials. Welcome.",

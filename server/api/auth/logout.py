@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from server.api import get_db
@@ -15,7 +15,9 @@ router = APIRouter(
 
 
 @router.delete("/{user_id}", response_model=BaseResponse)
-def logout_user(user_id: int, db: Session = Depends(get_db)) -> BaseResponse:
+def logout_user(
+    user_id: int, response: Response, db: Session = Depends(get_db)
+) -> BaseResponse:
     """
     Endpoint used for logging out to the application.
 
@@ -41,6 +43,10 @@ def logout_user(user_id: int, db: Session = Depends(get_db)) -> BaseResponse:
             status_code=404,
             detail="The id you try to log out with does not exist.",
         )
+
+    logger.info(f"Removing user_id cookie of user '{logout_user.id}'")
+    response.delete_cookie(key="user_id")
+
     return BaseResponse(
         message="Your logged out of the application. Goodbye.",
     )
