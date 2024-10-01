@@ -43,7 +43,7 @@ def test_get_pcs(create_pc, db_session):
             "vulnerabilities": [{"id": 1, "name": "Fire"}],
             "advantages": [{"id": 1, "name": "Charmed"}],
             "disadvantages": [{"id": 1, "name": "Charmed"}],
-            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+            "user": {"id": "1", "name": "test", "username": "Test", "image": None},
         }
     ]
 
@@ -81,7 +81,7 @@ def test_get_pc(create_pc, db_session):
         "vulnerabilities": [{"id": 1, "name": "Fire"}],
         "advantages": [{"id": 1, "name": "Charmed"}],
         "disadvantages": [{"id": 1, "name": "Charmed"}],
-        "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+        "user": {"id": "1", "name": "test", "username": "Test", "image": None},
     }
 
 
@@ -159,7 +159,7 @@ def test_post_pc(
             "vulnerabilities": [{"id": 1, "name": "Fire"}],
             "advantages": [{"id": 1, "name": "Charmed"}],
             "disadvantages": [{"id": 1, "name": "Charmed"}],
-            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+            "user": {"id": "1", "name": "test", "username": "Test", "image": None},
         },
     }
 
@@ -523,7 +523,7 @@ def test_pc_add_put(
                 {"id": 1, "name": "Charmed"},
                 {"id": 2, "name": "Poisoned"},
             ],
-            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+            "user": {"id": "1", "name": "test", "username": "Test", "image": None},
         },
     }
 
@@ -652,7 +652,7 @@ def test_pc_remove_put(
             "vulnerabilities": [],
             "advantages": [],
             "disadvantages": [],
-            "user": {"id": 1, "name": "test", "username": "Test", "image": None},
+            "user": {"id": "1", "name": "test", "username": "Test", "image": None},
         },
     }
 
