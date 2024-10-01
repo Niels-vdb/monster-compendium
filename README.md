@@ -6,13 +6,25 @@
 pipenv install
 ```
 
+## To create a virtual environment shell
+
+```shell
+pipenv shell
+```
+
 > [!NOTE]
-> Don't forget to select the python interpreter.
+> Don't forget to select the python interpreter in your IDE.
 
 ## Run to initialize database
 
 ```shell
 python -m server.database.setup
+```
+
+## Run to start api server with debug
+
+```shell
+python -m server.api.main
 ```
 
 ## Run to start api server

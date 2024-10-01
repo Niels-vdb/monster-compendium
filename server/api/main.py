@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
+import uvicorn
 
 from server.api.auth import logout
 from server.api.middleware.logger import log_middleware
@@ -97,3 +98,6 @@ app.include_router(subclasses.router)
 app.include_router(subraces.router)
 app.include_router(types.router)
 app.include_router(users.router)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
