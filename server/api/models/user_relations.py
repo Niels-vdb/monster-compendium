@@ -11,7 +11,7 @@ class UserBase(BaseModel):
     - `image`: The user's image. NOT IMPLEMENTED YET!
     """
 
-    id: int
+    id: int | str
     name: str
     username: str
     image: bytes | None

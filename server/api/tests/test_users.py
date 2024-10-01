@@ -1,3 +1,4 @@
+import uuid
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -16,7 +17,7 @@ def test_get_users(create_user, db_session):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": 1,
+            "id": "1",
             "name": "test",
             "username": "Test",
             "image": None,
@@ -37,7 +38,7 @@ def test_get_user(create_user, db_session):
     response = client.get("/api/users/1")
     assert response.status_code == 200
     assert response.json() == {
-        "id": 1,
+        "id": "1",
         "name": "test",
         "username": "Test",
         "image": None,
@@ -64,11 +65,15 @@ def test_post_user(create_party, create_role, create_pc, db_session):
             "roles": [1],
         },
     )
+    response_json = response.json()
+    user_id = response_json["user"]["id"]
+
     assert response.status_code == 200
-    assert response.json() == {
+    assert user_id == str(uuid.UUID(user_id, version=4))
+    assert response_json == {
         "message": "New user 'Player' has been added to the database.",
         "user": {
-            "id": 2,
+            "id": user_id,
             "name": "Player",
             "username": "player",
             "image": None,
@@ -185,7 +190,7 @@ def test_user_put(create_user, db_session):
     assert response.json() == {
         "message": "User 'Dungeon Master' has been updated.",
         "user": {
-            "id": 1,
+            "id": "1",
             "name": "Dungeon Master",
             "username": "DM",
             "image": None,

@@ -1,4 +1,5 @@
 from typing import Any
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -59,7 +60,7 @@ def get_users(db: Session = Depends(get_db)) -> list[UserModel]:
 
 
 @router.get("/{user_id}", response_model=UserModel)
-def get_user(user_id: int, db: Session = Depends(get_db)) -> UserModel:
+def get_user(user_id: str, db: Session = Depends(get_db)) -> UserModel:
     """
     Queries the users table in the database table for a specific row with the id of user_id.
 
@@ -136,6 +137,7 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
     try:
         logger.info(f"Creating new user with name '{user.username}'.")
         attributes: dict[str, Any] = {}
+        attributes["id"] = str(uuid.uuid4())
         attributes["name"] = user.name
         attributes["username"] = user.username
         attributes["image"] = user.image if user.image else None
@@ -199,7 +201,7 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
 
 @router.put("/{user_id}", response_model=UserResponse)
 def put_user(
-    user_id: int, user: UserPutBase, db: Session = Depends(get_db)
+    user_id: str, user: UserPutBase, db: Session = Depends(get_db)
 ) -> UserResponse:
     """
     Updates an user in the database by its unique id.
@@ -375,7 +377,7 @@ def put_user(
 
 
 @router.delete("/{user_id}", response_model=DeleteResponse)
-def delete_user(user_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
+def delete_user(user_id: str, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     Deletes a user from the database.
 

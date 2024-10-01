@@ -1,9 +1,10 @@
 from typing import Any
-from argon2 import PasswordHasher
 import pytest
+import uuid
 
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
+from argon2 import PasswordHasher
 
 from server.api.main import app
 from server.api import get_db
@@ -96,10 +97,12 @@ def create_role(db_session):
 def create_user(db_session, create_role, create_party):
     hasher = PasswordHasher()
 
+    id = "1"
     user = "test"
     username = "Test"
     password = hasher.hash("password")
     new_user = User(
+        id=id,
         username=username,
         name=user,
         password=password,

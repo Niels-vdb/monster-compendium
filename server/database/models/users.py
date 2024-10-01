@@ -1,4 +1,6 @@
-from sqlalchemy import BLOB, Column, ForeignKey, Integer, String
+import uuid
+
+from sqlalchemy import BLOB, Column, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import relationship
 
 from .base import CustomBase
@@ -18,7 +20,9 @@ class User(CustomBase):
 
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # SQLite does not accept UUID. If using a different database type try again.
+    # id = Column(Uuid, primary_key=True, default=uuid.uuid4())
     username = Column(String(50), nullable=False, unique=True)
     name = Column(String(50), nullable=False)
     password = Column(String(80), nullable=True)
