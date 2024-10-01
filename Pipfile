@@ -8,6 +8,7 @@ sqlalchemy = "*"
 fastapi = {extras = ["standard"] }
 loguru = "*"
 argon2-cffi = "*"
+python-dotenv = "*"
 
 [dev-packages]
 graphviz = "*"
