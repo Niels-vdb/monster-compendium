@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from server.api.auth import logout
-from server.api.middleware import log_middleware
+from server.api.middleware.logger import log_middleware
 
 from .routers import (
     attributes,

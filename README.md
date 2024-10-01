@@ -27,6 +27,21 @@ fastapi dev server/api/main.py
 http://127.0.0.1:8000/docs
 ```
 
+## Working with CORS
+
+If the frontend you created runs on a different port than `:8000` (which it should because this API server runs on 8000) or 8080.
+Or if the frontend runs on a different URL than `http://localhost/` (in case of deployment).
+You should update the `cors.py` file in `server/api/middleware/` folder.
+
+Update this part with your new URL:
+
+```py
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+```
+
 ## To work with dev packages
 
 pygraphviz sometime gives some trouble on mac intel and mac silicon.
