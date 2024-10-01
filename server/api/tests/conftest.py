@@ -1,13 +1,14 @@
+import os
 from typing import Any
 import pytest
-import uuid
 
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
-from argon2 import PasswordHasher
+from dotenv import load_dotenv
 
 from server.api.main import app
 from server.api import get_db
+from server.api.utils.user_utilities import hash_password
 from server.database.models.base import Base
 from server.database.models.creatures import (
     CreatureAdvantages,
@@ -31,6 +32,7 @@ from server.database.models.users import User
 from server.database.models.parties import Party
 from server.database.models.roles import Role
 
+load_dotenv(override=True)
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
@@ -95,12 +97,11 @@ def create_role(db_session):
 
 @pytest.fixture
 def create_user(db_session, create_role, create_party):
-    hasher = PasswordHasher()
-
     id = "1"
     user = "test"
     username = "Test"
-    password = hasher.hash("password")
+    password = hash_password("password")
+
     new_user = User(
         id=id,
         username=username,

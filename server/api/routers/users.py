@@ -15,6 +15,7 @@ from server.database.models.roles import Role
 from server.database.models.parties import Party
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.user import UserModel, UserPostBase, UserPutBase, UserResponse
+from server.api.utils.user_utilities import hash_password
 
 router = APIRouter(
     prefix="/api/users",
@@ -143,10 +144,7 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
         attributes["image"] = user.image if user.image else None
 
         if user.password:
-            logger.debug("Adding password to new user.")
-            hasher = PasswordHasher()
-            psw_hash = hasher.hash(user.password)
-            attributes["password"] = psw_hash
+            attributes["password"] = hash_password(user.password)
         if user.parties:
             logger.debug(f"Adding parties with ids '{user.parties}' to new user.")
 

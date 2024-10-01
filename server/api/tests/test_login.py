@@ -33,7 +33,7 @@ def test_login_wrong_password(create_user, db_session):
         "/login/",
         json={"username": "Test", "password": "password1"},
     )
-    assert response.status_code == 404
+    assert response.status_code == 400
     assert response.json() == {
         "detail": "The password you try to log in with is incorrect."
     }

@@ -9,6 +9,7 @@ from server.logger.logger import logger
 from server.database.models.users import User
 from server.api.models.login import LoginModel
 from server.api.models.base_response import BaseResponse
+from server.api.utils.user_utilities import verify_password
 
 
 router = APIRouter(
@@ -60,20 +61,18 @@ def login_user(
             )
 
         if user.password:
-            ph = PasswordHasher()
-            ph.verify(login_user.password, user.password)
+            if verify_password(user.password, login_user.password):
+                logger.info(f"Setting user_id cookie of user '{login_user.id}'")
+                response.set_cookie(key="user_id", value=login_user.id)
 
-        logger.info(f"Setting user_id cookie of user '{login_user.id}'")
-        response.set_cookie(key="user_id", value=login_user.id)
-
-        return BaseResponse(
-            message="Your logged in with valid credentials. Welcome.",
-        )
+                return BaseResponse(
+                    message="Your logged in with valid credentials. Welcome.",
+                )
 
     except VerifyMismatchError as e:
         logger.error(
             f"The password '{user.username}' tries to log in with is incorrect. Error {str(e)}"
         )
         raise HTTPException(
-            status_code=404, detail="The password you try to log in with is incorrect."
+            status_code=400, detail="The password you try to log in with is incorrect."
         )
