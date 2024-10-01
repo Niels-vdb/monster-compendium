@@ -162,6 +162,29 @@ python -m server.database.create_erd
 
 ## Testing
 
+### Server
+
+Testing on the server side is done with pytest. All API endpoints have happy and unhappy paths.
+The tests reside in their own directory. The path is `server/api/tests`. There are no specific tests written for the database tables.
+
+- To run all pytests:
+
+```shell
+pytest
+```
+
+- To run specific file:
+
+```shell
+pytest server/api/tests/<filename>
+```
+
+- To run specific tests:
+
+```shell
+pytest -k <function_name>
+```
+
 ## Changelog
 
 ## License
