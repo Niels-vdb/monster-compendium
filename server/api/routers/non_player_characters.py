@@ -6,15 +6,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.database.models.sizes import Size
-from server.database.models.types import Type
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
-from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import Race
-from server.database.models.subraces import Subrace
-from server.database.models.parties import Party
+from config.logger_config import logger
+from server.models import Size
+from server.models import Type
+from server.models import Class
+from server.models import Subclass
+from server.models import NonPlayerCharacter
+from server.models import Race
+from server.models import Subrace
+from server.models import Party
 from server.api.models.non_player_character import NPCResponse
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase

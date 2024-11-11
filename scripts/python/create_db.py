@@ -2,10 +2,10 @@ import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-from server.database.models import Base
+from server.models import Base
 
 
-db_path = "server/database/instance/"
+db_path = "instance/"
 # Creates instance folder if non exist
 if not os.path.exists(db_path):
     os.makedirs(db_path)

@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.parties import Party
+from server.models import Party
 
 from .conftest import app
 

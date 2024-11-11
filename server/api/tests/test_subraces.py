@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.races import Race
-from server.database.models.subraces import Subrace
+from server.models import Race
+from server.models import Subrace
 
 from .conftest import app
 

@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.attributes import Attribute
+from server.models import Attribute
 
 from .conftest import app
 

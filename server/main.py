@@ -5,7 +5,7 @@ import uvicorn
 from server.api.auth import logout
 from server.api.middleware.logger import log_middleware
 
-from .routers import (
+from server.api.routers import (
     attributes,
     classes,
     damage_types,
@@ -21,7 +21,7 @@ from .routers import (
     types,
     users,
 )
-from .auth import login
+from server.api.auth import login
 
 tags_metadata = [
     {

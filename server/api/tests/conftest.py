@@ -1,4 +1,3 @@
-import os
 from typing import Any
 import pytest
 
@@ -6,31 +5,31 @@ from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-from server.api.main import app
+from server.main import app
 from server.api import get_db
 from server.api.utils.user_utilities import hash_password
-from server.database.models.base import Base
-from server.database.models.creatures import (
+from server.models import Base
+from server.models import (
     CreatureAdvantages,
     CreatureDisadvantages,
     CreatureImmunities,
     CreatureResistances,
     CreatureVulnerabilities,
 )
-from server.database.models.enemies import Enemy
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import Race
-from server.database.models.subraces import Subrace
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
-from server.database.models.sizes import Size
-from server.database.models.types import Type
-from server.database.models.damage_types import DamageType
-from server.database.models.attributes import Attribute
-from server.database.models.users import User
-from server.database.models.parties import Party
-from server.database.models.roles import Role
+from server.models import Enemy
+from server.models import PlayerCharacter
+from server.models import NonPlayerCharacter
+from server.models import Race
+from server.models import Subrace
+from server.models import Class
+from server.models import Subclass
+from server.models import Size
+from server.models import Type
+from server.models import DamageType
+from server.models import Attribute
+from server.models import User
+from server.models import Party
+from server.models import Role
 
 load_dotenv(override=True)
 

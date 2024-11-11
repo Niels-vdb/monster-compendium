@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.database.models.classes import Class
+from config.logger_config import logger
+from server.models import Class
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.cls import ClassModel, ClassPostBase, ClassPutBase, ClassResponse
 

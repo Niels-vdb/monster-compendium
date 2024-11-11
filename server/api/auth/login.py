@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from argon2.exceptions import VerifyMismatchError
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.database.models.users import User
+from config.logger_config import logger
+from server.models import User
 from server.api.models.login import LoginModel
 from server.api.models.base_response import BaseResponse
 from server.api.utils.user_utilities import verify_password

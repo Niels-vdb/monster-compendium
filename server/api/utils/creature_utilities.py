@@ -4,26 +4,26 @@ from fastapi import HTTPException
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from server.logger.logger import logger
+from config.logger_config import logger
 from server.api.models.attribute import PostAttribute, PutAttribute
 from server.api.models.creatures import PutClass, PutParty, PutSubclass
 from server.api.models.damage_type import PostDamageType, PutDamageType
-from server.database.models.attributes import Attribute
-from server.database.models.creatures import (
+from server.models import Attribute
+from server.models import (
     CreatureAdvantages,
     CreatureDisadvantages,
     CreatureImmunities,
     CreatureResistances,
     CreatureVulnerabilities,
 )
-from server.database.models.damage_types import DamageType
-from server.database.models.parties import Party
-from server.database.models.sizes import Size
-from server.database.models.types import Type
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
-from server.database.models.races import Race
-from server.database.models.subraces import Subrace
+from server.models import DamageType
+from server.models import Party
+from server.models import Size
+from server.models import Type
+from server.models import Class
+from server.models import Subclass
+from server.models import Race
+from server.models import Subrace
 
 
 class CreatureUtilities:

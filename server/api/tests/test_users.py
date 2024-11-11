@@ -2,10 +2,10 @@ import uuid
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.users import User
-from server.database.models.roles import Role
-from server.database.models.parties import Party
+from server.models import PlayerCharacter
+from server.models import User
+from server.models import Role
+from server.models import Party
 
 from .conftest import app
 

@@ -1,4 +1,4 @@
-from ..database.create import Session
+from scripts.python.create_db import Session
 
 
 async def get_db():

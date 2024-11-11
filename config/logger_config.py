@@ -8,7 +8,7 @@ logger.add(
     level="DEBUG",
 )
 logger.add(
-    "server/logs/COMPENDIUM.log",
+    "logs/COMPENDIUM.log",
     format="{time:MMMM D, YYYY HH:mm:ss} - <level>{level}</level> - {module}/{file}/{function}/{line}: {message} - {exception}",
     level="INFO",
 )

@@ -1,6 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 
-from server.api.main import app
+from server.main import app
 
 origins = [
     "http://localhost",

@@ -1,26 +1,31 @@
+import os
+import sys
+
 from sqlalchemy import select
 
-from server.database.create import session
-from server.logger.logger import logger
-from server.database.models.attributes import Attribute
-from server.database.models.creatures import CreatureClasses
-from server.database.models.enemies import Enemy
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.non_player_characters import NonPlayerCharacter
-from server.database.models.races import Race, RaceAdvantages, RaceDisadvantages
-from server.database.models.subraces import (
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+from create_db import session
+from config.logger_config import logger
+from server.models.attributes import Attribute
+from server.models.creatures import CreatureClasses
+from server.models.enemies import Enemy
+from server.models.player_characters import PlayerCharacter
+from server.models.non_player_characters import NonPlayerCharacter
+from server.models.races import Race, RaceAdvantages, RaceDisadvantages
+from server.models.subraces import (
     Subrace,
     SubraceAdvantages,
     SubraceDisadvantages,
 )
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
-from server.database.models.sizes import Size
-from server.database.models.types import Type
-from server.database.models.damage_types import DamageType
-from server.database.models.users import User
-from server.database.models.parties import Party
-from server.database.models.roles import Role
+from server.models.classes import Class
+from server.models.subclasses import Subclass
+from server.models.sizes import Size
+from server.models.types import Type
+from server.models.damage_types import DamageType
+from server.models.users import User
+from server.models.parties import Party
+from server.models.roles import Role
 
 
 def initialize_party() -> None:

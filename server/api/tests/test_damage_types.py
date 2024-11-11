@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.damage_types import DamageType
+from server.models import DamageType
 
 from .conftest import app
 

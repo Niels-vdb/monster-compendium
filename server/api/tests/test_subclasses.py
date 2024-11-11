@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
+from server.models import Class
+from server.models import Subclass
 
 from .conftest import app
 

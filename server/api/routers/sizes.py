@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.database.models.sizes import Size
+from config.logger_config import logger
+from server.models import Size
 from server.api.models.size import SizeModel, SizePostBase, SizePutBase, SizeResponse
 from server.api.models.delete_response import DeleteResponse
 

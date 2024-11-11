@@ -8,11 +8,11 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.users import User
-from server.database.models.roles import Role
-from server.database.models.parties import Party
+from config.logger_config import logger
+from server.models import PlayerCharacter
+from server.models import User
+from server.models import Role
+from server.models import Party
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.user import UserModel, UserPostBase, UserPutBase, UserResponse
 from server.api.utils.user_utilities import hash_password

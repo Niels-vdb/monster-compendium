@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
+from config.logger_config import logger
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.models.base_response import BaseResponse
@@ -16,10 +16,10 @@ from server.api.models.delete_response import DeleteResponse
 from server.api.models.attribute import PostAttribute, PutAttribute
 from server.api.models.damage_type import PostDamageType, PutDamageType
 from server.api.models.race_subrace_bases import RaceBase, SubraceBase
-from server.database.models.attributes import Attribute
-from server.database.models.damage_types import DamageType
-from server.database.models.races import Race
-from server.database.models.subraces import (
+from server.models.attributes import Attribute
+from server.models.damage_types import DamageType
+from server.models.races import Race
+from server.models.subraces import (
     Subrace,
     SubraceAdvantages,
     SubraceDisadvantages,

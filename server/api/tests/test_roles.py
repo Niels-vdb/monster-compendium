@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.database.models.roles import Role
+from server.models import Role
 
 from .conftest import app
 
