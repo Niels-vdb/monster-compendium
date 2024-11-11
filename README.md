@@ -72,26 +72,6 @@ pipenv shell
 python -m server.database.setup
 ```
 
-7. Run API sever (without debugging)
-
-```shell
-fastapi dev server/api/main.py
-```
-
-###### Optional
-
-1. RUN API server (without debugging)
-
-```shell
-python -m server.api.main
-```
-
-2. Go to API docs
-
-```url
-http://127.0.0.1:8000/docs
-```
-
 ##### Working with CORS
 
 If the frontend you created runs on a different port than `:8000` (which it should because this API server runs on 8000) or 8080.
@@ -122,7 +102,8 @@ This installs the packages used when developing:
 - httpx
 - pytest
 
-The pygraphviz and eralchemy2 packages (used for creating ERDiagrams of the SQLAlchemy ORM tables) might show some trouble because they need GraphViz globally installed on your machine. For OS users follow these steps:
+The pygraphviz and eralchemy2 packages (used for creating ERDiagrams of the SQLAlchemy ORM tables) might show some 
+trouble because they need GraphViz globally installed on your machine. For iOS users follow these steps:
 
 1. Install graphviz globally using homebrew
 
@@ -130,7 +111,7 @@ The pygraphviz and eralchemy2 packages (used for creating ERDiagrams of the SQLA
 brew install graphviz
 ```
 
-2. Run the this in your virtual env.
+2. Run this in your virtual env.
 
 - Intel
 
@@ -157,6 +138,24 @@ python -m server.database.create_erd
 ```
 
 ## Usage
+
+1. Run API sever (without debugging)
+
+```shell
+fastapi dev server/api/main.py
+```
+
+2. RUN API server (with debugging)
+
+```shell
+python -m server.api.main
+```
+
+3. Go to API docs
+
+```url
+http://127.0.0.1:8000/docs
+```
 
 ## Contributing
 

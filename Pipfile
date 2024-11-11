@@ -11,7 +11,6 @@ argon2-cffi = "*"
 python-dotenv = "*"
 
 [dev-packages]
-graphviz = "*"
 eralchemy2 = "*"
 httpx = "*"
 pytest = "*"
