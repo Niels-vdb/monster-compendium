@@ -18,8 +18,8 @@ def test_get_users(create_user, db_session):
     assert response.json() == [
         {
             "id": "1",
-            "name": "test",
-            "username": "Test",
+            "name": "Test",
+            "username": "test",
             "image": None,
             "parties": [{"id": 1, "name": "Murder Hobo Party"}],
             "roles": [{"id": 1, "name": "Player"}],
@@ -39,8 +39,8 @@ def test_get_user(create_user, db_session):
     assert response.status_code == 200
     assert response.json() == {
         "id": "1",
-        "name": "test",
-        "username": "Test",
+        "name": "Test",
+        "username": "test",
         "image": None,
         "parties": [{"id": 1, "name": "Murder Hobo Party"}],
         "roles": [{"id": 1, "name": "Player"}],
@@ -146,7 +146,7 @@ def test_user_duplicate_username_put(
     db_session.commit()
     response = client.put(
         f"/api/users/{user.id}",
-        json={"username": "Test"},
+        json={"username": "test"},
     )
     assert response.status_code == 400
     assert response.json() == {

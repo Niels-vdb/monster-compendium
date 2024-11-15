@@ -14,7 +14,7 @@ class UserBase(BaseModel):
     id: int | str
     name: str
     username: str
-    image: bytes | None
+    image: bytes | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

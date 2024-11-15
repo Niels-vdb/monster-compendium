@@ -9,13 +9,13 @@ from argon2 import PasswordHasher
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.user_authentication import hash_password
 from server.models import PlayerCharacter
 from server.models import User
 from server.models import Role
 from server.models import Party
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.user import UserModel, UserPostBase, UserPutBase, UserResponse
-from server.api.utils.user_utilities import hash_password
 
 router = APIRouter(
     prefix="/api/users",

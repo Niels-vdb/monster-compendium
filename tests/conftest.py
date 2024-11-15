@@ -1,13 +1,16 @@
 from typing import Any
 import pytest
+from argon2 import PasswordHasher
 
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from starlette.testclient import TestClient
 
+from server.api.auth.user_authentication import hash_password
 from server.main import app
 from server.api import get_db
-from server.api.utils.user_utilities import hash_password
+
 from server.models import Base
 from server.models import (
     CreatureAdvantages,
@@ -35,6 +38,7 @@ load_dotenv(override=True)
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
+client = TestClient(app)
 
 # Fixture to create a fresh in-memory database for each test
 @pytest.fixture(scope="function")
@@ -77,6 +81,39 @@ def override_get_db(db_session):
 
 
 @pytest.fixture
+def create_user(db_session, create_role, create_party):
+    id = "1"
+    user = "Test"
+    username = "test"
+    password = hash_password("password")
+
+    new_user = User(
+        id=id,
+        username=username,
+        name=user,
+        password=password,
+        roles=[create_role],
+        parties=[create_party],
+    )
+
+    db_session.add(new_user)
+    db_session.commit()
+    db_session.refresh(new_user)
+
+    return new_user
+
+@pytest.fixture
+def login(create_user):
+    form_data = {
+        "username": "admin",
+        "password": "password"
+    }
+
+    response = client.post("/token", data=form_data)
+
+    return response.json()
+
+@pytest.fixture
 def create_party(db_session):
     new_party = Party(name="Murder Hobo Party")
     db_session.add(new_party)
@@ -92,28 +129,6 @@ def create_role(db_session):
     db_session.commit()
     db_session.refresh(new_role)
     return new_role
-
-
-@pytest.fixture
-def create_user(db_session, create_role, create_party):
-    id = "1"
-    user = "test"
-    username = "Test"
-    password = hash_password("password")
-
-    new_user = User(
-        id=id,
-        username=username,
-        name=user,
-        password=password,
-        roles=[create_role],
-        parties=[create_party],
-    )
-    db_session.add(new_user)
-    db_session.commit()
-    db_session.refresh(new_user)
-    return new_user
-
 
 @pytest.fixture
 def create_damage_type(db_session):

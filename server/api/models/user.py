@@ -85,6 +85,14 @@ class UserPutBase(BaseModel):
     roles: list[RolePut] | None = None
     characters: list[CharacterPut] | None = None
 
+class UserInDB(UserBase):
+    """
+    Model used for user authentication.
+    Inherits from UserBase.
+
+    - `hashed_password`: The hashed password string of the user.
+    """
+    hashed_password: str
 
 class UserResponse(BaseResponse):
     """
