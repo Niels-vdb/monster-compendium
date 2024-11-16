@@ -1,5 +1,7 @@
 {
 	"/": [],
-	"/home": [],
-	"/users": []
+	"/monsters": [],
+	"/non_player_characters": [],
+	"/player_character": [],
+	"/user": []
 }
