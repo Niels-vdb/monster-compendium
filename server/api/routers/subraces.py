@@ -1,4 +1,3 @@
-import re
 from pydantic import BaseModel, Field
 from pydantic.types import Annotated
 
@@ -8,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.api.auth.security import oauth2_scheme
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from server.api import get_db
 from server.api.auth.user_authentication import authenticate_user, create_access_token
 from server.api.models.base_response import BaseResponse
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.models import User
 
 router = APIRouter()

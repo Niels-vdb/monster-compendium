@@ -7,7 +7,7 @@ from sqlalchemy import select
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from create_db import session
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.api.auth.user_authentication import hash_password
 from server.models.attributes import Attribute
 from server.models.creatures import CreatureClasses

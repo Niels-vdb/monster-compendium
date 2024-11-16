@@ -1,5 +1,5 @@
 from fastapi import Request
-from config.logger_config import logger
+from server.config.logger_config import logger
 
 
 async def log_middleware(request: Request, call_next):
