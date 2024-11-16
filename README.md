@@ -7,9 +7,9 @@
 - [Introduction](#introduction)
 - [Features](#features)
 - [Getting started](#getting-started)
-  - [Production](#production)
-  - [Development](#development)
-    - [Server](#server)
+    - [Production](#production)
+    - [Development](#development)
+        - [Server](#server)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Testing](#testing)
@@ -23,6 +23,9 @@
 
 ## Getting started
 
+> [!NOTE]
+> This program runs on Python version 3.13
+
 ### Production
 
 Not yet in production
@@ -31,10 +34,11 @@ Not yet in production
 
 #### Server
 
-For a quick start using the server in full capacity you can run the following automated script `./scripts/project_setup.sh`.
+For a quick start using the server in full capacity you can run the following automated script
+`./scripts/bash/project_setup.sh`.
 This will:
 
-- Install and pipenv (if not yet on machine) and install all dependencies needed for the application.
+- Install pipenv (if not yet on machine) and install all dependencies needed for the application.
 - Copy the .env.example file to a .env file.
 - Create a secret key in the .env file (Windows users have to copy the key from the stdout where it is printed).
 
@@ -43,30 +47,27 @@ This will:
 If the automated script is not working to your liking please follow the manual steps below.
 
 1. Copy the `.env.example` file and name it `.env`
-2. Create a random string in a python shell in your terminal or CMD
-
-   - `python` or `python3`
-   - `import string`
-   - `import random`
-   - `print(str(''.join(random.choices(string.ascii_letters,k=82))))`
-
-3. Instal pipenv `pip install --user pipenv`
-4. Install python packages (using pipenv)
+2. Create a random string in your terminal or git bash
 
 ```shell
-pipenv install
+openssl rand -hex 32 
 ```
 
+3. Paste the string into the .env file and fill out the other variables.
+4. Install pipenv `pip install --user pipenv`
 5. Create pipenv shell
 
 ```shell
 pipenv shell
 ```
 
-> [!NOTE]
-> Don't forget to select the python interpreter in your IDE.
+6. Install python packages (using pipenv)
 
-6. Initialize dummy database
+```shell
+pipenv install --python 3.13
+```
+7. Select Python interpreter if using an IDE.
+8. Create dummy database
 
 ```shell
 python -m server.database.setup
@@ -74,7 +75,8 @@ python -m server.database.setup
 
 ##### Working with CORS
 
-If the frontend you created runs on a different port than `:8000` (which it should because this API server runs on 8000) or 8080.
+If the frontend you created runs on a different port than `:8000` or `:8080` (which it should because the API server runs on 8000
+or 8080).
 Or if the frontend runs on a different URL than `http://localhost/` (in case of deployment).
 You should update the `cors.py` file in `server/api/middleware/` folder.
 
@@ -102,7 +104,7 @@ This installs the packages used when developing:
 - httpx
 - pytest
 
-The pygraphviz and eralchemy2 packages (used for creating ERDiagrams of the SQLAlchemy ORM tables) might show some 
+The pygraphviz and eralchemy2 packages (used for creating ERDiagrams of the SQLAlchemy ORM tables) might show some
 trouble because they need GraphViz globally installed on your machine. For iOS users follow these steps:
 
 1. Install graphviz globally using homebrew
@@ -144,14 +146,13 @@ python -m server.database.create_erd
 ```shell
 fastapi dev server/api/main.py
 ```
-
-2. RUN API server (with debugging)
+Run API server (with debugging)
 
 ```shell
 python -m server.api.main
 ```
 
-3. Go to API docs
+2. Go to API docs
 
 ```url
 http://127.0.0.1:8000/docs
@@ -164,7 +165,8 @@ http://127.0.0.1:8000/docs
 ### Server
 
 Testing on the server side is done with pytest. All API endpoints have happy and unhappy paths.
-The tests reside in their own directory. The path is `server/api/tests`. There are no specific tests written for the database tables.
+The tests reside in their own directory. The path is `server/api/tests`. There are no specific tests written for the
+database tables.
 
 - To run all pytests:
 

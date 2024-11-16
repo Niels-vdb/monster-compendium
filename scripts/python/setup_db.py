@@ -1,6 +1,7 @@
 import os
 import sys
 
+from dotenv import load_dotenv
 from sqlalchemy import select
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
@@ -27,6 +28,8 @@ from server.models.damage_types import DamageType
 from server.models.users import User
 from server.models.parties import Party
 from server.models.roles import Role
+
+load_dotenv(override=True)
 
 
 def initialize_party() -> None:
@@ -63,54 +66,35 @@ def initialize_roles() -> None:
 
 def initialize_users() -> None:
     """
-    Create the initial user accounts and adds them to the users table.
+    Create the initial admin account and add them to the users table.
     """
-    users: dict[str, dict[str, str]] = {
-        "admin": {
-            "name": "Admin",
-            "username": "admin",
-            "password": hash_password("password"),
-            "roles": ["Admin", "Player"],
-            "parties": ["Murder Hobo Party"],
-        },
-        "player": {
-            "name": "Player",
-            "username": "player",
-            "password": hash_password("password"),
-            "roles": ["Player"],
-            "parties": ["Murder Hobo Party"],
-        },
-        "dungeonmaster": {
-            "name": "Dungeon Master",
-            "username": "dungeonmaster",
-            "password": hash_password("password"),
-            "roles": ["Dungeon Master"],
-            "parties": ["Murder Hobo Party"],
-        },
+    user: dict[str, str] = {
+        "name": "Admin",
+        "username": os.getenv("ADMIN_USER"),
+        "password": hash_password(os.getenv("ADMIN_PASSWORD")),
+        "roles": ["Admin", "Player"],
+        "parties": ["Murder Hobo Party"],
     }
 
-    for user, info in users.items():
-        stmt = select(User).where(User.username == info["username"])
+    user["roles"] = [
+        session.execute(
+            select(Role).where(Role.name == role)
+        ).scalar_one_or_none()
+        for role in user["roles"]
+    ]
+    user["parties"] = [
+        session.execute(
+            select(Party).where(Party.name == party)
+        ).scalar_one_or_none()
+        for party in user["parties"]
+    ]
 
-        if not session.execute(stmt).scalar_one_or_none():
-            logger.info(f"Adding '{user}' to users table in database.")
-
-            info["roles"] = [
-                session.execute(
-                    select(Role).where(Role.name == role)
-                ).scalar_one_or_none()
-                for role in info["roles"]
-            ]
-            info["parties"] = [
-                session.execute(
-                    select(Party).where(Party.name == party)
-                ).scalar_one_or_none()
-                for party in info["parties"]
-            ]
-            new_user = User(**info)
-            session.add(new_user)
-
-    session.commit()
+    stmt = select(User).where(User.username == user["username"])
+    if not session.execute(stmt).scalar_one_or_none():
+        logger.info(f"Adding '{user}' to users table in database.")
+        new_user = User(**user)
+        session.add(new_user)
+        session.commit()
 
 
 def initialize_sizes() -> None:
@@ -1180,7 +1164,7 @@ def create_creatures() -> None:
             "classes": ["Barbarian"],
             "subclasses": ["Herculean Path"],
             "race_id": "Thylean Centaur",
-            "user": "player",
+            "user": "admin",
             "parties": ["Murder Hobo Party"],
         },
         "Electra": {
