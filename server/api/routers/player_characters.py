@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Size
 from server.models import Type
 from server.models import Class
@@ -25,6 +26,7 @@ router = APIRouter(
     prefix="/api/player_characters",
     tags=["Player Characters"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -356,7 +358,7 @@ def post_pc(pc: PCPostBase, db: Session = Depends(get_db)) -> PCResponse:
 
 @router.put("/{pc_id}", response_model=PCResponse)
 def put_pc(
-    pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)
+        pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)
 ) -> PCResponse:
     """
     Updates an pc in the database by its unique id.

@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Size
 from server.models import Type
 from server.models import Class
@@ -25,6 +26,7 @@ router = APIRouter(
     prefix="/api/non_player_characters",
     tags=["Non Player Characters"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -350,7 +352,7 @@ def post_npc(npc: CreaturePostBase, db: Session = Depends(get_db)) -> NPCRespons
 
 @router.put("/{npc_id}", response_model=NPCResponse)
 def put_npc(
-    npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)
+        npc_id: str, npc: CreaturePutBase, db: Session = Depends(get_db)
 ) -> NPCResponse:
     """
     Updates an npc in the database by its unique id.

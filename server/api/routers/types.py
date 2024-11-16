@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Type
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.type import TypeModel, TypePostBase, TypePutBase, TypeResponse
@@ -14,6 +15,7 @@ router = APIRouter(
     prefix="/api/types",
     tags=["Types"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 

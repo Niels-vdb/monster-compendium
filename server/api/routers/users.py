@@ -9,6 +9,7 @@ from argon2 import PasswordHasher
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.api.auth.user_authentication import hash_password
 from server.models import PlayerCharacter
 from server.models import User
@@ -21,6 +22,7 @@ router = APIRouter(
     prefix="/api/users",
     tags=["Users"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 

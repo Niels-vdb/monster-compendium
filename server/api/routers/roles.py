@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Role
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.role import RoleModel, RolePostBase, RolePutBase, RoleResponse
@@ -13,6 +14,7 @@ router = APIRouter(
     prefix="/api/roles",
     tags=["Roles"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -129,7 +131,7 @@ def post_role(role: RolePostBase, db: Session = Depends(get_db)) -> RoleResponse
 
 @router.put("/{role_id}", response_model=RoleResponse)
 def put_role(
-    role_id: int, role: RolePutBase, db: Session = Depends(get_db)
+        role_id: int, role: RolePutBase, db: Session = Depends(get_db)
 ) -> RoleResponse:
     """
     Updates a role in the database by its unique id.

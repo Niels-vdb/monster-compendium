@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.race_subrace_bases import RaceBase, SubraceBase
@@ -29,6 +30,7 @@ router = APIRouter(
     prefix="/api/races",
     tags=["Races"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 

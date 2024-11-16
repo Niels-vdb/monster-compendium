@@ -1,24 +1,29 @@
-from fastapi.testclient import TestClient
-
-from server.models import Size
-from server.models import Type
-from server.models import Class
-from server.models import Subclass
-from server.models import DamageType
 from server.models import Attribute
+from server.models import Class
+from server.models import DamageType
 from server.models import NonPlayerCharacter
 from server.models import Party
+from server.models import Size
+from server.models import Subclass
+from server.models import Type
+from .conftest import client
 
-from .conftest import app
 
-
-client = TestClient(app)
-
-
-def test_get_npc_characters(create_npc, db_session):
+def test_no_auth_npc_characters():
     response = client.get("/api/non_player_characters")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+def test_get_npc_characters(login, create_npc):
+    token = login.get(name="user_token")
+    response = client.get(
+        "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
     assert response.status_code == 200
-    print("response.json(): ", response.json())
     assert response.json() == [
         {
             "id": 1,
@@ -48,14 +53,24 @@ def test_get_npc_characters(create_npc, db_session):
     ]
 
 
-def test_get_no_npc_characters(db_session):
-    response = client.get("/api/non_player_characters")
+def test_get_no_npc_characters(login):
+    token = login.get(name="user_token")
+    response = client.get(
+        "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_get_npc_character(create_npc, db_session):
-    response = client.get("/api/non_player_characters/1")
+def test_get_npc_character(login, create_npc):
+    token = login.get(name="user_token")
+    response = client.get(
+        "/api/non_player_characters/1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
@@ -84,26 +99,33 @@ def test_get_npc_character(create_npc, db_session):
     }
 
 
-def test_get_no_npc_character(create_npc, db_session):
-    response = client.get("/api/non_player_characters/2")
+def test_get_no_npc_character(login):
+    token = login.get(name="user_token")
+    response = client.get(
+        "/api/non_player_characters/1",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Non player character not found."}
 
 
 def test_post_npc(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_damage_type,
-    create_attribute,
-    db_session,
+        login,
+        create_class,
+        create_subclass,
+        create_race,
+        create_subrace,
+        create_size,
+        create_type,
+        create_party,
+        create_damage_type,
+        create_attribute,
 ):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
             "description": "Volo for short",
@@ -129,6 +151,7 @@ def test_post_npc(
             "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 201
     assert response.json() == {
         "message": "New npc 'Volothamp Geddarm' has been added to the database.",
@@ -160,197 +183,196 @@ def test_post_npc(
     }
 
 
-def test_post_npc_fake_class(
-    create_class,
-    db_session,
-):
+def test_post_npc_fake_class(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "classes": [2],
+            "classes": [1],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Class not found."}
 
 
-def test_post_npc_fake_subclass(
-    create_subclass,
-    db_session,
-):
+def test_post_npc_fake_subclass(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "subclasses": [2],
+            "subclasses": [1],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass not found."}
 
 
-def test_post_npc_fake_race(
-    create_race,
-    db_session,
-):
+def test_post_npc_fake_race(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "race_id": 2,
+            "race_id": 1,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Race not found."}
 
 
-def test_post_npc_fake_subrace(
-    create_subrace,
-    db_session,
-):
+def test_post_npc_fake_subrace(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "subrace_id": 2,
+            "subrace_id": 1,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subrace not found."}
 
 
-def test_post_npc_fake_size(
-    create_size,
-    db_session,
-):
+def test_post_npc_fake_size(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "size_id": 2,
+            "size_id": 1,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Size not found."}
 
 
-def test_post_npc_fake_type(
-    create_type,
-    db_session,
-):
+def test_post_npc_fake_type(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "type_id": 2,
+            "type_id": 1,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Type not found."}
 
 
-def test_post_npc_fake_party(
-    create_party,
-    db_session,
-):
+def test_post_npc_fake_party(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "parties": [2],
+            "parties": [1],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Party not found."}
 
 
-def test_post_npc_fake_resistance(
-    create_damage_type,
-    db_session,
-):
+def test_post_npc_fake_resistance(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "resistances": [{"damage_type_id": 2, "condition": "When in rage"}],
+            "resistances": [{"damage_type_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_npc_fake_immunity(
-    create_damage_type,
-    db_session,
-):
+def test_post_npc_fake_immunity(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "immunities": [{"damage_type_id": 2, "condition": "When in rage"}],
+            "immunities": [{"damage_type_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_npc_fake_vulnerabilities(
-    create_damage_type,
-    db_session,
-):
+def test_post_npc_fake_vulnerabilities(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Volothamp Geddarm",
-            "vulnerabilities": [{"damage_type_id": 2, "condition": "When in rage"}],
+            "vulnerabilities": [{"damage_type_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_npc_fake_advantages(
-    create_user,
-    create_attribute,
-    db_session,
-):
+def test_post_npc_fake_advantages(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Gobby",
             "user_id": 1,
-            "advantages": [{"attribute_id": 2, "condition": "When in rage"}],
+            "advantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_post_npc_fake_disadvantages(
-    create_user,
-    create_attribute,
-    db_session,
-):
+def test_post_npc_fake_disadvantages(login):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/non_player_characters",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Gobby",
             "user_id": 1,
-            "disadvantages": [{"attribute_id": 2, "condition": "When in rage"}],
+            "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_npc_add_put(
-    create_npc,
-    create_race,
-    create_subrace,
-    create_class,
-    create_subclass,
-    db_session,
+        login,
+        create_npc,
+        create_race,
+        create_subrace,
+        create_class,
+        create_subclass,
+        db_session,
 ):
     race_id = create_race.id
     subrace_id = create_subrace.id
@@ -381,8 +403,10 @@ def test_npc_add_put(
     size_id = size.id
     type_id = new_type.id
 
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Endofyre",
             "information": "Some new information about the big hippo.",
@@ -438,7 +462,9 @@ def test_npc_add_put(
             ],
         },
     )
+
     npc = db_session.query(NonPlayerCharacter).first()
+
     assert response.status_code == 200
     assert npc.name == "Endofyre"
     assert npc.information == "Some new information about the big hippo."
@@ -501,7 +527,13 @@ def test_npc_add_put(
 
 
 def test_npc_remove_put(
-    create_npc, create_race, create_subrace, create_class, create_subclass, db_session
+        login,
+        create_npc,
+        create_race,
+        create_subrace,
+        create_class,
+        create_subclass,
+        db_session
 ):
     race_id = create_race.id
     subrace_id = create_subrace.id
@@ -517,8 +549,10 @@ def test_npc_remove_put(
     size_id = size.id
     type_id = new_type.id
 
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Endofyre",
             "information": "",
@@ -569,7 +603,9 @@ def test_npc_remove_put(
             ],
         },
     )
+
     npc = db_session.query(NonPlayerCharacter).first()
+
     assert response.status_code == 200
     assert npc.name == "Endofyre"
     assert npc.information == "Some say she knows everything, but shares very little."
@@ -622,68 +658,95 @@ def test_npc_remove_put(
     }
 
 
-def test_npc_fake_race_put(create_npc, db_session):
+def test_npc_fake_race_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"race_id": 3}
+        f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"race_id": 3}
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Race not found."}
 
 
-def test_npc_fake_subrace_put(create_npc, db_session):
+def test_npc_fake_subrace_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"subrace_id": 3}
+        f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"subrace_id": 3}
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subrace not found."}
 
 
-def test_npc_fake_size_put(create_npc, db_session):
+def test_npc_fake_size_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"size_id": 3}
+        f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"size_id": 3}
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Size not found."}
 
 
-def test_npc_fake_type_put(create_npc, db_session):
+def test_npc_fake_type_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
-        f"/api/non_player_characters/{create_npc.id}", json={"type_id": 3}
+        f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"type_id": 3}
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Type not found."}
 
 
-def test_npc_fake_class_put(create_npc, db_session):
+def test_npc_fake_class_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"classes": [{"class_id": 3, "add_class": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Class not found."}
 
 
-def test_npc_fake_subclass_put(create_npc, db_session):
+def test_npc_fake_subclass_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"subclasses": [{"subclass_id": 3, "add_subclass": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass not found."}
 
 
-def test_npc_fake_party_put(create_npc, db_session):
+def test_npc_fake_party_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"parties": [{"party_id": 3, "add_party": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Party not found."}
 
 
-def test_npc_fake_resistance_put(create_npc, db_session):
+def test_npc_fake_resistance_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "resistances": [
                 {
@@ -693,13 +756,16 @@ def test_npc_fake_resistance_put(create_npc, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_npc_fake_vulnerability_put(create_npc, db_session):
+def test_npc_fake_vulnerability_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "vulnerabilities": [
                 {
@@ -709,13 +775,16 @@ def test_npc_fake_vulnerability_put(create_npc, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_npc_fake_immunity_put(create_npc, db_session):
+def test_npc_fake_immunity_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "immunities": [
                 {
@@ -725,13 +794,16 @@ def test_npc_fake_immunity_put(create_npc, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_npc_fake_advantage_put(create_npc, db_session):
+def test_npc_fake_advantage_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "advantages": [
                 {
@@ -741,13 +813,16 @@ def test_npc_fake_advantage_put(create_npc, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_npc_fake_disadvantage_put(create_npc, db_session):
+def test_npc_fake_disadvantage_put(login, create_npc):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "disadvantages": [
                 {
@@ -757,24 +832,32 @@ def test_npc_fake_disadvantage_put(create_npc, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_npc_delete(create_npc, db_session):
-    response = client.delete(f"/api/non_player_characters/{create_npc.id}")
-    npc = (
-        db_session.query(NonPlayerCharacter)
-        .filter(NonPlayerCharacter.id == create_npc.id)
-        .first()
+def test_npc_delete(login, create_npc, db_session):
+    token = login.get(name="user_token")
+    response = client.delete(
+        f"/api/non_player_characters/{create_npc.id}",
+        headers={"Authorization": f"Bearer {token}"},
     )
+
+    npc = db_session.get(NonPlayerCharacter, create_npc.id)
+
     assert response.status_code == 200
     assert response.json() == {"message": "NPC has been deleted."}
-    assert npc == None
+    assert npc is None
 
 
-def test_npc_fake_delete(create_npc, db_session):
-    response = client.delete(f"/api/non_player_characters/2")
+def test_npc_fake_delete(login, create_npc):
+    token = login.get(name="user_token")
+    response = client.delete(
+        f"/api/non_player_characters/2",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
     assert response.status_code == 404
     assert response.json() == {
         "detail": "The NPC you are trying to delete does not exist."

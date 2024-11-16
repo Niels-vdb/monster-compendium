@@ -1,17 +1,17 @@
 from typing import Any
-import pytest
-from argon2 import PasswordHasher
 
+import pytest
+from dotenv import load_dotenv
+from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-from starlette.testclient import TestClient
 
+from server.api import get_db
 from server.api.auth.user_authentication import hash_password
 from server.main import app
-from server.api import get_db
-
+from server.models import Attribute
 from server.models import Base
+from server.models import Class
 from server.models import (
     CreatureAdvantages,
     CreatureDisadvantages,
@@ -19,26 +19,25 @@ from server.models import (
     CreatureResistances,
     CreatureVulnerabilities,
 )
-from server.models import Enemy
-from server.models import PlayerCharacter
-from server.models import NonPlayerCharacter
-from server.models import Race
-from server.models import Subrace
-from server.models import Class
-from server.models import Subclass
-from server.models import Size
-from server.models import Type
 from server.models import DamageType
-from server.models import Attribute
-from server.models import User
+from server.models import Enemy
+from server.models import NonPlayerCharacter
 from server.models import Party
+from server.models import PlayerCharacter
+from server.models import Race
 from server.models import Role
+from server.models import Size
+from server.models import Subclass
+from server.models import Subrace
+from server.models import Type
+from server.models import User
 
 load_dotenv(override=True)
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
 client = TestClient(app)
+
 
 # Fixture to create a fresh in-memory database for each test
 @pytest.fixture(scope="function")
@@ -81,8 +80,36 @@ def override_get_db(db_session):
 
 
 @pytest.fixture
-def create_user(db_session, create_role, create_party):
+def login(db_session):
     id = "1"
+    user = "Admin"
+    username = "admin"
+    password = hash_password("password")
+
+    new_user = User(
+        id=id,
+        username=username,
+        name=user,
+        password=password,
+    )
+
+    db_session.add(new_user)
+    db_session.commit()
+    db_session.refresh(new_user)
+
+    form_data = {
+        "username": "admin",
+        "password": "password"
+    }
+
+    response = client.post("/token", data=form_data)
+
+    return response.cookies
+
+
+@pytest.fixture
+def create_user(db_session, create_role, create_party):
+    id = "2"
     user = "Test"
     username = "test"
     password = hash_password("password")
@@ -102,16 +129,6 @@ def create_user(db_session, create_role, create_party):
 
     return new_user
 
-@pytest.fixture
-def login(create_user):
-    form_data = {
-        "username": "admin",
-        "password": "password"
-    }
-
-    response = client.post("/token", data=form_data)
-
-    return response.json()
 
 @pytest.fixture
 def create_party(db_session):
@@ -129,6 +146,7 @@ def create_role(db_session):
     db_session.commit()
     db_session.refresh(new_role)
     return new_role
+
 
 @pytest.fixture
 def create_damage_type(db_session):
@@ -204,14 +222,14 @@ def create_type(db_session):
 
 @pytest.fixture
 def create_npc(
-    create_size,
-    create_party,
-    create_class,
-    create_subclass,
-    create_damage_type,
-    create_attribute,
-    create_type,
-    db_session,
+        create_size,
+        create_party,
+        create_class,
+        create_subclass,
+        create_damage_type,
+        create_attribute,
+        create_type,
+        db_session,
 ):
     npc = "Fersi (Oracle)"
     attributes: dict[str, Any] = {}
@@ -275,17 +293,17 @@ def create_npc(
 
 @pytest.fixture
 def create_pc(
-    create_user,
-    create_party,
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_damage_type,
-    create_attribute,
-    db_session,
+        create_user,
+        create_party,
+        create_class,
+        create_subclass,
+        create_race,
+        create_subrace,
+        create_size,
+        create_type,
+        create_damage_type,
+        create_attribute,
+        db_session,
 ):
     pc = "Rhoetus"
     attributes: dict[str, Any] = {}
@@ -350,14 +368,14 @@ def create_pc(
 
 @pytest.fixture
 def create_enemy(
-    create_party,
-    create_class,
-    create_subclass,
-    create_size,
-    create_type,
-    create_damage_type,
-    create_attribute,
-    db_session,
+        create_party,
+        create_class,
+        create_subclass,
+        create_size,
+        create_type,
+        create_damage_type,
+        create_attribute,
+        db_session,
 ):
     enemy = "Giff"
     attributes: dict[str, Any] = {}

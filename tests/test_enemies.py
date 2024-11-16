@@ -1,24 +1,27 @@
-from typing import Any
-from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from server.models import Size
-from server.models import Type
-from server.models import Class
-from server.models import Subclass
-from server.models import DamageType
 from server.models import Attribute
+from server.models import Class
+from server.models import DamageType
 from server.models import Enemy
 from server.models import Party
+from server.models import Size
+from server.models import Subclass
+from server.models import Type
+from .conftest import client
 
-from .conftest import app
 
-
-client = TestClient(app)
-
-
-def test_get_enemies(create_enemy, db_session):
+def test_no_auth_enemies():
     response = client.get("/api/enemies")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+def test_get_enemies(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.get("/api/enemies", headers={"Authorization": f"Bearer {token}"})
+
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -49,14 +52,18 @@ def test_get_enemies(create_enemy, db_session):
     ]
 
 
-def test_get_no_enemies(db_session):
-    response = client.get("/api/enemies")
+def test_get_no_enemies(login):
+    token = login.get(name="user_token")
+    response = client.get("/api/enemies", headers={"Authorization": f"Bearer {token}"})
+
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_get_enemy(create_enemy, db_session):
-    response = client.get("/api/enemies/1")
+def test_get_enemy(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.get("/api/enemies/1", headers={"Authorization": f"Bearer {token}"})
+
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
@@ -85,26 +92,30 @@ def test_get_enemy(create_enemy, db_session):
     }
 
 
-def test_get_no_enemy(create_enemy, db_session):
-    response = client.get("/api/enemies/2")
+def test_get_no_enemy(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.get("/api/enemies/2", headers={"Authorization": f"Bearer {token}"})
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Enemy not found."}
 
 
 def test_post_enemy(
-    create_class,
-    create_subclass,
-    create_race,
-    create_subrace,
-    create_size,
-    create_type,
-    create_party,
-    create_damage_type,
-    create_attribute,
-    db_session,
+        login,
+        create_class,
+        create_subclass,
+        create_race,
+        create_subrace,
+        create_size,
+        create_type,
+        create_party,
+        create_damage_type,
+        create_attribute,
 ):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "description": " A large hippo like creature",
@@ -130,6 +141,7 @@ def test_post_enemy(
             "disadvantages": [{"attribute_id": 1, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 201
     assert response.json() == {
         "message": "New enemy 'Giff' has been added to the database.",
@@ -161,199 +173,197 @@ def test_post_enemy(
     }
 
 
-def test_post_enemy_fake_class(
-    create_class,
-    db_session,
-):
+def test_post_enemy_fake_class(login, create_class):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "classes": [2],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Class not found."}
 
 
-def test_post_enemy_fake_subclass(
-    create_subclass,
-    db_session,
-):
+def test_post_enemy_fake_subclass(login, create_subclass):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "subclasses": [2],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass not found."}
 
 
-def test_post_enemy_fake_race(
-    create_race,
-    db_session,
-):
+def test_post_enemy_fake_race(login, create_race):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "race_id": 2,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Race not found."}
 
 
-def test_post_enemy_fake_subrace(
-    create_subrace,
-    db_session,
-):
+def test_post_enemy_fake_subrace(login, create_subrace):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "subrace_id": 2,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subrace not found."}
 
 
-def test_post_enemy_fake_size(
-    create_size,
-    db_session,
-):
+def test_post_enemy_fake_size(login, create_size):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "size_id": 2,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Size not found."}
 
 
-def test_post_enemy_fake_type(
-    create_type,
-    db_session,
-):
+def test_post_enemy_fake_type(login, create_type):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "type_id": 2,
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Type not found."}
 
 
-def test_post_enemy_fake_party(
-    create_party,
-    db_session,
-):
+def test_post_enemy_fake_party(login, create_party):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "parties": [2],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Party not found."}
 
 
-def test_post_enemy_fake_resistance(
-    create_damage_type,
-    db_session,
-):
+def test_post_enemy_fake_resistance(login, create_damage_type):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "resistances": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_enemy_fake_immunity(
-    create_damage_type,
-    db_session,
-):
+def test_post_enemy_fake_immunity(login, create_damage_type):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "immunities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_enemy_fake_vulnerabilities(
-    create_damage_type,
-    db_session,
-):
+def test_post_enemy_fake_vulnerabilities(login, create_damage_type):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "vulnerabilities": [{"damage_type_id": 2, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_post_enemy_fake_advantages(
-    create_user,
-    create_attribute,
-    db_session,
-):
+def test_post_enemy_fake_advantages(login, create_attribute):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "user_id": 1,
             "advantages": [{"attribute_id": 2, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_post_enemy_fake_disadvantages(
-    create_user,
-    create_attribute,
-    db_session,
-):
+def test_post_enemy_fake_disadvantages(login, create_attribute):
+    token = login.get(name="user_token")
     response = client.post(
         "/api/enemies",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Giff",
             "user_id": 1,
             "disadvantages": [{"attribute_id": 2, "condition": "When in rage"}],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
 def test_enemy_add_put(
-    create_enemy,
-    create_race,
-    create_subrace,
-    create_class,
-    create_subclass,
-    db_session,
+        login,
+        create_enemy,
+        create_race,
+        create_subrace,
+        create_class,
+        create_subclass,
+        db_session,
 ):
-
     race_id = create_race.id
     subrace_id = create_subrace.id
 
@@ -382,8 +392,11 @@ def test_enemy_add_put(
 
     size_id = size.id
     type_id = new_type.id
+
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Froghemoth",
             "information": "Some new information about Froghemoth.",
@@ -439,8 +452,10 @@ def test_enemy_add_put(
             ],
         },
     )
+
     stmt = select(Enemy)
     enemy = db_session.execute(stmt).scalar_one_or_none()
+
     assert response.status_code == 200
     assert enemy.name == "Froghemoth"
     assert enemy.information == "Some new information about Froghemoth."
@@ -507,10 +522,11 @@ def test_enemy_add_put(
 
 
 def test_enemy_remove_put(
-    create_enemy,
-    create_race,
-    create_subrace,
-    db_session,
+        login,
+        create_enemy,
+        create_race,
+        create_subrace,
+        db_session,
 ):
     race_id = create_race.id
     subrace_id = create_subrace.id
@@ -525,8 +541,11 @@ def test_enemy_remove_put(
 
     size_id = size.id
     type_id = new_type.id
+
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Froghemoth",
             "information": "Some new information about Froghemoth.",
@@ -592,8 +611,10 @@ def test_enemy_remove_put(
             ],
         },
     )
+
     stmt = select(Enemy)
     enemy = db_session.execute(stmt).scalar_one_or_none()
+
     assert response.status_code == 200
     assert enemy.name == "Froghemoth"
     assert enemy.information == "Some new information about Froghemoth."
@@ -647,60 +668,95 @@ def test_enemy_remove_put(
     }
 
 
-def test_enemy_fake_race_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"race_id": 3})
+def test_enemy_fake_race_put(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.put(
+        f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"race_id": 3}
+    )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Race not found."}
 
 
-def test_enemy_fake_subrace_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"subrace_id": 3})
+def test_enemy_fake_subrace_put(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.put(
+        f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"subrace_id": 3}
+    )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subrace not found."}
 
 
-def test_enemy_fake_size_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"size_id": 3})
+def test_enemy_fake_size_put(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.put(
+        f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"size_id": 3}
+    )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Size not found."}
 
 
-def test_enemy_fake_type_put(create_enemy, db_session):
-    response = client.put(f"/api/enemies/{create_enemy.id}", json={"type_id": 3})
+def test_enemy_fake_type_put(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.put(
+        f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"type_id": 3}
+    )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Type not found."}
 
 
-def test_enemy_fake_class_put(create_enemy, db_session):
+def test_enemy_fake_class_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"classes": [{"class_id": 3, "add_class": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Class not found."}
 
 
-def test_enemy_fake_subclass_put(create_enemy, db_session):
+def test_enemy_fake_subclass_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"subclasses": [{"subclass_id": 3, "add_subclass": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Subclass not found."}
 
 
-def test_enemy_fake_party_put(create_enemy, db_session):
+def test_enemy_fake_party_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={"parties": [{"party_id": 3, "add_party": False}]},
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Party not found."}
 
 
-def test_enemy_fake_resistance_put(create_enemy, db_session):
+def test_enemy_fake_resistance_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "resistances": [
                 {
@@ -710,13 +766,16 @@ def test_enemy_fake_resistance_put(create_enemy, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_enemy_fake_vulnerability_put(create_enemy, db_session):
+def test_enemy_fake_vulnerability_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "vulnerabilities": [
                 {
@@ -726,13 +785,16 @@ def test_enemy_fake_vulnerability_put(create_enemy, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_enemy_fake_immunity_put(create_enemy, db_session):
+def test_enemy_fake_immunity_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "immunities": [
                 {
@@ -742,13 +804,16 @@ def test_enemy_fake_immunity_put(create_enemy, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Damage type not found."}
 
 
-def test_enemy_fake_advantage_put(create_enemy, db_session):
+def test_enemy_fake_advantage_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "advantages": [
                 {
@@ -758,13 +823,16 @@ def test_enemy_fake_advantage_put(create_enemy, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_enemy_fake_disadvantage_put(create_enemy, db_session):
+def test_enemy_fake_disadvantage_put(login, create_enemy):
+    token = login.get(name="user_token")
     response = client.put(
         f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "disadvantages": [
                 {
@@ -774,20 +842,32 @@ def test_enemy_fake_disadvantage_put(create_enemy, db_session):
             ],
         },
     )
+
     assert response.status_code == 404
     assert response.json() == {"detail": "Attribute not found."}
 
 
-def test_enemy_delete(create_enemy, db_session):
-    response = client.delete(f"/api/enemies/{create_enemy.id}")
+def test_enemy_delete(login, create_enemy, db_session):
+    token = login.get(name="user_token")
+    response = client.delete(
+        f"/api/enemies/{create_enemy.id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
     enemy = db_session.get(Enemy, create_enemy.id)
+
     assert response.status_code == 200
     assert response.json() == {"message": "Enemy has been deleted."}
-    assert enemy == None
+    assert enemy is None
 
 
-def test_enemy_fake_delete(create_enemy, db_session):
-    response = client.delete(f"/api/enemies/2")
+def test_enemy_fake_delete(login, create_enemy):
+    token = login.get(name="user_token")
+    response = client.delete(
+        f"/api/enemies/2",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
     assert response.status_code == 404
     assert response.json() == {
         "detail": "The enemy you are trying to delete does not exist."

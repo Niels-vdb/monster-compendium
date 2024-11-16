@@ -5,15 +5,17 @@ from sqlalchemy.orm import Session
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Class
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.cls import ClassModel, ClassPostBase, ClassPutBase, ClassResponse
-
 
 router = APIRouter(
     prefix="/api/classes",
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
+
 )
 
 
@@ -154,7 +156,7 @@ def post_class(cls: ClassPostBase, db: Session = Depends(get_db)) -> ClassRespon
 
 @router.put("/{class_id}", response_model=ClassResponse)
 def put_class(
-    class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)
+        class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)
 ) -> ClassResponse:
     """
     Updates an class in the database by its unique id.

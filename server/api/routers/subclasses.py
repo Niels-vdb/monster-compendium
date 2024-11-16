@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Class
 from server.models import Subclass
 from server.api.models.delete_response import DeleteResponse
@@ -15,11 +16,11 @@ from server.api.models.subclass import (
     SubclassResponse,
 )
 
-
 router = APIRouter(
     prefix="/api/subclasses",
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -86,7 +87,7 @@ def get_subclass(subclass_id: int, db: Session = Depends(get_db)) -> SubclassMod
 
 @router.post("/", response_model=SubclassResponse, status_code=201)
 def post_subclass(
-    subclass: SubclassPostBase, db: Session = Depends(get_db)
+        subclass: SubclassPostBase, db: Session = Depends(get_db)
 ) -> SubclassResponse:
     """
     Creates a new row in the subclasses table.
@@ -150,7 +151,7 @@ def post_subclass(
 
 @router.put("/{subclass_id}", response_model=SubclassResponse)
 def put_subclass(
-    subclass_id: int, subclass: SubclassPutBase, db: Session = Depends(get_db)
+        subclass_id: int, subclass: SubclassPutBase, db: Session = Depends(get_db)
 ) -> SubclassResponse:
     """
     Updates a subclass in the database by its unique id.

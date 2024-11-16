@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Size
 from server.api.models.size import SizeModel, SizePostBase, SizePutBase, SizeResponse
 from server.api.models.delete_response import DeleteResponse
@@ -13,6 +14,7 @@ router = APIRouter(
     prefix="/api/sizes",
     tags=["Sizes"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -125,7 +127,7 @@ def post_size(size: SizePostBase, db: Session = Depends(get_db)) -> SizeResponse
 
 @router.put("/{size_id}", response_model=SizeResponse)
 def put_size(
-    size_id: int, size: SizePutBase, db: Session = Depends(get_db)
+        size_id: int, size: SizePutBase, db: Session = Depends(get_db)
 ) -> SizeResponse:
     """
     Updates a size in the database by its unique id.

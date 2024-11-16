@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import DamageType
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.damage_type import (
@@ -18,6 +19,8 @@ router = APIRouter(
     prefix="/api/damage_types",
     tags=["Damage Types"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
+
 )
 
 
@@ -51,7 +54,7 @@ def get_damage_types(db: Session = Depends(get_db)) -> list[DamageTypeModel]:
 
 @router.get("/{damage_type_id}", response_model=DamageTypeModel)
 def get_damage_type(
-    damage_type_id: int, db: Session = Depends(get_db)
+        damage_type_id: int, db: Session = Depends(get_db)
 ) -> DamageTypeModel:
     """
     Queries the damage types table in the database table for a specific row with the id of damage_type_id.
@@ -82,7 +85,7 @@ def get_damage_type(
 
 @router.post("/", response_model=DamageTypeResponse, status_code=201)
 def post_damage_type(
-    damage_type: DamageTypePostBase, db: Session = Depends(get_db)
+        damage_type: DamageTypePostBase, db: Session = Depends(get_db)
 ) -> DamageTypeResponse:
     """
     Creates a new row in the damage_types table.
@@ -138,7 +141,7 @@ def post_damage_type(
 
 @router.put("/{damage_type_id}", response_model=DamageTypeResponse)
 def put_damage_type(
-    damage_type_id: int, damage_type: DamageTypePutBase, db: Session = Depends(get_db)
+        damage_type_id: int, damage_type: DamageTypePutBase, db: Session = Depends(get_db)
 ) -> DamageTypeResponse:
     """
     Updates a damage type in the database by its unique id.
@@ -201,7 +204,7 @@ def put_damage_type(
 
 @router.delete("/{damage_type_id}", response_model=DeleteResponse)
 def delete_damage_type(
-    damage_type_id: int, db: Session = Depends(get_db)
+        damage_type_id: int, db: Session = Depends(get_db)
 ) -> DeleteResponse:
     """
     Deletes an damage type from the database.

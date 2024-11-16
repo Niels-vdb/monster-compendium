@@ -1,11 +1,5 @@
 from .conftest import client
 
-#
-# def test_not_authorized(db_session):
-#     response = client.get("/classes/")
-#
-#     assert response.status_code == 401
-#     assert response.json() == {"detail": "Not authenticated"}
 
 def test_login(create_user):
     form_data = {
@@ -28,3 +22,10 @@ def test_incorrect_login(db_session):
 
     assert response.status_code == 401
     assert response.json() == {'detail': 'Incorrect username or password'}
+
+
+def test_not_authorized(db_session):
+    response = client.get("/api/attributes/")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}

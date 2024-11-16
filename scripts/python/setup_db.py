@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 
 from create_db import session
 from config.logger_config import logger
+from server.api.auth.user_authentication import hash_password
 from server.models.attributes import Attribute
 from server.models.creatures import CreatureClasses
 from server.models.enemies import Enemy
@@ -68,18 +69,21 @@ def initialize_users() -> None:
         "admin": {
             "name": "Admin",
             "username": "admin",
+            "password": hash_password("password"),
             "roles": ["Admin", "Player"],
             "parties": ["Murder Hobo Party"],
         },
         "player": {
             "name": "Player",
             "username": "player",
+            "password": hash_password("password"),
             "roles": ["Player"],
             "parties": ["Murder Hobo Party"],
         },
         "dungeonmaster": {
             "name": "Dungeon Master",
             "username": "dungeonmaster",
+            "password": hash_password("password"),
             "roles": ["Dungeon Master"],
             "parties": ["Murder Hobo Party"],
         },
@@ -103,7 +107,6 @@ def initialize_users() -> None:
                 ).scalar_one_or_none()
                 for party in info["parties"]
             ]
-
             new_user = User(**info)
             session.add(new_user)
 
@@ -1065,7 +1068,7 @@ def initialize_subraces() -> None:
         for subrace in subraces:
 
             if not session.execute(
-                select(Subrace).where(Subrace.name == subrace)
+                    select(Subrace).where(Subrace.name == subrace)
             ).scalar_one_or_none():
                 logger.info(
                     f"Adding subrace '{subrace}' of race '{race}' to the subraces table."
@@ -1244,7 +1247,7 @@ def create_creatures() -> None:
         del attributes["creature_type"]
 
         if not session.execute(
-            select(creature_type).where(creature_type.name == creature)
+                select(creature_type).where(creature_type.name == creature)
         ).scalar_one_or_none():
             logger.info(
                 f"Adding '{creature}' to the {creature_type.__tablename__} table."

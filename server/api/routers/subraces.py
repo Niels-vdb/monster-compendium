@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.models.base_response import BaseResponse
@@ -32,6 +33,7 @@ router = APIRouter(
     prefix="/api/subraces",
     tags=["Races"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -263,7 +265,7 @@ def get_subrace(subrace_id: int, db: Session = Depends(get_db)) -> SubraceModel:
 
 @router.post("/", response_model=SubraceResponse, status_code=201)
 def post_subrace(
-    subrace: SubracePostBase, db: Session = Depends(get_db)
+        subrace: SubracePostBase, db: Session = Depends(get_db)
 ) -> SubraceResponse:
     """
     Creates a new row in the subraces table.
@@ -506,7 +508,7 @@ def post_subrace(
 
 @router.put("/{subrace_id}", response_model=SubraceResponse)
 def put_subrace(
-    subrace_id: int, subrace: SubracePutBase, db: Session = Depends(get_db)
+        subrace_id: int, subrace: SubracePutBase, db: Session = Depends(get_db)
 ) -> SubraceResponse:
     """
     Updates a subrace in the database by its unique id.

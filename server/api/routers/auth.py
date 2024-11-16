@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from server.api import get_db
 from server.api.auth.user_authentication import authenticate_user, create_access_token
 from server.api.models.base_response import BaseResponse
-from server.api.models.token import Token
 from config.logger_config import logger
 from server.models import User
 
@@ -69,9 +68,6 @@ async def login_for_access_token(
 
     logger.info(f"Setting jwt token cookie of user '{user.id}'")
     response.set_cookie(key="user_token", value=access_token)
-
-    logger.info(f"Setting user_id cookie of user '{user.id}'")
-    response.set_cookie(key="user_id", value=user.id)
 
     return BaseResponse(
         message="Your logged in with valid credentials. Welcome.",

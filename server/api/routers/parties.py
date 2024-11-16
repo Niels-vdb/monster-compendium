@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
 from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.models import Party
 from server.api.models.delete_response import DeleteResponse
 from server.api.models.party import (
@@ -18,6 +19,7 @@ router = APIRouter(
     prefix="/api/parties",
     tags=["Parties"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -138,7 +140,7 @@ def post_party(party: PartyPostBase, db: Session = Depends(get_db)) -> PartyResp
 
 @router.put("/{party_id}", response_model=PartyResponse)
 def put_party(
-    party_id: int, party: PartyPutBase, db: Session = Depends(get_db)
+        party_id: int, party: PartyPutBase, db: Session = Depends(get_db)
 ) -> PartyResponse:
     """
     Updates an party in the database by its unique id.

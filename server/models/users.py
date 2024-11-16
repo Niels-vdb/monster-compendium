@@ -25,7 +25,7 @@ class User(CustomBase):
     # id = Column(Uuid, primary_key=True, default=uuid.uuid4())
     username = Column(String(50), nullable=False, unique=True)
     name = Column(String(50), nullable=False)
-    password = Column(String(80), nullable=True)
+    password = Column(String(80), nullable=False)
     image = Column(BLOB, nullable=True)
 
     # 1-n relationships
