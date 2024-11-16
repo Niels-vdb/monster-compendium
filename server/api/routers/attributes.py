@@ -1,72 +1,32 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
+from typing import Sequence, Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, Row, RowMapping
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
+from server.models import Attribute
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.attributes import Attribute
+from server.api.models.attribute import (
+    AttributeModel,
+    AttributePostBase,
+    AttributePutBase,
+    AttributeResponse,
+)
 
 router = APIRouter(
     prefix="/api/attributes",
     tags=["Attributes"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
-class AttributeModel(BaseModel):
-    """
-    Represents an attribute entity.
-
-    - `id`: Unique identifier of the attribute.
-    - `name`: Name of the attribute.
-    """
-
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AttributePostBase(BaseModel):
-    """
-    Schema for creating a new attribute.
-
-    - `attribute_name`: Name of the attribute to be created, must be between 1 and 50 characters.
-    """
-
-    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class AttributePutBase(BaseModel):
-    """
-    Schema for updating an attribute.
-
-    - `attribute_name`: Updated name of the attribute, must be between 1 and 50 characters.
-    """
-
-    attribute_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class AttributeResponse(BaseResponse):
-    """
-    Response model for creating or retrieving an attribute.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `attribute`: The actual attribute data, represented by the `AttributeModel`.
-    """
-
-    attribute: AttributeModel
-
-
 @router.get("/", response_model=list[AttributeModel])
-def get_attributes(db: Session = Depends(get_db)) -> list[AttributeModel]:
+def get_attributes(db: Session = Depends(get_db)) -> Sequence[Attribute]:
     """
     Queries the attributes database table for all rows.
 
@@ -94,7 +54,7 @@ def get_attributes(db: Session = Depends(get_db)) -> list[AttributeModel]:
 
 
 @router.get("/{attribute_id}", response_model=AttributeModel)
-def get_attribute(attribute_id: int, db: Session = Depends(get_db)) -> AttributeModel:
+def get_attribute(attribute_id: int, db: Session = Depends(get_db)) -> Row[Any] | RowMapping:
     """
     Queries the attributes table in the database table for a specific row with the id of attribute_id.
 
@@ -124,7 +84,7 @@ def get_attribute(attribute_id: int, db: Session = Depends(get_db)) -> Attribute
 
 @router.post("/", response_model=AttributeResponse, status_code=201)
 def post_attribute(
-    attribute: AttributePostBase, db: Session = Depends(get_db)
+        attribute: AttributePostBase, db: Session = Depends(get_db)
 ) -> AttributeResponse:
     """
     Creates a new row in the attributes table.
@@ -178,7 +138,7 @@ def post_attribute(
 
 @router.put("/{attribute_id}", response_model=AttributeResponse)
 def put_attribute(
-    attribute_id: int, attribute: AttributePutBase, db: Session = Depends(get_db)
+        attribute_id: int, attribute: AttributePutBase, db: Session = Depends(get_db)
 ) -> AttributeResponse:
     """
     Updates an attribute in the database by its unique id.
@@ -242,7 +202,7 @@ def put_attribute(
 
 @router.delete("/{attribute_id}", response_model=DeleteResponse)
 def delete_attribute(
-    attribute_id: int, db: Session = Depends(get_db)
+        attribute_id: int, db: Session = Depends(get_db)
 ) -> DeleteResponse:
     """
     Deletes an attribute from the database.

@@ -8,18 +8,19 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
 from server.api.routers.attributes import AttributeModel
 from server.api.routers.damage_types import DamageTypeModel
 from server.api.models.base_response import BaseResponse
 from server.api.models.delete_response import DeleteResponse
-from server.api.models.attributes import PostAttribute, PutAttribute
-from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.models.attribute import PostAttribute, PutAttribute
+from server.api.models.damage_type import PostDamageType, PutDamageType
 from server.api.models.race_subrace_bases import RaceBase, SubraceBase
-from server.database.models.attributes import Attribute
-from server.database.models.damage_types import DamageType
-from server.database.models.races import Race
-from server.database.models.subraces import (
+from server.models.attributes import Attribute
+from server.models.damage_types import DamageType
+from server.models.races import Race
+from server.models.subraces import (
     Subrace,
     SubraceAdvantages,
     SubraceDisadvantages,
@@ -32,6 +33,7 @@ router = APIRouter(
     prefix="/api/subraces",
     tags=["Races"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
 
 
@@ -263,7 +265,7 @@ def get_subrace(subrace_id: int, db: Session = Depends(get_db)) -> SubraceModel:
 
 @router.post("/", response_model=SubraceResponse, status_code=201)
 def post_subrace(
-    subrace: SubracePostBase, db: Session = Depends(get_db)
+        subrace: SubracePostBase, db: Session = Depends(get_db)
 ) -> SubraceResponse:
     """
     Creates a new row in the subraces table.
@@ -506,7 +508,7 @@ def post_subrace(
 
 @router.put("/{subrace_id}", response_model=SubraceResponse)
 def put_subrace(
-    subrace_id: int, subrace: SubracePutBase, db: Session = Depends(get_db)
+        subrace_id: int, subrace: SubracePutBase, db: Session = Depends(get_db)
 ) -> SubraceResponse:
     """
     Updates a subrace in the database by its unique id.

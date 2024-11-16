@@ -1,70 +1,22 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
-from server.api.models.class_subclass_bases import ClassBase, SubclassBase
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
+from server.models import Class
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.classes import Class
-
+from server.api.models.cls import ClassModel, ClassPostBase, ClassPutBase, ClassResponse
 
 router = APIRouter(
     prefix="/api/classes",
     tags=["Classes"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
+
 )
-
-
-class ClassModel(ClassBase):
-    """
-    Represents a class entity.
-
-    - `id`: Unique identifier of the class.
-    - `name`: Name of the class.
-    - `subclasses`: List of related subclass entities.
-    """
-
-    subclasses: list[SubclassBase] | None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class ClassPostBase(BaseModel):
-    """
-    Schema for creating a new class.
-
-    - `class_name`: Name of the class to be created, must be between 1 and 50 characters.
-    """
-
-    class_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class ClassPutBase(BaseModel):
-    """
-    Schema for updating a class.
-
-    - `class_name`: Name of the class to be created, must be between 1 and 50 characters.
-    """
-
-    class_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class ClassResponse(BaseResponse):
-    """
-    Response model for creating or retrieving a class.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `cls`: The actual class data, represented by the `ClassModel`.
-    """
-
-    cls: ClassModel
 
 
 @router.get("/", response_model=list[ClassModel])
@@ -204,7 +156,7 @@ def post_class(cls: ClassPostBase, db: Session = Depends(get_db)) -> ClassRespon
 
 @router.put("/{class_id}", response_model=ClassResponse)
 def put_class(
-    class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)
+        class_id: int, cls: ClassPutBase, db: Session = Depends(get_db)
 ) -> ClassResponse:
     """
     Updates an class in the database by its unique id.

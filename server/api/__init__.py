@@ -1,7 +1,7 @@
-from ..database.create import Session
+from scripts.python.create_db import Session
 
 
-def get_db():
+async def get_db():
     db = Session()
     try:
         yield db

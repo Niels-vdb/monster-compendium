@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from server.logger.logger import logger
+from config.logger_config import logger
 
 
 class Utilities:

@@ -1,6 +1,5 @@
 from typing import Any
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -9,113 +8,22 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
-from server.api.models.creatures import CreatureBase
-from server.api.models.user_relations import PartyBase, RoleBase, UserBase
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
+from server.api.auth.user_authentication import hash_password
+from server.models import PlayerCharacter
+from server.models import User
+from server.models import Role
+from server.models import Party
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.users import User
-from server.database.models.roles import Role
-from server.database.models.parties import Party
+from server.api.models.user import UserModel, UserPostBase, UserPutBase, UserResponse
 
 router = APIRouter(
     prefix="/api/users",
     tags=["Users"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
-
-
-class UserModel(UserBase):
-    """
-    Extension of the UserBase entity.
-
-    - `id`: Unique identifier of the user.
-    - `name`: Name of the user.
-    - `username`: Username of the user.
-    - `image`: The user's image. NOT IMPLEMENTED YET!
-    - `parties`: The parties the user is in.
-    - `characters`: The characters the user has.
-    """
-
-    parties: list[PartyBase] | None
-    roles: list[RoleBase] | None
-    characters: list[CreatureBase] | None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserPostBase(BaseModel):
-    """
-    Schema for creating a new user.
-
-    - `name`: Name of the user to be created, must be between 1 and 50 characters.
-    - `username`: Username of the user, must be between 1 and 50 characters.
-    - `image`: The user's image. NOT IMPLEMENTED YET!
-    - `parties`: List of parties the user is in.
-    - `roles`: List of the roles of the user.
-    """
-
-    name: Annotated[str, Field(min_length=1, max_length=50)]
-    username: Annotated[str, Field(min_length=1, max_length=50)]
-    image: bytes | None = None
-    password: str | None = None
-    parties: list[int] | None = None
-    roles: list[int] | None = None
-
-
-class PartyPut(BaseModel):
-    """Creates model for updating the parties the user is in."""
-
-    party_id: int
-    add_party: bool
-
-
-class RolePut(BaseModel):
-    """Creates model for updating the roles the user is."""
-
-    role_id: int
-    add_role: bool
-
-
-class CharacterPut(BaseModel):
-    """Creates model for updating the characters a user has."""
-
-    character_id: int
-    add_character: bool
-
-
-class UserPutBase(BaseModel):
-    """
-    Schema for updating a user.
-
-    - `name`: Name of the user to be created, must be between 1 and 50 characters.
-    - `username`: Username of the user, must be between 1 and 50 characters.
-    - `image`: The user's image. NOT IMPLEMENTED YET!
-    - `parties`: List of parties the user is in.
-    - `roles`: List of the roles of the user.
-    - `characters`: List of all characters of the user.
-    """
-
-    name: Annotated[str, Field(min_length=1, max_length=50)] | None = None
-    username: Annotated[str, Field(min_length=1, max_length=50)] | None = None
-    image: bytes | None = None
-    password: str | None = None
-    parties: list[PartyPut] | None = None
-    roles: list[RolePut] | None = None
-    characters: list[CharacterPut] | None = None
-
-
-class UserResponse(BaseResponse):
-    """
-    Response model for creating or retrieving a user.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `user`: The actual user data, represented by the `UserModel`.
-    """
-
-    user: UserModel
 
 
 @router.get("/", response_model=list[UserModel])
@@ -155,7 +63,7 @@ def get_users(db: Session = Depends(get_db)) -> list[UserModel]:
 
 
 @router.get("/{user_id}", response_model=UserModel)
-def get_user(user_id: int, db: Session = Depends(get_db)) -> UserModel:
+def get_user(user_id: str, db: Session = Depends(get_db)) -> UserModel:
     """
     Queries the users table in the database table for a specific row with the id of user_id.
 
@@ -232,15 +140,13 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
     try:
         logger.info(f"Creating new user with name '{user.username}'.")
         attributes: dict[str, Any] = {}
+        attributes["id"] = str(uuid.uuid4())
         attributes["name"] = user.name
         attributes["username"] = user.username
         attributes["image"] = user.image if user.image else None
 
         if user.password:
-            logger.debug("Adding password to new user.")
-            hasher = PasswordHasher()
-            psw_hash = hasher.hash(user.password)
-            attributes["parties"] = psw_hash
+            attributes["password"] = hash_password(user.password)
         if user.parties:
             logger.debug(f"Adding parties with ids '{user.parties}' to new user.")
 
@@ -295,7 +201,7 @@ def post_user(user: UserPostBase, db: Session = Depends(get_db)) -> UserResponse
 
 @router.put("/{user_id}", response_model=UserResponse)
 def put_user(
-    user_id: int, user: UserPutBase, db: Session = Depends(get_db)
+    user_id: str, user: UserPutBase, db: Session = Depends(get_db)
 ) -> UserResponse:
     """
     Updates an user in the database by its unique id.
@@ -471,7 +377,7 @@ def put_user(
 
 
 @router.delete("/{user_id}", response_model=DeleteResponse)
-def delete_user(user_id: int, db: Session = Depends(get_db)) -> DeleteResponse:
+def delete_user(user_id: str, db: Session = Depends(get_db)) -> DeleteResponse:
     """
     Deletes a user from the database.
 

@@ -1,68 +1,33 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
+from server.models import Size
+from server.models import Type
+from server.models import Class
+from server.models import Subclass
+from server.models import PlayerCharacter
+from server.models import Race
+from server.models import Subrace
+from server.models import Party
+from server.api.models.delete_response import DeleteResponse
+from server.api.models.creatures import CreaturePutBase
+from server.api.models.player_character import PCModel, PCPostBase, PCResponse
 from server.api.utils.creature_utilities import CreatureUtilities
 from server.api.utils.utilities import Utilities
-from server.api.models.delete_response import DeleteResponse
-from server.api.models.base_response import BaseResponse
-from server.api.models.creatures import CreatureModel, CreaturePostBase, CreaturePutBase
-from server.api.models.user_relations import UserBase
-from server.database.models.sizes import Size
-from server.database.models.types import Type
-from server.database.models.classes import Class
-from server.database.models.subclasses import Subclass
-from server.database.models.player_characters import PlayerCharacter
-from server.database.models.races import Race
-from server.database.models.subraces import Subrace
-from server.database.models.parties import Party
 
 router = APIRouter(
     prefix="/api/player_characters",
     tags=["Player Characters"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
 )
-
-
-class PCModel(CreatureModel):
-    user: UserBase
-
-
-class PCPostBase(CreaturePostBase):
-    """
-    Extension of the CreaturePostBase with extra user_id for
-    pc to user connection.
-    """
-
-    user_id: int
-
-
-class UserPublic(BaseModel):
-    """Only allows specific data from the User table to show up."""
-
-    name: str
-    username: str
-    image: bytes | None = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PCResponse(BaseResponse):
-    """
-    Response model for creating or retrieving a player character.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `pc`: The actual pc data, represented by the `PCModel`.
-    """
-
-    pc: PCModel
 
 
 @router.get("/", response_model=list[PCModel])
@@ -393,7 +358,7 @@ def post_pc(pc: PCPostBase, db: Session = Depends(get_db)) -> PCResponse:
 
 @router.put("/{pc_id}", response_model=PCResponse)
 def put_pc(
-    pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)
+        pc_id: str, pc: CreaturePutBase, db: Session = Depends(get_db)
 ) -> PCResponse:
     """
     Updates an pc in the database by its unique id.

@@ -1,9 +1,9 @@
 from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
-from server.api.models.attributes import PostAttribute, PutAttribute
+from server.api.models.attribute import PostAttribute, PutAttribute
 from server.api.models.class_subclass_bases import ClassBase, SubclassBase
-from server.api.models.damage_types import PostDamageType, PutDamageType
+from server.api.models.damage_type import PostDamageType, PutDamageType
 from server.api.models.race_subrace_bases import SubraceBase
 from server.api.models.user_relations import RoleBase
 from server.api.routers.attributes import AttributeModel

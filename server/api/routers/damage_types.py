@@ -1,68 +1,27 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.types import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.api import get_db
-from server.logger.logger import logger
-from server.api.models.base_response import BaseResponse
+from config.logger_config import logger
+from server.api.auth.security import oauth2_scheme
+from server.models import DamageType
 from server.api.models.delete_response import DeleteResponse
-from server.database.models.damage_types import DamageType
+from server.api.models.damage_type import (
+    DamageTypeModel,
+    DamageTypePostBase,
+    DamageTypePutBase,
+    DamageTypeResponse,
+)
 
 router = APIRouter(
     prefix="/api/damage_types",
     tags=["Damage Types"],
     responses={404: {"description": "Not found."}},
+    dependencies=[Depends(oauth2_scheme)]
+
 )
-
-
-class DamageTypeModel(BaseModel):
-    """
-    Represents an damage type entity.
-
-    - `id`: Unique identifier of the damage type.
-    - `name`: Name of the damage type.
-    """
-
-    id: int
-    name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class DamageTypePostBase(BaseModel):
-    """
-    Schema for creating a new damage type.
-
-    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
-    """
-
-    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class DamageTypePutBase(BaseModel):
-    """
-    Schema for updating an damage type.
-
-    - `damage_type_name`: Name of the damage type to be created, must be between 1 and 50 characters.
-    """
-
-    damage_type_name: Annotated[str, Field(min_length=1, max_length=50)]
-
-
-class DamageTypeResponse(BaseResponse):
-    """
-    Response model for creating or retrieving an damage type.
-    Inherits from BaseResponse
-
-    - `message`: A descriptive message about the action performed.
-    - `damage_type`: The actual damage type data, represented by the `AttributeModel`.
-    """
-
-    damage_type: DamageTypeModel
 
 
 @router.get("/", response_model=list[DamageTypeModel])
@@ -95,7 +54,7 @@ def get_damage_types(db: Session = Depends(get_db)) -> list[DamageTypeModel]:
 
 @router.get("/{damage_type_id}", response_model=DamageTypeModel)
 def get_damage_type(
-    damage_type_id: int, db: Session = Depends(get_db)
+        damage_type_id: int, db: Session = Depends(get_db)
 ) -> DamageTypeModel:
     """
     Queries the damage types table in the database table for a specific row with the id of damage_type_id.
@@ -126,7 +85,7 @@ def get_damage_type(
 
 @router.post("/", response_model=DamageTypeResponse, status_code=201)
 def post_damage_type(
-    damage_type: DamageTypePostBase, db: Session = Depends(get_db)
+        damage_type: DamageTypePostBase, db: Session = Depends(get_db)
 ) -> DamageTypeResponse:
     """
     Creates a new row in the damage_types table.
@@ -182,7 +141,7 @@ def post_damage_type(
 
 @router.put("/{damage_type_id}", response_model=DamageTypeResponse)
 def put_damage_type(
-    damage_type_id: int, damage_type: DamageTypePutBase, db: Session = Depends(get_db)
+        damage_type_id: int, damage_type: DamageTypePutBase, db: Session = Depends(get_db)
 ) -> DamageTypeResponse:
     """
     Updates a damage type in the database by its unique id.
@@ -245,7 +204,7 @@ def put_damage_type(
 
 @router.delete("/{damage_type_id}", response_model=DeleteResponse)
 def delete_damage_type(
-    damage_type_id: int, db: Session = Depends(get_db)
+        damage_type_id: int, db: Session = Depends(get_db)
 ) -> DeleteResponse:
     """
     Deletes an damage type from the database.
