@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.api.models.attribute import PostAttribute, PutAttribute
 from server.api.models.creatures import PutClass, PutParty, PutSubclass
 from server.api.models.damage_type import PostDamageType, PutDamageType

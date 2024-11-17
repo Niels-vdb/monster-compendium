@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 
 from server.api import get_db
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.api.auth.security import oauth2_scheme
 from server.api.auth.user_authentication import hash_password
 from server.models import PlayerCharacter

@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from server.api import get_db
-from config.logger_config import logger
+from server.config.logger_config import logger
 from server.api.auth.security import oauth2_scheme
 from server.models import Class
 from server.models import Subclass
