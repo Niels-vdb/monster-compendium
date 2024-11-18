@@ -20,7 +20,7 @@
 	};
 </script>
 
-<nav class="grid h-24 grid-cols-6 items-center justify-items-stretch">
+<nav class="row-span-1 grid h-24 grid-cols-6 items-center justify-items-stretch">
 	<div class="col-span-4 col-start-2 flex justify-center">
 		<button on:click={creatureSwitch} class="border-b border-black px-5 text-2xl text-black"
 			>Enemies</button
