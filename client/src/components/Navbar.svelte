@@ -13,7 +13,7 @@
 		for (let child of event.target.parentElement.children) {
 			child.classList.remove('border-black');
 			child.classList.remove('text-black');
-			child.classList.add('text-[#B3B3B3]');
+			child.classList.add('text-textTertiary');
 		}
 		event.target.classList.add('border-black');
 		event.target.classList.add('text-black');
@@ -25,15 +25,15 @@
 		<button on:click={creatureSwitch} class="border-b border-black px-5 text-2xl text-black"
 			>Enemies</button
 		>
-		<button on:click={creatureSwitch} class="border-b px-5 text-2xl text-[#B3B3B3]"
+		<button on:click={creatureSwitch} class="text-textTertiary border-b px-5 text-2xl"
 			>Non-Player Characters</button
 		>
-		<button on:click={creatureSwitch} class="border-b px-5 text-2xl text-[#B3B3B3]"
+		<button on:click={creatureSwitch} class="text-textTertiary border-b px-5 text-2xl"
 			>Player Characters</button
 		>
 	</div>
 	<div
-		class="mr-5 grid w-60 grid-cols-8 items-center gap-5 justify-self-end rounded-xl bg-[#9B9B7A] p-2"
+		class="bg-secondary mr-5 grid w-60 grid-cols-8 items-center gap-5 justify-self-end rounded-xl p-2"
 	>
 		<button
 			on:click={toggleDropdown}
@@ -45,9 +45,9 @@
 		</button>
 		<div class="col-span-3 col-start-3">
 			<p class="text-sm">Name</p>
-			<p class="text-sm text-[#5A5A5A]">Role</p>
+			<p class="text-text-secondary text-sm">Role</p>
 		</div>
-		<button class="col-span-3 col-start-6 rounded-lg bg-[#2C2C2C] p-2 text-white">Logout</button>
+		<button class="bg-primary col-span-3 col-start-6 rounded-lg p-2">Logout</button>
 	</div>
 </nav>
 
