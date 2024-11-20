@@ -1,6 +1,13 @@
 <script>
 	import plusIcon from '../assets/plus.svg';
 	import editIcon from '../assets/edit.svg';
+	import CreatureModal from './CreatureModal.svelte';
+
+	let isModalOpen = false;
+
+	const openModal = () => {
+		isModalOpen = true;
+	};
 </script>
 
 <div class="col-span-2 grid grid-rows-10 gap-4">
@@ -29,8 +36,15 @@
 		</div>
 	</div>
 
-	<div class="bg-secondary row-start-10 grid cursor-pointer grid-cols-10 items-center rounded-xl">
+	<button
+		on:click={openModal}
+		class="bg-secondary row-start-10 grid grid-cols-10 items-center rounded-xl"
+	>
 		<p class="col-start-2 col-end-9 overflow-visible text-center text-lg">Add a new creature</p>
 		<img src={plusIcon} alt="Add a new creature" class="col-start-10 h-8" />
-	</div>
+	</button>
+
+	{#if isModalOpen}
+		<CreatureModal bind:isModalOpen />
+	{/if}
 </div>
