@@ -13,7 +13,7 @@
 <div class="col-span-2 grid grid-rows-10 gap-4">
 	<div class="bg-secondary row-span-9 flex flex-col items-center overflow-scroll rounded-xl">
 		<input
-			type="text"
+			type="search"
 			name="creature-search"
 			id="creature-search"
 			class="bg-primary m-5 w-10/12 rounded-full text-black placeholder-black"

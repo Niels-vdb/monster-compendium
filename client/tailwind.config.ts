@@ -12,7 +12,13 @@ export default {
 				textPrimary: '#000000',
 				textSecondary: '#5A5A5A',
 				textTertiary: '#B3B3B3'
+			},
+			transitionProperty: {
+				'top-font-color': 'top, font-size, color'
 			}
+			// fontFamily: {
+			// 	sans: ['Metamorphous', 'system-ui', 'sans-serif']
+			// }
 		}
 	},
 
