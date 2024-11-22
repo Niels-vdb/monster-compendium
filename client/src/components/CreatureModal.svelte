@@ -65,12 +65,14 @@
 	];
 </script>
 
-<dialog {isModalOpen} open={isModalOpen} class="h-5/6 overflow-scroll rounded-xl bg-[#f0ead6]">
-	<div class="grid grid-cols-6">
-		<h1 class="col-span-2 col-start-3 p-2 pt-4 text-center text-xl font-medium">
-			Adding New Creature
-		</h1>
-		<button on:click={closeModal} class="col-start-6 m-3 justify-self-end">
+<dialog
+	{isModalOpen}
+	open={isModalOpen}
+	class="h-5/6 w-5/6 overflow-scroll rounded-xl bg-[#f0ead6]"
+>
+	<div class="grid grid-cols-3">
+		<h1 class="col-start-2 p-2 pt-4 text-center text-xl font-medium">Adding New Creature</h1>
+		<button on:click={closeModal} class="col-start-3 m-3 justify-self-end">
 			<img src={crossIcon} alt="" class="h-6" />
 		</button>
 	</div>

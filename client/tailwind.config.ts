@@ -15,10 +15,10 @@ export default {
 			},
 			transitionProperty: {
 				'top-font-color': 'top, font-size, color'
+			},
+			fontFamily: {
+				sans: ['Metamorphous', 'system-ui', 'sans-serif']
 			}
-			// fontFamily: {
-			// 	sans: ['Metamorphous', 'system-ui', 'sans-serif']
-			// }
 		}
 	},
 

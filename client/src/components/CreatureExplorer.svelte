@@ -77,7 +77,7 @@
 </script>
 
 <div class="bg-secondary col-span-4 flex flex-col items-center overflow-auto rounded-xl">
-	<img src={noImage} alt="Creature" class="w-9/12" />
+	<img src={noImage} alt="Creature" class=" w-4/6" />
 	<div class="mx-10 self-start py-2">
 		<h2 class="text-xl">Creature Name</h2>
 		<h2 class="text-textSecondary text-xl">Creature Type</h2>
