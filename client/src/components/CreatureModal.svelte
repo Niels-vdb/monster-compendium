@@ -7,6 +7,7 @@
 	import FloatingTextarea from './FloatingTextarea.svelte';
 	import ImageInput from './ImageInput.svelte';
 	import crossIcon from '../assets/cross.svg';
+	import InputToggle from './inputToggle.svelte';
 
 	/**
 	 * @type {boolean}
@@ -83,7 +84,10 @@
 			<FloatingInput inputType="text" inputId="name" labelName="Name" />
 			<div class="col-span-2 grid grid-cols-2 gap-2">
 				<FloatingInput inputType="number" inputId="armour-class" labelName="Armour Class" />
-				<FloatingSelect selectId="size" selectOptions={sizes} labelName="Size" />
+				<div class="grid grid-cols-2 gap-4">
+					<FloatingSelect selectId="size" selectOptions={sizes} labelName="Size" />
+					<InputToggle />
+				</div>
 			</div>
 		</div>
 		<ImageInput inputId="image" />
