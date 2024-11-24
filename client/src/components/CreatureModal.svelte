@@ -1,28 +1,45 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 
-	import FloatingInput from './FloatingInput.svelte';
-	import FloatingMultiSelect from './FloatingMultiSelect.svelte';
-	import FloatingSelect from './FloatingSelect.svelte';
-	import FloatingTextarea from './FloatingTextarea.svelte';
-	import ImageInput from './ImageInput.svelte';
+	import FloatingInput from '../components/FloatingInput.svelte';
+	import FloatingMultiSelect from '../components/FloatingMultiSelect.svelte';
+	import FloatingSelect from '../components/FloatingSelect.svelte';
+	import FloatingTextarea from '../components/FloatingTextarea.svelte';
+	import ImageInput from '../components/ImageInput.svelte';
 	import crossIcon from '../assets/cross.svg';
-	import InputToggle from './inputToggle.svelte';
+	import InputToggle from '../components/InputToggle.svelte';
 
-	/**
-	 * @type {boolean}
-	 */
-	export let isModalOpen;
+	export let isModalOpen: boolean;
+	export let creatureId;
+
+	let creatureName;
+	let creatureAlive;
+	let creatureAC;
+	let creatureSize;
+	let creatureKind;
+	let creatureType;
+	let creatureWalkingSpeed;
+	let creatureSwimmingSpeed;
+	let creatureClimbingSpeed;
+	let creatureFlyingSpeed;
+	let creatureRace;
+	let creatureSubrace;
+	let creatureClass;
+	let creatureSubclass;
+	let creatureInformation;
+	let creatureDescription;
 
 	const closeModal = () => {
 		isModalOpen = false;
+
+		creatureId = undefined;
 	};
 	const saveCreature = () => {};
 
 	document.addEventListener('keydown', (e) => {
 		e = e || window.event;
 		if (e.keyCode == 27) {
-			isModalOpen = false;
+			closeModal();
 		}
 	});
 
@@ -33,7 +50,6 @@
 	const subraces = ['High', 'Wood', 'Sea'];
 	const classes = ['Barbarian', 'Wizard', 'Fighter'];
 	const subclasses = ['Champion', 'Eldrich Knight', 'Battle Master'];
-
 	const attributes = [
 		'Acrobatics',
 		'Animal Handling',
@@ -64,64 +80,163 @@
 		'Slashing',
 		'Thunder'
 	];
+
+	if (creatureId) {
+		// Create fetch to get creature info.
+		creatureName = 'Gold Dragon';
+		creatureAlive = false;
+		creatureAC = 17;
+		creatureSize = 'Large';
+		creatureKind = 'Enemy';
+		creatureType = 'Dragon';
+		creatureWalkingSpeed = 40;
+		creatureSwimmingSpeed = 20;
+		creatureClimbingSpeed = 20;
+		creatureFlyingSpeed = 40;
+		creatureRace = 'Dragon Hatched';
+		creatureSubrace = 'Gold';
+		creatureClass = 'Artificer';
+		creatureSubclass = 'Armourer';
+		creatureInformation =
+			'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptate numquam, dolore quasi, recusandae ducimus molestiae vero molestias tenetur laborum facilis repellat explicabo rem voluptatem consequuntur.';
+		creatureDescription =
+			'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Optio, perspiciatis.';
+	}
+
+	console.log(creatureAlive);
 </script>
 
-<dialog
-	{isModalOpen}
-	open={isModalOpen}
-	class="h-5/6 w-5/6 overflow-scroll rounded-xl bg-[#f0ead6]"
->
+<dialog open={isModalOpen} class="h-5/6 w-5/6 overflow-scroll rounded-xl bg-[#f0ead6]">
 	<div class="grid grid-cols-3">
-		<h1 class="col-start-2 p-2 pt-4 text-center text-xl font-medium">Adding New Creature</h1>
+		<h1 class="col-start-2 p-2 pt-4 text-center text-xl font-medium">
+			{creatureId ? 'Editing Creature' : 'Adding New Creature'}
+		</h1>
 		<button on:click={closeModal} class="col-start-3 m-3 justify-self-end">
-			<img src={crossIcon} alt="" class="h-6" />
+			<img src={crossIcon} alt="Close modal" class="h-6" />
 		</button>
 	</div>
 	<div
 		class="mx-auto my-0 grid w-full grid-cols-3 grid-rows-6 place-items-center justify-items-center gap-1 px-7"
 	>
 		<div class="col-span-2 col-start-1 row-start-1 flex w-full flex-col gap-2">
-			<FloatingInput inputType="text" inputId="name" labelName="Name" />
-			<div class="col-span-2 grid grid-cols-2 gap-2">
-				<FloatingInput inputType="number" inputId="armour-class" labelName="Armour Class" />
-				<div class="grid grid-cols-2 gap-4">
-					<FloatingSelect selectId="size" selectOptions={sizes} labelName="Size" />
-					<InputToggle />
-				</div>
+			<div class="grid grid-cols-6">
+				<FloatingInput
+					extraClass="col-span-5"
+					inputType="text"
+					inputId="name"
+					labelName="Name"
+					value={creatureName}
+				/>
+				<InputToggle aliveValue={creatureAlive} />
+			</div>
+			<div class="grid grid-cols-2 gap-2">
+				<FloatingInput
+					inputType="number"
+					inputId="armour-class"
+					labelName="Armour Class"
+					value={creatureAC}
+				/>
+				<FloatingSelect
+					selectId="size"
+					selectOptions={sizes}
+					labelName="Size"
+					valueId="1"
+					bind:valueOption={creatureSize}
+				/>
 			</div>
 		</div>
 		<ImageInput inputId="image" />
-		<FloatingTextarea textareaId="information" textareaName="Information" />
-		<FloatingTextarea textareaId="description" textareaName="Description" />
+		<FloatingTextarea
+			textareaId="information"
+			textareaName="Information"
+			value={creatureInformation}
+		/>
+		<FloatingTextarea
+			textareaId="description"
+			textareaName="Description"
+			value={creatureDescription}
+		/>
 
 		<div class="col-start-3 row-start-1 flex w-full flex-col gap-2">
-			<FloatingSelect selectId="creature" selectOptions={creatures} labelName="Creature" />
+			<FloatingSelect
+				selectId="creature"
+				selectOptions={creatures}
+				labelName="Creature"
+				valueId="1"
+				valueOption={creatureKind}
+			/>
 			<FloatingSelect
 				selectId="creatureType"
 				selectOptions={creatureTypes}
 				labelName="Creature Type"
+				valueId="1"
+				valueOption={creatureType}
 			/>
 		</div>
 
 		<div class="col-start-3 row-start-2 flex flex-col gap-2">
 			<div class="flex gap-2">
-				<FloatingInput inputType="number" inputId="walking-speed" labelName="Walking Speed" />
-				<FloatingInput inputType="number" inputId="swimming-speed" labelName="Swimming Speed" />
+				<FloatingInput
+					inputType="number"
+					inputId="walking-speed"
+					labelName="Walking Speed"
+					value={creatureWalkingSpeed}
+				/>
+				<FloatingInput
+					inputType="number"
+					inputId="swimming-speed"
+					labelName="Swimming Speed"
+					value={creatureSwimmingSpeed}
+				/>
 			</div>
 			<div class="flex gap-2">
-				<FloatingInput inputType="number" inputId="climbing-speed" labelName="Climbing Speed" />
-				<FloatingInput inputType="number" inputId="flying-speed" labelName="Flying Speed" />
+				<FloatingInput
+					inputType="number"
+					inputId="climbing-speed"
+					labelName="Climbing Speed"
+					value={creatureClimbingSpeed}
+				/>
+				<FloatingInput
+					inputType="number"
+					inputId="flying-speed"
+					labelName="Flying Speed"
+					value={creatureFlyingSpeed}
+				/>
 			</div>
 		</div>
 
 		<div class="col-start-3 row-start-3 flex w-full flex-col gap-2">
-			<FloatingSelect selectId="race" selectOptions={races} labelName="Race" />
-			<FloatingSelect selectId="subrace" selectOptions={subraces} labelName="Subrace" />
+			<FloatingSelect
+				selectId="race"
+				selectOptions={races}
+				labelName="Race"
+				valueId="1"
+				valueOption={creatureRace}
+			/>
+			<FloatingSelect
+				selectId="subrace"
+				selectOptions={subraces}
+				labelName="Subrace"
+				valueId="1"
+				valueOption={creatureSubrace}
+			/>
 		</div>
 
 		<div class="col-start-3 row-start-4 flex w-full flex-col gap-2">
-			<FloatingSelect selectId="class" selectOptions={classes} labelName="Class" />
-			<FloatingSelect selectId="subclass" selectOptions={subclasses} labelName="Subclass" />
+			<FloatingSelect
+				selectId="class"
+				selectOptions={classes}
+				labelName="Class"
+				valueId="1"
+				valueOption={creatureClass}
+			/>
+			<FloatingSelect
+				selectId="subclass"
+				selectOptions={subclasses}
+				labelName="Subclass"
+				valueId="1"
+				valueOption={creatureSubclass}
+			/>
 		</div>
 
 		<div class="col-start-1 row-start-5 w-full">

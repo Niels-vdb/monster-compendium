@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
 	import plusIcon from '../assets/plus.svg';
-	import editIcon from '../assets/edit.svg';
 	import CreatureModal from './CreatureModal.svelte';
+	import CreatureRow from './CreatureRow.svelte';
 
 	let isModalOpen = false;
+	let creatureId: any = null;
 
-	const openModal = () => {
+	const openModal = (id = null) => {
+		creatureId = id;
 		isModalOpen = true;
 	};
 </script>
@@ -21,23 +23,14 @@
 		/>
 		<div class="flex w-10/12 flex-col items-center">
 			<h2 class="mb-2 w-5/6 border-b-2 border-black text-center text-xl">Dragons</h2>
-			<div class="flex w-5/6 items-center justify-between">
-				<span class="cursor-pointer text-lg">Gold Dragon</span>
-				<img src={editIcon} alt="Edit creature" class="h-4 cursor-pointer" />
-			</div>
-			<div class="flex w-5/6 items-center justify-between">
-				<span class="cursor-pointer text-lg">Red Dragon</span>
-				<img src={editIcon} alt="Edit creature" class="h-4 cursor-pointer" />
-			</div>
-			<div class="flex w-5/6 items-center justify-between">
-				<span class="cursor-pointer text-lg">Blue Dragon</span>
-				<img src={editIcon} alt="Edit creature" class="h-4 cursor-pointer" />
-			</div>
+			<CreatureRow creatureName="Gold Dragon" creatureId="1" {openModal} />
+			<CreatureRow creatureName="Red Dragon" creatureId="2" {openModal} />
+			<CreatureRow creatureName="Blue Dragon" creatureId="3" {openModal} />
 		</div>
 	</div>
 
 	<button
-		on:click={openModal}
+		on:click={() => (isModalOpen = true)}
 		class="bg-secondary row-start-10 grid grid-cols-10 items-center rounded-xl"
 	>
 		<p class="col-start-2 col-end-9 overflow-visible text-center text-lg">Add a new creature</p>
@@ -45,6 +38,6 @@
 	</button>
 
 	{#if isModalOpen}
-		<CreatureModal bind:isModalOpen />
+		<CreatureModal bind:isModalOpen bind:creatureId />
 	{/if}
 </div>

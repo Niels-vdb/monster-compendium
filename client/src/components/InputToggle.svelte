@@ -1,5 +1,11 @@
-<label class="inline-flex cursor-pointer items-center">
-	<input type="checkbox" value="" class="peer sr-only" checked />
+<script lang="ts">
+	export let aliveValue: boolean = true;
+
+	console.log(aliveValue);
+</script>
+
+<label class="inline-flex cursor-pointer items-center justify-self-center">
+	<input type="checkbox" class="peer sr-only" bind:checked={aliveValue} />
 	<div
 		class="peer relative h-6 w-11 rounded-full bg-gray-200 after:absolute
                 after:start-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border

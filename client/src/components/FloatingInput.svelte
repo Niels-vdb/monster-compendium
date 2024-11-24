@@ -2,12 +2,15 @@
 	export let inputType;
 	export let inputId;
 	export let labelName;
+	export let value;
+	export let extraClass = undefined;
 </script>
 
-<div class="relative">
+<div class="relative {extraClass ? extraClass : undefined}">
 	<input
 		type={inputType}
 		name=""
+		{value}
 		id={inputId}
 		min={inputType === 'number' ? '0' : undefined}
 		class="border-1 peer block w-full appearance-none self-center rounded-lg border-gray-300 bg-white px-2.5
