@@ -1,12 +1,12 @@
 <script>
 	export let inputType;
-	export let inputId;
+	export let inputId = undefined;
 	export let labelName;
-	export let value;
+	export let value = undefined;
 	export let extraClass = undefined;
 </script>
 
-<div class="relative {extraClass ? extraClass : undefined}">
+<div class="relative {extraClass}">
 	<input
 		type={inputType}
 		name=""
