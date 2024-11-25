@@ -1,5 +1,6 @@
 <script>
 	import Button from '../components/Button.svelte';
+	import FloatingInput from '../components/FloatingInput.svelte';
 
 	const login = () => {
 		console.log('click');
@@ -8,25 +9,13 @@
 
 <div class="flex h-dvh w-dvw flex-col items-center justify-center gap-5">
 	<h1 class="text-2xl">Creature Compendium</h1>
-	<div class="flex h-60 w-96 flex-col justify-center gap-4 rounded-lg border border-black p-5">
-		<div>
-			<label for="username" class="text-sm">Username</label>
-			<input
-				type="text"
-				id="username"
-				class="border-1 peer w-full appearance-none self-center rounded-lg border-gray-300 bg-white px-2.5
-                            pb-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
-			/>
-		</div>
-		<div>
-			<label for="password" class="text-sm">Password</label>
-			<input
-				type="password"
-				id="password"
-				class="border-1 peer w-full appearance-none self-center rounded-lg border-gray-300 bg-white px-2.5
-                            pb-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
-			/>
-		</div>
+	<div class="flex h-64 w-96 flex-col justify-center gap-4 rounded-lg border border-black p-5">
+		<FloatingInput inputType="text" inputId="username-login" labelName="Username" />
+		<FloatingInput inputType="password" inputId="password-login" labelName="Password" />
 		<Button value="Login" action={login} />
+		<div class="flex justify-between">
+			<a href="#" class="hover:text-[#9E7682]">Register</a>
+			<a href="#" class="hover:text-[#9E7682]">Recover password</a>
+		</div>
 	</div>
 </div>
