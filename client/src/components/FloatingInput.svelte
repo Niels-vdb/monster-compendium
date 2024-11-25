@@ -1,16 +1,15 @@
-<script>
-	export let inputType;
-	export let inputId = undefined;
-	export let labelName;
-	export let value = undefined;
-	export let extraClass = undefined;
+<script lang="ts">
+	export let inputType: string;
+	export let inputId: string;
+	export let labelName: string;
+	export let value: string;
+	export let extraClass: string | undefined = undefined;
 </script>
 
 <div class="relative {extraClass}">
 	<input
 		type={inputType}
-		name=""
-		{value}
+		bind:value
 		id={inputId}
 		min={inputType === 'number' ? '0' : undefined}
 		class="border-1 peer block w-full appearance-none self-center rounded-lg border-gray-300 bg-white px-2.5
