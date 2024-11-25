@@ -8,12 +8,16 @@
 	let password: string = $state('');
 
 	const login = () => {
-		const data = {
-			username: username,
-			password: password
-		};
+		if (!username || !password) {
+			console.log('Please fill out username and password');
+		} else {
+			const data = {
+				username: username,
+				password: password
+			};
 
-		goto('/creatures');
+			goto('/creatures');
+		}
 	};
 </script>
 
@@ -25,12 +29,14 @@
 			inputType="text"
 			inputId="username-login"
 			labelName="Username"
+			required={true}
 		/>
 		<FloatingInput
 			bind:value={password}
 			inputType="password"
 			inputId="password-login"
 			labelName="Password"
+			required={true}
 		/>
 		<Button value="Login" action={login} />
 		<div class="flex justify-between">

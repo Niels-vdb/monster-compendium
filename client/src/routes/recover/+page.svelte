@@ -5,9 +5,13 @@
 	let email: string = $state('');
 
 	const recover = () => {
-		const data = {
-			email: email
-		};
+		if (!email) {
+			console.log('Please fill out email address');
+		} else {
+			const data = {
+				email: email
+			};
+		}
 	};
 </script>
 

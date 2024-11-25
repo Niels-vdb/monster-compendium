@@ -6,14 +6,18 @@
 
 	let username: string = $state('');
 	let email: string = $state('');
+	let emailConfirm: string = $state('');
 	let password: string = $state('');
 	let passwordConfirm: string = $state('');
 	let termsChecked: boolean = $state(false);
 
 	const register = () => {
-		console.log(termsChecked);
-		if (password !== passwordConfirm) {
+		if (!username || !email || !password || !passwordConfirm || !termsChecked) {
+			console.log('Please fill out the form');
+		} else if (password !== passwordConfirm) {
 			console.log('Passwords are not the same');
+		} else if (email !== emailConfirm) {
+			console.log('Email addresses are not the same');
 		} else if (!termsChecked) {
 			console.log('Accept Terms and Conditions');
 		} else {
@@ -42,6 +46,12 @@
 			inputId="email-register"
 			labelName="Email"
 			bind:value={email}
+		/>
+		<FloatingInput
+			inputType="email"
+			inputId="confirm-email"
+			labelName="Email"
+			bind:value={emailConfirm}
 		/>
 		<FloatingInput
 			inputType="password"

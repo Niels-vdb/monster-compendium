@@ -1,5 +1,5 @@
 <script>
-	export let action;
+	export let action = undefined;
 	export let value;
 </script>
 
