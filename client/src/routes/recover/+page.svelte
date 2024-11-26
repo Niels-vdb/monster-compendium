@@ -24,6 +24,6 @@
 			labelName="Email"
 			bind:value={email}
 		/>
-		<Button value="Send Recovery Email" action={recover} />
+		<Button value="Send Recovery Email" action={recover} disabled={!email} />
 	</div>
 </div>

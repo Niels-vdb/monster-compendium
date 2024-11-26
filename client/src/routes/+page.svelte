@@ -7,6 +7,8 @@
 	let username: string = $state('');
 	let password: string = $state('');
 
+	const isDisabled = () => !username || !password;
+
 	const login = () => {
 		if (!username || !password) {
 			console.log('Please fill out username and password');
@@ -38,7 +40,7 @@
 			labelName="Password"
 			required={true}
 		/>
-		<Button value="Login" action={login} />
+		<Button value="Login" action={login} disabled={isDisabled()} />
 		<div class="flex justify-between">
 			<a href="/register" class="text-sm font-light hover:underline">Register</a>
 			<a href="/recover" class="text-sm font-light hover:underline">Recover password</a>

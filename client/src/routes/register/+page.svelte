@@ -11,6 +11,9 @@
 	let passwordConfirm: string = $state('');
 	let termsChecked: boolean = $state(false);
 
+	const isDisabled = () =>
+		!username || !email || !emailConfirm || !password || !passwordConfirm || !termsChecked;
+
 	const register = () => {
 		if (!username || !email || !password || !passwordConfirm || !termsChecked) {
 			console.log('Please fill out the form');
@@ -70,7 +73,7 @@
 			checkboxLabel="I accept the <a href=# class='hover:underline'>Terms and Conditions</a>"
 			bind:checked={termsChecked}
 		/>
-		<Button value="Register" action={register} />
+		<Button value="Register" action={register} disabled={isDisabled()} />
 		<p class="text-sm font-light">
 			Already have an account? <a href="/" class="font-medium hover:underline">Login here</a>
 		</p>
