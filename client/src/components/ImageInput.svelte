@@ -25,7 +25,7 @@
 	};
 </script>
 
-<div class="col-span-2 col-start-1 flex h-5/6 w-full items-center justify-center">
+<div class="col-span-4 col-start-1 flex h-5/6 w-full items-center justify-center">
 	<label
 		for={inputId}
 		class="relative flex h-32 w-full cursor-pointer flex-col items-center justify-center

@@ -1,7 +1,5 @@
 <script lang="ts">
 	export let aliveValue: boolean = true;
-
-	console.log(aliveValue);
 </script>
 
 <label class="inline-flex cursor-pointer items-center justify-self-center">

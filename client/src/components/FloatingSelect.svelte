@@ -1,29 +1,21 @@
-<script>
-	export let selectId;
-	export let selectOptions;
-	export let labelName;
-	export let rowStart;
-	export let colStart;
-	export let valueId;
-	export let valueOption;
+<script lang="ts">
+	export let selectId: string;
+	export let labelName: string;
 
-	console.log(!valueOption);
+	export let value: string | null = null;
+	export let selectOptions: { value: string | number; name: string }[];
 </script>
 
-<div class="relative w-full col-start-{colStart} row-start-{rowStart}">
+<div class="relative w-full">
 	<select
+		bind:value
 		id={selectId}
-		name=""
 		class="border-1 peer block w-full appearance-none rounded-lg border-gray-300 bg-white px-2.5
-    pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
+    			pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
 	>
-		{#if !valueOption}
-			<option value="" disabled selected>Choose {labelName}</option>
-		{:else}
-			<option selected disabled value={valueId}>{valueOption}</option>
-		{/if}
-		{#each selectOptions as creature}
-			<option value="option1">{creature}</option>
+		<option value={null} disabled selected>Choose {labelName}</option>
+		{#each selectOptions as option}
+			<option value={option.value}>{option.name}</option>
 		{/each}
 	</select>
 	<label

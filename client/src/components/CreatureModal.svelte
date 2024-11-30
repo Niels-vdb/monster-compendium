@@ -9,32 +9,60 @@
 	import crossIcon from '../assets/cross.svg';
 	import InputToggle from '../components/InputToggle.svelte';
 
-	export let isModalOpen: boolean;
-	export let creatureId;
+	let {
+		creatureId = $bindable(),
+		modalOpen = $bindable()
+	}: { creatureId: string | null; modalOpen: boolean } = $props();
 
-	let creatureName;
-	let creatureAlive;
-	let creatureAC;
-	let creatureSize;
-	let creatureKind;
-	let creatureType;
-	let creatureWalkingSpeed;
-	let creatureSwimmingSpeed;
-	let creatureClimbingSpeed;
-	let creatureFlyingSpeed;
-	let creatureRace;
-	let creatureSubrace;
-	let creatureClass;
-	let creatureSubclass;
-	let creatureInformation;
-	let creatureDescription;
+	let creatureName: string | null = $state(null);
+	let creatureAlive: boolean | null = $state(true);
+	let creatureAC: number | null = $state(null);
+	let creatureSize: number | null = $state(null);
+	let creatureKind: number | null = $state(null);
+	let creatureType: number | null = $state(null);
+	let creatureWalkingSpeed: number | null = $state(null);
+	let creatureSwimmingSpeed: number | null = $state(null);
+	let creatureClimbingSpeed: number | null = $state(null);
+	let creatureFlyingSpeed: number | null = $state(null);
+	let creatureRace: number | null = $state(null);
+	let creatureSubrace: number | null = $state(null);
+	let creatureClass: number[] = $state([]);
+	let creatureSubclass: number[] = $state([]);
+	let creatureInformation: string | null = $state(null);
+	let creatureDescription: string | null = $state(null);
+	let creatureImmunities: number[] = $state([]);
+	let creatureVulnerabilities: number[] = $state([]);
+	let creatureResistances: number[] = $state([]);
+	let creatureAdvantages: number[] = $state([]);
+	let creatureDisadvantages: number[] = $state([]);
 
-	const closeModal = () => {
-		isModalOpen = false;
+	const saveCreature = () => {
+		const creatureData = {
+			creatureName: creatureName,
+			creatureAlive: creatureAlive,
+			creatureAC: creatureAC,
+			creatureSize: creatureSize,
+			creatureKind: creatureKind,
+			creatureType: creatureType,
+			creatureWalkingSpeed: creatureWalkingSpeed,
+			creatureSwimmingSpeed: creatureSwimmingSpeed,
+			creatureClimbingSpeed: creatureClimbingSpeed,
+			creatureFlyingSpeed: creatureFlyingSpeed,
+			creatureRace: creatureRace,
+			creatureSubrace: creatureSubrace,
+			creatureClass: creatureClass,
+			creatureSubclass: creatureSubclass,
+			creatureInformation: creatureInformation,
+			creatureDescription: creatureDescription,
+			creatureImmunities: creatureImmunities,
+			creatureVulnerabilities: creatureVulnerabilities,
+			creatureResistances: creatureResistances,
+			creatureAdvantages: creatureAdvantages,
+			creatureDisadvantages: creatureDisadvantages
+		};
 
-		creatureId = undefined;
+		console.log(creatureData);
 	};
-	const saveCreature = () => {};
 
 	document.addEventListener('keydown', (e) => {
 		e = e || window.event;
@@ -43,42 +71,63 @@
 		}
 	});
 
-	const creatures = ['Enemy', 'Non-Player Character', 'Player Character'];
-	const creatureTypes = ['Aberration', 'Beast', 'Celestial', 'Construct', 'Dragon'];
-	const sizes = ['Tiny', 'Small', 'Medium', 'Large'];
-	const races = ['Human', 'Orc', 'Elf'];
-	const subraces = ['High', 'Wood', 'Sea'];
-	const classes = ['Barbarian', 'Wizard', 'Fighter'];
-	const subclasses = ['Champion', 'Eldrich Knight', 'Battle Master'];
+	const closeModal = () => {
+		modalOpen = false;
+	};
+
+	// These values will be fetched dynamically
+	const creatureKinds = [
+		{ value: 1, name: 'Enemy' },
+		{ value: 2, name: 'Non-Player Character' },
+		{ value: 3, name: 'Player Character' }
+	];
+	const creatureTypes = [
+		{ value: 1, name: 'Aberration' },
+		{ value: 2, name: 'Beast' },
+		{ value: 3, name: 'Celestial' },
+		{ value: 4, name: 'Construct' },
+		{ value: 5, name: 'Dragon' }
+	];
+	const sizes = [
+		{ value: 1, name: 'Tiny' },
+		{ value: 2, name: 'Small' },
+		{ value: 3, name: 'Medium' },
+		{ value: 4, name: 'Large' },
+		{ value: 5, name: 'Gargantuan' }
+	];
+	const races = [
+		{ value: 1, name: 'Human' },
+		{ value: 2, name: 'Orc' },
+		{ value: 3, name: 'Elf' }
+	];
+	const subraces = [
+		{ value: 1, name: 'High' },
+		{ value: 2, name: 'Wood' },
+		{ value: 3, name: 'Sea' }
+	];
+	const classes = [
+		{ value: 1, name: 'Barbarian' },
+		{ value: 2, name: 'Wizard' },
+		{ value: 3, name: 'Fighter' }
+	];
+	const subclasses = [
+		{ value: 1, name: 'Champion' },
+		{ value: 2, name: 'Eldrich Knight' },
+		{ value: 3, name: 'Battle Master' }
+	];
 	const attributes = [
-		'Acrobatics',
-		'Animal Handling',
-		'Arcana',
-		'Athletics',
-		'Attack rolls',
-		'Blinded',
-		'Charmed',
-		'Charisma',
-		'Constitution',
-		'Deception',
-		'Dexterity',
-		'Exhaustion',
-		'Frightened'
+		{ value: 1, name: 'Acrobatics' },
+		{ value: 2, name: 'Animal Handling' },
+		{ value: 3, name: 'Arcana' },
+		{ value: 4, name: 'Athletics' },
+		{ value: 5, name: 'Attack rolls' }
 	];
 	const damageTypes = [
-		'Acid',
-		'Bludgeoning',
-		'Cold',
-		'Fire',
-		'Force',
-		'Lightning',
-		'Necrotic',
-		'Piercing',
-		'Poison',
-		'Psychic',
-		'Radiant',
-		'Slashing',
-		'Thunder'
+		{ value: 1, name: 'Acid' },
+		{ value: 2, name: 'Bludgeoning' },
+		{ value: 3, name: 'Cold' },
+		{ value: 4, name: 'Fire' },
+		{ value: 5, name: 'Force' }
 	];
 
 	if (creatureId) {
@@ -102,183 +151,183 @@
 		creatureDescription =
 			'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Optio, perspiciatis.';
 	}
-
-	console.log(creatureAlive);
 </script>
 
-<dialog open={isModalOpen} class="h-5/6 w-5/6 overflow-scroll rounded-xl bg-[#f0ead6]">
+<dialog open={modalOpen} class="h-5/6 w-5/6 overflow-scroll rounded-xl bg-[#f0ead6]">
 	<div class="grid grid-cols-3">
 		<h1 class="col-start-2 p-2 pt-4 text-center text-xl font-medium">
 			{creatureId ? 'Editing Creature' : 'Adding New Creature'}
 		</h1>
-		<button on:click={closeModal} class="col-start-3 m-3 justify-self-end">
+		<button onclick={closeModal} class="col-start-3 m-3 justify-self-end">
 			<img src={crossIcon} alt="Close modal" class="h-6" />
 		</button>
 	</div>
 	<div
-		class="mx-auto my-0 grid w-full grid-cols-3 grid-rows-6 place-items-center justify-items-center gap-1 px-7"
+		class="mx-auto my-0 grid w-full grid-cols-6 grid-rows-6 place-items-center justify-items-center gap-2 px-7"
 	>
-		<div class="col-span-2 col-start-1 row-start-1 flex w-full flex-col gap-2">
-			<div class="grid grid-cols-6">
+		<div class="col-span-4 col-start-1 row-start-1 flex w-full flex-col gap-2">
+			<div class="grid grid-cols-4">
 				<FloatingInput
-					extraClass="col-span-5"
+					bind:value={creatureName}
 					inputType="text"
 					inputId="name"
 					labelName="Name"
-					value={creatureName}
+					required={true}
+					extraClass="col-span-3"
 				/>
-				<InputToggle aliveValue={creatureAlive} />
+				<InputToggle bind:checked={creatureAlive} />
 			</div>
 			<div class="grid grid-cols-2 gap-2">
 				<FloatingInput
+					bind:value={creatureAC}
 					inputType="number"
 					inputId="armour-class"
 					labelName="Armour Class"
-					value={creatureAC}
 				/>
 				<FloatingSelect
+					bind:value={creatureSize}
 					selectId="size"
 					selectOptions={sizes}
 					labelName="Size"
-					valueId="1"
-					bind:valueOption={creatureSize}
 				/>
 			</div>
 		</div>
-		<ImageInput inputId="image" />
-		<FloatingTextarea
-			textareaId="information"
-			textareaName="Information"
-			value={creatureInformation}
-		/>
-		<FloatingTextarea
-			textareaId="description"
-			textareaName="Description"
-			value={creatureDescription}
-		/>
 
-		<div class="col-start-3 row-start-1 flex w-full flex-col gap-2">
+		<div class="col-span-2 col-start-5 row-start-1 flex w-full flex-col gap-2">
 			<FloatingSelect
-				selectId="creature"
-				selectOptions={creatures}
-				labelName="Creature"
-				valueId="1"
-				valueOption={creatureKind}
+				bind:value={creatureKind}
+				selectId="creatureKind"
+				selectOptions={creatureKinds}
+				labelName="Creature Kind"
 			/>
 			<FloatingSelect
+				bind:value={creatureType}
 				selectId="creatureType"
 				selectOptions={creatureTypes}
 				labelName="Creature Type"
-				valueId="1"
-				valueOption={creatureType}
 			/>
 		</div>
 
-		<div class="col-start-3 row-start-2 flex flex-col gap-2">
+		<ImageInput inputId="image" />
+
+		<div class="col-span-2 col-start-5 row-start-2 flex flex-col gap-2">
 			<div class="flex gap-2">
 				<FloatingInput
+					bind:value={creatureWalkingSpeed}
 					inputType="number"
 					inputId="walking-speed"
 					labelName="Walking Speed"
-					value={creatureWalkingSpeed}
 				/>
 				<FloatingInput
+					bind:value={creatureSwimmingSpeed}
 					inputType="number"
 					inputId="swimming-speed"
 					labelName="Swimming Speed"
-					value={creatureSwimmingSpeed}
 				/>
 			</div>
 			<div class="flex gap-2">
 				<FloatingInput
+					bind:value={creatureClimbingSpeed}
 					inputType="number"
 					inputId="climbing-speed"
 					labelName="Climbing Speed"
-					value={creatureClimbingSpeed}
 				/>
 				<FloatingInput
+					bind:value={creatureFlyingSpeed}
 					inputType="number"
 					inputId="flying-speed"
 					labelName="Flying Speed"
-					value={creatureFlyingSpeed}
 				/>
 			</div>
 		</div>
 
-		<div class="col-start-3 row-start-3 flex w-full flex-col gap-2">
-			<FloatingSelect
-				selectId="race"
-				selectOptions={races}
-				labelName="Race"
-				valueId="1"
-				valueOption={creatureRace}
-			/>
-			<FloatingSelect
-				selectId="subrace"
-				selectOptions={subraces}
-				labelName="Subrace"
-				valueId="1"
-				valueOption={creatureSubrace}
-			/>
-		</div>
-
-		<div class="col-start-3 row-start-4 flex w-full flex-col gap-2">
-			<FloatingSelect
+		<div class="col-span-2 col-start-1 row-start-3 flex w-full flex-col gap-2">
+			<FloatingMultiSelect
+				bind:value={creatureClass}
 				selectId="class"
 				selectOptions={classes}
 				labelName="Class"
-				valueId="1"
-				valueOption={creatureClass}
 			/>
-			<FloatingSelect
+		</div>
+		<div class="col-span-2 col-start-3 row-start-3 flex w-full flex-col gap-2">
+			<FloatingMultiSelect
+				bind:value={creatureSubclass}
 				selectId="subclass"
 				selectOptions={subclasses}
 				labelName="Subclass"
-				valueId="1"
-				valueOption={creatureSubclass}
 			/>
 		</div>
 
-		<div class="col-start-1 row-start-5 w-full">
+		<div class="col-span-2 col-start-5 row-start-3 mb-7 flex w-full flex-col gap-2">
+			<FloatingSelect
+				bind:value={creatureRace}
+				selectId="race"
+				selectOptions={races}
+				labelName="Race"
+			/>
+			<FloatingSelect
+				bind:value={creatureSubrace}
+				selectId="subrace"
+				selectOptions={subraces}
+				labelName="Subrace"
+			/>
+		</div>
+		<FloatingTextarea
+			bind:value={creatureInformation}
+			textareaId="information"
+			textareaName="Information"
+		/>
+		<FloatingTextarea
+			bind:value={creatureDescription}
+			textareaId="description"
+			textareaName="Description"
+		/>
+
+		<div class="col-span-2 col-start-1 row-start-5 w-full">
 			<FloatingMultiSelect
+				bind:value={creatureImmunities}
 				selectId="immunities"
 				selectOptions={damageTypes}
 				labelName="Immunities"
 			/>
 		</div>
-		<div class="col-start-2 row-start-5 w-full">
+		<div class="col-span-2 col-start-3 row-start-5 w-full">
 			<FloatingMultiSelect
+				bind:value={creatureResistances}
 				selectId="resistances"
 				selectOptions={damageTypes}
 				labelName="Resistances"
 			/>
 		</div>
-		<div class="col-start-3 row-start-5 w-full">
+		<div class="col-span-2 col-start-5 row-start-5 w-full">
 			<FloatingMultiSelect
+				bind:value={creatureVulnerabilities}
 				selectId="vulnerabilities"
 				selectOptions={damageTypes}
 				labelName="Vulnerabilities"
 			/>
 		</div>
-		<div class="col-start-1 row-start-6 w-full">
+		<div class="col-span-2 col-start-1 row-start-6 w-full">
 			<FloatingMultiSelect
+				bind:value={creatureAdvantages}
 				selectId="advantages"
 				selectOptions={attributes}
 				labelName="Advantages"
 			/>
 		</div>
-		<div class="col-start-2 row-start-6 w-full">
+		<div class="col-span-2 col-start-3 row-start-6 w-full">
 			<FloatingMultiSelect
+				bind:value={creatureDisadvantages}
 				selectId="disadvantages"
 				selectOptions={attributes}
 				labelName="Disadvantages"
 			/>
 		</div>
-		<div class="col-start-3 row-start-6 mt-2 flex h-full w-full flex-col gap-2">
-			<button on:click={closeModal} class="h-1/3 items-center rounded-xl border bg-white"
+		<div class="col-span-2 col-start-5 row-start-6 mt-2 flex h-full w-full flex-col gap-2">
+			<button onclick={closeModal} class="h-1/3 items-center rounded-xl border bg-white"
 				>Close</button
 			>
-			<button on:click={saveCreature} class=" h-1/3 items-center rounded-xl border bg-white"
+			<button onclick={saveCreature} class=" h-1/3 items-center rounded-xl border bg-white"
 				>Save</button
 			>
 		</div>

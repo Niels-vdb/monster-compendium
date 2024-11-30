@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { redirect } from '@sveltejs/kit';
 	import Button from '../components/Button.svelte';
 	import FloatingInput from '../components/FloatingInput.svelte';
 	import { goto } from '$app/navigation';

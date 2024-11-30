@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import editIcon from '../assets/edit.svg';
 
-	export let creatureId;
-	export let creatureName;
-	export let openModal;
+	export let creatureId: string;
+	export let creatureName: string;
+	export let openModal: (id: string) => void;
 </script>
 
 <div class="flex w-5/6 items-center justify-between">
