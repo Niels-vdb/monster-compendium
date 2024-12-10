@@ -15,7 +15,8 @@
 	}: { creatureId: string | null; modalOpen: boolean } = $props();
 
 	let creatureName: string | null = $state(null);
-	let creatureAlive: boolean | null = $state(true);
+	let creatureInformation: string | null = $state(null);
+	let creatureDescription: string | null = $state(null);
 	let creatureAC: number | null = $state(null);
 	let creatureSize: number | null = $state(null);
 	let creatureKind: number | null = $state(null);
@@ -26,10 +27,9 @@
 	let creatureFlyingSpeed: number | null = $state(null);
 	let creatureRace: number | null = $state(null);
 	let creatureSubrace: number | null = $state(null);
+	let creatureAlive: boolean | null = $state(true);
 	let creatureClass: number[] = $state([]);
 	let creatureSubclass: number[] = $state([]);
-	let creatureInformation: string | null = $state(null);
-	let creatureDescription: string | null = $state(null);
 	let creatureImmunities: number[] = $state([]);
 	let creatureVulnerabilities: number[] = $state([]);
 	let creatureResistances: number[] = $state([]);
@@ -135,17 +135,22 @@
 		creatureName = 'Gold Dragon';
 		creatureAlive = false;
 		creatureAC = 17;
-		creatureSize = 'Large';
-		creatureKind = 'Enemy';
-		creatureType = 'Dragon';
+		creatureSize = 1;
+		creatureKind = 2;
+		creatureType = 3;
 		creatureWalkingSpeed = 40;
 		creatureSwimmingSpeed = 20;
 		creatureClimbingSpeed = 20;
 		creatureFlyingSpeed = 40;
-		creatureRace = 'Dragon Hatched';
-		creatureSubrace = 'Gold';
-		creatureClass = 'Artificer';
-		creatureSubclass = 'Armourer';
+		creatureRace = 1;
+		creatureSubrace = 2;
+		creatureClass = [1, 2];
+		creatureSubclass = [2, 3];
+		creatureImmunities = [1, 2];
+		creatureResistances = [3, 4];
+		creatureVulnerabilities = [4, 5];
+		creatureAdvantages = [1, 2];
+		creatureDisadvantages = [3, 4];
 		creatureInformation =
 			'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Voluptate numquam, dolore quasi, recusandae ducimus molestiae vero molestias tenetur laborum facilis repellat explicabo rem voluptatem consequuntur.';
 		creatureDescription =
