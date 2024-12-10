@@ -1,11 +1,11 @@
-<script>
-	export let textareaId;
-	export let textareaName;
-	export let extraClass;
-	export let value;
+<script lang="ts">
+	export let textareaId: string;
+	export let textareaName: string;
+	export let extraClass: string | null = null;
+	export let value: string;
 </script>
 
-<div class="relative col-span-2 col-start-1 w-full">
+<div class="relative col-span-3 w-full">
 	<textarea
 		id={textareaId}
 		name="description"
@@ -14,7 +14,7 @@
                 px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600
                 focus:outline-none focus:ring-0"
 		placeholder=""
-		{value}
+		bind:value
 	></textarea>
 	<label
 		for={textareaId}

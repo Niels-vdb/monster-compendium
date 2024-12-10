@@ -1,5 +1,6 @@
 <script lang="ts">
 	import userIcon from '../assets/user.svg';
+	import { creatureKind } from '../stores/creatureKind';
 	import UserDropdown from './UserDropdown.svelte';
 
 	let dropdownIsOpen = false;
@@ -18,19 +19,27 @@
 		event.target.classList.remove('text-textTertiary');
 		event.target.classList.add('border-black');
 		event.target.classList.add('text-black');
+
+		creatureKind.set(event.target.value);
 	};
 </script>
 
 <nav class="row-span-1 grid h-24 grid-cols-6 items-center justify-items-stretch">
 	<div class="col-span-4 col-start-2 flex justify-center">
-		<button on:click={creatureSwitch} class="border-b border-black px-5 text-xl text-black"
-			>Enemies</button
+		<button
+			on:click={creatureSwitch}
+			value="Enemies"
+			class="border-b border-black px-5 text-xl text-black">Enemies</button
 		>
-		<button on:click={creatureSwitch} class="text-textTertiary border-b px-5 text-xl"
-			>Non-Player Characters</button
+		<button
+			on:click={creatureSwitch}
+			value="Non-Player Characters"
+			class="text-textTertiary border-b px-5 text-xl">Non-Player Characters</button
 		>
-		<button on:click={creatureSwitch} class="text-textTertiary border-b px-5 text-xl"
-			>Player Characters</button
+		<button
+			on:click={creatureSwitch}
+			value="Player Characters"
+			class="text-textTertiary border-b px-5 text-xl">Player Characters</button
 		>
 	</div>
 	<div
